@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.abstracthorizon</groupId>
+    <artifactId>abstracthorizon-dev</artifactId>
+    <version>1.0.1</version>
+  </parent>
+
+  <artifactId>libgdx-pygame</artifactId>
+
+  <groupId>org.ah.libgdx.pygame</groupId>
+
+  <packaging>jar</packaging>
+
+  <name>libgdx-pygame</name>
+
+  <version>1.0-SNAPSHOT</version>
+
+  <description>
+    Pygame implementation in LibGDX
+  </description>
+
+  <url>http://wwww.abstracthorizon.org/</url>
+
+  <inceptionYear>2014</inceptionYear>
+
+  <organization>
+    <name>Abstract Horizon</name>
+    <url>http://www.abstracthorizon.org/</url>
+  </organization>
+
+  <properties>
+    <gdx-version>1.9.11</gdx-version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.ah.python.interpreter</groupId>
+      <artifactId>python-interpreter</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx</artifactId>
+      <version>${gdx-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx</artifactId>
+      <version>${gdx-version}</version>
+      <type>jar</type>
+      <classifier>sources</classifier>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>abstracthorizon</id>
+      <layout>default</layout>
+      <name>Abstracthorizon.org Repository</name>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <url>
+        http://repository.abstracthorizon.org/maven2/abstracthorizon
+      </url>
+    </repository>
+    <repository>
+      <id>abstracthorizon.snapshot</id>
+      <layout>default</layout>
+      <name>Abstracthorizon.org Snapshot Repository</name>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <url>
+        http://repository.abstracthorizon.org/maven2/abstracthorizon.snapshot
+      </url>
+    </repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <!-- best lock down version of the plugin too -->
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

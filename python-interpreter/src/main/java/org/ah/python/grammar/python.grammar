@@ -1,0 +1,765 @@
+grammar python;
+
+scanner PythonScanner package org.ah.python.grammar {
+
+    "del"; "pass"; "continue"; "break"; "return";
+    "raise"; "from"; "global"; "nonlocal";
+    "assert"; "if"; "elif"; "else"; "for"; "while"; "def";
+    "yield";
+    "class";
+    "None" ; "True" ; "False";
+    "in"; "is"; "as"; "with"; "except"; "lambda";
+
+    "not"; "and"; "or";
+  
+    "try"; "finally"; "import";
+
+    "+="; "-="; "*="; "/="; "%="; "&="; "|="; "^="; "<<="; ">>="; "**="; "//=";
+
+    COMMA = ',';
+    DASH_GT = "->";
+
+    LPAREN = '(';
+    RPAREN = ')';
+    LBRACK = '[';
+    RBRACK = ']';
+    LKBRACK = '{';
+    RKBRACK = '}';
+
+    COLON = ':';
+    EQ = '=';
+    STAR = '*';
+    STARSTAR = "**";
+    SEMICOLON = ';';
+    DOT = '.';
+    ELLIPSIS = "...";
+    AT = '@';
+    EQUAL = "==";
+    NOT_EQUAL = "!=";
+    NOT_EQUAL2 = "<>";
+  
+    GE = ">=";
+    GT = '>';
+    LE = "<=";
+    LT = '<';
+    OR = '|';
+    XOR = '^';
+    AND = '&';
+    LSHIFT = "<<";
+    RSHIFT = ">>";
+    PLUS = '+';
+    MINUS = '-';
+    MOD = '%';
+    SLASH = '/';
+    SLASHSLASH = "//";
+    TILDA = '~';
+ 
+
+    private digit = '0' .. '9';
+    private letter = 'A' .. 'Z' | 'a' .. 'z' | '_';
+
+    private allbuteolandnl = CHR(1) .. CHR(9) | CHR(11) .. CHR(127);
+
+    NEWLINE = ['\\'] [CHR(13)] CHR(10);
+
+    COMMENTS = '#' { allbuteolandnl } NEWLINE ;
+    
+    private whitespaceChars = CHR(1) .. CHR(9) | CHR(11) .. CHR(31) | " " ;
+    WHITESPACE  =  whitespaceChars { whitespaceChars };
+
+    NAME = letter { letter | digit }
+       <%
+          return new TokenImpl(s, TOKEN_NAME, startLine, startPos);
+       %>;
+
+    NUMBER = digit { digit } [ '.' { digit } ];
+
+    private char1  = ' ' | CHR(33) | '\\' CHR(34) | CHR(35) .. CHR(91) | '\\' '\\' | CHR(93) .. CHR(127) ;
+    private char2  = ' ' | CHR(33) .. CHR(38) | '\\' CHR(39) | CHR(40) .. CHR(91) | '\\' '\\' | CHR(93) .. CHR(127) ;
+
+    STRING = ( '"' { char1 } '"' ) | ( CHR(39) { char2 } CHR(39) )
+      <% 
+          StringBuilder buf = new StringBuilder();
+          for (int i = 0; i < s.length(); i++) {
+              char c = s.charAt(i);
+              if (c == '\\') {
+                  i++;
+                  c = s.charAt(i + 1);
+              }
+              buf.append(c);
+          }
+          return new TokenImpl(buf.toString().substring(1, buf.length() - 1), TOKEN_STRING, startLine, startPos); 
+      %>
+      ;
+
+    // NEWLINE_INDENT = NEWLINE ' ' { ' ' };
+    // INDENT = ' ' { ' ' };
+    //  DEDENT = "ALB  ";
+    INDENT = "!!!";
+    DEDENT = "@@@";
+    
+
+}
+
+parser PythonParser package org.ah.python.grammar using scanner org.ah.python.grammar.PythonScannerFixed {
+
+    import "org.ah.python.modules.BuiltInFunctions";
+    import "org.ah.python.interpreter.*";
+    import "java.util.*";
+
+<%
+    private Suite currentSuite;
+    private OperatorType operatorType;
+    private CmpopType cmpopType;
+    private PythonObject currentObject;
+
+    private List<String> stringList = new ArrayList<String>();
+    private Import currentImport;
+    private List<PythonObject> currentList;
+
+    private Module module;
+    private boolean trailingComma = false;
+    
+    public Module getModule() { return module; }
+
+%>
+
+    single_input = (NEWLINE | simple_stmt | compound_stmt NEWLINE { NEWLINE } );
+
+    file_input = 
+        <% module = new Module(); currentSuite = module.getSuite(); %> 
+                 { NEWLINE | stmt };
+
+    eval_input = testlist { NEWLINE };
+
+    decorator = AT dotted_name [ LPAREN [ arglist ] RPAREN ] NEWLINE
+        <% throw new UnsupportedOperationException("decorator"); %>
+              ;
+
+    decorators = decorator { decorator }
+        <% throw new UnsupportedOperationException("decorators"); %>
+               ;
+ 
+    decorated = decorators ( classdef | funcdef )
+        <% throw new UnsupportedOperationException("decorated"); %>
+              ;
+    
+    funcdef = "def" NAME <% Def def = new Def(t.toString()); %>
+              parameters 
+              <%
+                 for (PythonObject arg : currentList) {
+                     if (arg instanceof Reference) { 
+                         def.getArguments().add((Reference)arg);
+                     } else {
+                         throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
+                     }
+                 }
+              %>
+              [ DASH_GT test <% throw new UnsupportedOperationException("->"); %> ] COLON 
+              <% 
+                 Suite save = currentSuite; currentSuite = def.getSuite();
+              %>
+              suite
+              <% currentSuite = save; currentSuite.asList().add(def); %>
+            ;
+
+    parameters = LPAREN <% currentList = new ArrayList<PythonObject>(); %> [ typedargslist ] RPAREN
+               ;
+
+    typedargslist = ( tfpdef <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+                        [ EQ test <% throw new UnsupportedOperationException("named parameters"); %> ] 
+                        { COMMA tfpdef <% args.add(currentObject); %>
+                            [ EQ test <% throw new UnsupportedOperationException("named parameters"); %> ]
+                        }  
+                        [ COMMA
+                            [ STAR [tfpdef] 
+                                { COMMA tfpdef 
+                                    [EQ test]
+                                }
+                                [ COMMA STARSTAR tfpdef ] 
+                            | STARSTAR tfpdef
+                            ]
+                        ]
+                        <% currentList = args; %>
+                  |  STAR 
+                      [ tfpdef ] 
+                      { COMMA tfpdef 
+                          [ EQ test ] 
+                      }
+                      [ COMMA STARSTAR tfpdef ] 
+                      <% throw new UnsupportedOperationException("star parameters"); %>
+                  | STARSTAR tfpdef <% throw new UnsupportedOperationException("starstar parameters"); %>
+                  );
+
+    tfpdef = NAME <% currentObject = new Reference(null, PythonString.valueOf(t.toString())); %>
+             [ COLON test <% throw new UnsupportedOperationException("parameter types"); %> ];
+
+    varargslist = (vfpdef [EQ test] { COMMA vfpdef [EQ test] }
+                      [ COMMA
+                          [ STAR [vfpdef] 
+                              { COMMA vfpdef [EQ test] } 
+                              [ COMMA STARSTAR vfpdef ] 
+                          | STARSTAR vfpdef
+                          ]
+                      ]
+                  |  STAR [vfpdef] 
+                      { COMMA vfpdef [EQ test] }
+                      [ COMMA STARSTAR vfpdef ] 
+                  | STARSTAR vfpdef
+                  );
+
+    vfpdef = NAME;
+
+    stmt = simple_stmt | compound_stmt
+         ;
+
+    simple_stmt = small_stmt { SEMICOLON small_stmt } [SEMICOLON] NEWLINE { NEWLINE }; 
+
+    small_stmt = ( expr_stmt 
+                 | del_stmt
+                 | pass_stmt <% throw new UnsupportedOperationException("pass_stmt"); %>
+                 | flow_stmt 
+                 | import_stmt 
+                 | global_stmt 
+                 | nonlocal_stmt  <% throw new UnsupportedOperationException("nonlocal_stmt"); %>
+                 | assert_stmt    <% throw new UnsupportedOperationException("assert_stmt"); %>
+                 );
+
+    expr_stmt = testlist_star_expr <% List<PythonObject> targets = currentList; %>
+                ( augassign
+                    ( yield_expr <% throw new UnsupportedOperationException("yield_expr"); %>
+                    | testlist
+                        <%
+                            if (currentList.size() != targets.size()) {
+                                throw new UnsupportedOperationException("Target assignment list size " + targets.size() + " does not match values size " + currentList.size());
+                            }
+                            for (int i = 0; i < targets.size(); i++) {
+                                PythonObject target = targets.get(i);
+                                PythonObject value = currentList.get(i);
+                                BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
+                                
+                                if (!(target instanceof Assignable)) {
+                                    throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
+                                }
+                                
+                                Assign assign = new Assign((Assignable)target, binaryOp);
+                                currentSuite.asList().add(assign);
+                            }
+                         %>
+                    )
+                |
+                    { EQ 
+                        ( yield_expr <% throw new UnsupportedOperationException("yield_expr"); %>
+                        | testlist_star_expr
+                        <%
+                            if (currentList.size() != targets.size()) {
+                                throw new UnsupportedOperationException("Target assignment list size " + targets.size() + " does not match values size " + currentList.size());
+                            }
+                            List<PythonObject> assigns = new ArrayList<PythonObject>();
+                            for (int i = 0; i < targets.size(); i++) {
+                                PythonObject target = targets.get(i);
+                                PythonObject value = currentList.get(i);
+                                Assign assign;
+                                if (target instanceof Assign) {
+                                    Assign lastAssign = (Assign)target;
+                                    if (!(lastAssign.getExpression() instanceof Assignable)) {
+                                        throw new UnsupportedOperationException("Illegal left side of assignment; " + lastAssign.getExpression());
+                                    }
+                                    assign = new Assign(lastAssign.getReference(), new Assign((Assignable)lastAssign.getExpression(), value));
+                                } else {
+                                    if (!(target instanceof Assignable)) {
+                                        throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
+                                    }
+                                
+                                    assign = new Assign((Assignable)target, value);
+                                }
+                                assigns.add(assign);
+                            }
+                            targets = assigns;
+                        %>
+                        )
+                    }
+                    <%
+                           for (PythonObject res : targets) {
+                               currentSuite.asList().add(res);
+                           }
+                    %>
+                )
+                ;
+
+    testlist_star_expr = ( test
+                         | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
+                         )
+                         <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %> 
+                         { COMMA 
+                             [ test <% args.add(currentObject); %>
+                             | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
+                             ]
+                         }
+                         <% currentList = args; %>
+                         ;
+
+    augassign = 
+                ( "+="  <% operatorType = OperatorType.Add; %>
+                | "-="  <% operatorType = OperatorType.Sub; %>
+                | "*="  <% operatorType = OperatorType.Mult; %>
+                | "/="  <% operatorType = OperatorType.Div; %>
+                | "%="  <% operatorType = OperatorType.Mod; %>
+                | "&="  <% operatorType = OperatorType.BitAnd; %>
+                | "|="  <% operatorType = OperatorType.BitOr; %>
+                | "^="  <% operatorType = OperatorType.BitXor; %>
+                | "<<=" <% operatorType = OperatorType.LShift; %>
+                | ">>=" <% operatorType = OperatorType.RShift; %>
+                | "**=" <% operatorType = OperatorType.Pow; %>
+                | "//=" <% operatorType = OperatorType.FloorDiv; %>
+                );
+
+    // For normal assignments, additional restrictions enforced by the interpreter
+    del_stmt = "del" exprlist <% currentObject = new Del(currentList); currentSuite.asList().add(currentObject); %>  
+             ;
+
+    pass_stmt = "pass";
+
+    flow_stmt = break_stmt 
+              | continue_stmt 
+              | return_stmt 
+              | raise_stmt 
+              | yield_stmt;
+
+    break_stmt = "break" <% currentSuite.asList().add(new Break()); %>;
+
+    continue_stmt = "continue" <% currentSuite.asList().add(new Continue()); %>;
+
+    return_stmt = "return" <% currentObject = PythonNone.NONE; %> [ testlist ] <% currentSuite.asList().add(new Return(currentObject)); %>;
+
+    yield_stmt = yield_expr <% throw new UnsupportedOperationException("yield_stmt"); %>;
+
+    raise_stmt = "raise" [ test [ "from" test ] ] <% throw new UnsupportedOperationException("raise_stmt"); %>;
+
+    import_stmt =
+                <% currentImport = new Import(); %>
+                ( import_name 
+                | import_from <% throw new UnsupportedOperationException("import_from"); %>
+                )
+                <% currentSuite.asList().add(currentImport); %>
+                ;
+
+    import_name = "import" dotted_as_names;
+
+    // note below: the (DOT | ELLIPSIS) is necessary because ELLIPSIS is tokenized as ELLIPSIS
+    import_from = ("from" ({DOT | ELLIPSIS} dotted_name | (DOT | ELLIPSIS) { (DOT | ELLIPSIS) } )
+              "import" (STAR | LPAREN import_as_names RPAREN | import_as_names));
+
+    import_as_name = NAME ["as" NAME];
+
+    dotted_as_name = dotted_name <% String as = null; %> 
+                     ["as" NAME <% as = t.toString(); %>]
+                     <% currentImport.addImport(as, stringList); %>
+                    ;
+
+    import_as_names = import_as_name { COMMA import_as_name };
+
+    dotted_as_names = dotted_as_name { COMMA dotted_as_name };
+
+    dotted_name = NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); %>  { DOT NAME <% stringList.add(t.toString()); %> };
+
+    global_stmt = "global" NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); %> { COMMA NAME <% stringList.add(t.toString()); %> }
+                <% currentSuite.asList().add(new Global(stringList)); %>
+                ;
+
+    nonlocal_stmt = "nonlocal" NAME { COMMA NAME };
+
+    assert_stmt = "assert" test [ COMMA test ];
+
+    compound_stmt = if_stmt 
+                  | while_stmt 
+                  | for_stmt 
+                  | try_stmt  <% throw new UnsupportedOperationException("try_stmt"); %>
+                  | with_stmt <% throw new UnsupportedOperationException("with_stmt"); %>
+                  | funcdef 
+                  | classdef
+                  | decorated <% throw new UnsupportedOperationException("decorated"); %>
+                  ;
+
+    if_stmt = "if" test COLON 
+                   <%
+                      If iff = new If(currentObject);
+                      If originalIf = iff;
+                      Suite save = currentSuite; currentSuite = iff;
+                   %>
+               suite 
+             { "elif" test COLON
+                   <% 
+                      If elif = new If(currentObject);
+                      iff.getElse().asList().add(elif);
+                      iff = elif;
+                      currentSuite = elif;
+                   %>
+               suite 
+             } 
+             [ "else" COLON 
+                   <% currentSuite = iff.getElse(); %>
+               suite 
+             ]
+                   <% currentSuite = save;  currentSuite.asList().add(originalIf); %>
+             ;
+
+    while_stmt = "while" test COLON 
+                   <%
+                      While whle = new While(currentObject);
+                      Suite save = currentSuite; currentSuite = whle;
+                   %>
+                  suite 
+               [ "else" COLON 
+                   <% currentSuite = whle.getElse(); %>
+                 suite 
+               ]
+                   <% currentSuite = save; currentSuite.asList().add(whle); %>
+               ;
+
+    for_stmt = "for" exprlist <% PythonObject target = currentObject; %>
+               "in" testlist COLON 
+                   <%
+                      if (!(target instanceof Reference)) {
+                          throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
+                      }
+                      For fr = new For((Reference)target, currentObject);
+                      Suite save = currentSuite; currentSuite = fr;
+                   %>
+                  suite 
+                [ "else" COLON 
+                   <% currentSuite = fr.getElse(); %>
+                  suite 
+                ]
+                   <% currentSuite = save;  currentSuite.asList().add(fr); %>
+                ;
+
+    try_stmt = ("try" COLON suite
+           ((except_clause COLON suite) { (except_clause COLON suite) }
+        ["else" COLON suite]
+        ["finally" COLON suite] |
+       "finally" COLON suite));
+
+    with_stmt = "with" with_item {COMMA with_item}  COLON suite;
+
+    with_item = test ["as" expr];
+
+    // NB compile.c makes sure that the default except clause is last
+    except_clause = "except" [test ["as" NAME]];
+
+    suite = simple_stmt 
+          | NEWLINE { NEWLINE }
+               INDENT stmt 
+                   { 
+                       stmt
+                   } 
+               DEDENT
+          ;
+
+    test = (or_test [ "if" or_test "else" test ]
+           | lambdef <% throw new UnsupportedOperationException("lambdef"); %>
+           );
+
+    test_nocond = or_test | lambdef_nocond;
+
+    lambdef = "lambda" [varargslist] COLON test;
+    
+    lambdef_nocond = "lambda" [varargslist] COLON test_nocond;
+
+    or_test = and_test        <% List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); %>
+            { "or" and_test   <% list.add(currentObject); %>
+            }                 <% if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.Or); } %>
+            ;
+
+    and_test = not_test       <% List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); %>
+             { "and" not_test <% list.add(currentObject); %>
+             }                <% if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.And); } %>
+             ;
+
+    not_test = "not" not_test <% currentObject = new UnaryOp(currentObject, UnaryopType.Not); %>
+             | comparison
+             ;
+
+    comparison = star_expr 
+                   <%
+                       PythonObject left = currentObject;
+                       List<CmpopType> ops = new ArrayList<CmpopType>();
+                       List<PythonObject> operands = new ArrayList<PythonObject>();
+                   %>
+               { comp_op <% ops.add(cmpopType); %> star_expr <% operands.add(currentObject); %>
+               }
+                   <% if (ops.size() > 0) { currentObject = new Compare(left, operands, ops); } %>
+               ;
+
+    comp_op = 
+              LT         <% cmpopType = CmpopType.Lt; %>
+            | GT         <% cmpopType = CmpopType.Gt; %>
+            | EQUAL      <% cmpopType = CmpopType.Eq; %>
+            | GE         <% cmpopType = CmpopType.GtE; %>
+            | LE         <% cmpopType = CmpopType.LtE; %>
+            | NOT_EQUAL2 <% cmpopType = CmpopType.NotEq; %>
+            | NOT_EQUAL  <% cmpopType = CmpopType.NotEq; %>
+            | "in"       <% cmpopType = CmpopType.In; %>
+            | "not"      <% cmpopType = CmpopType.NotIn; %>
+            | "is"       <% cmpopType = CmpopType.Is; %>
+            | "is" "not" <% cmpopType = CmpopType.IsNot; %>
+            ;
+
+    star_expr = [STAR <% throw new UnsupportedOperationException("star_expr"); %> ] expr;
+
+    expr = xor_expr    <% PythonObject left = currentObject; %>
+         { OR xor_expr <% currentObject = new BinaryOp(left, currentObject, OperatorType.BitOr); left = currentObject; %> 
+         }
+         ;
+
+    xor_expr = and_expr     <% PythonObject left = currentObject; %>
+             { XOR and_expr <% currentObject = new BinaryOp(left, currentObject, OperatorType.BitXor); left = currentObject; %>
+             }
+             ;
+
+    and_expr = shift_expr     <% PythonObject left = currentObject; %>
+             { AND shift_expr <% currentObject = new BinaryOp(left, currentObject, OperatorType.BitAnd); left = currentObject; %>
+             }
+             ;
+
+    shift_expr = arith_expr    <% PythonObject left = currentObject; %>
+               { <% OperatorType op; %> 
+                   ( LSHIFT <% op = OperatorType.LShift; %> 
+                   | RSHIFT <% op = OperatorType.RShift; %> 
+                   ) 
+                   arith_expr <% currentObject = new BinaryOp(left, currentObject, op); left = currentObject; %>
+               };
+
+    arith_expr = term   <% PythonObject left = currentObject; %>
+               { <% OperatorType op; %> 
+                   ( PLUS  <% op = OperatorType.Add; %> 
+                   | MINUS <% op = OperatorType.Sub; %> 
+                   ) 
+                   term <% currentObject = new BinaryOp(left, currentObject, op); left = currentObject; %>
+               };
+
+    term = factor <% PythonObject left = currentObject; %>
+         {  <% OperatorType op; %> 
+             ( STAR       <% op = OperatorType.Mult; %> 
+             | SLASH      <% op = OperatorType.Div; %> 
+             | MOD        <% op = OperatorType.Mod; %> 
+             | SLASHSLASH <% op = OperatorType.FloorDiv; %> 
+             ) 
+             factor <% currentObject = new BinaryOp(left, currentObject, op); left = currentObject; %>
+         };
+
+    factor = <% UnaryopType op; %>
+               ( PLUS  <% op = UnaryopType.UAdd; %> 
+               | MINUS <% op = UnaryopType.USub; %> 
+               | TILDA <% op = UnaryopType.Not; %> 
+               ) 
+               factor <% currentObject = new UnaryOp(currentObject, op); %>
+           | 
+           power;
+
+    power = atom <% PythonObject atom = currentObject; %>
+            { LPAREN   <% currentList = new ArrayList<PythonObject>(); // since arglist is optional - to ensure empty list! %> 
+              [ arglist ] 
+              RPAREN   <% currentObject = new Call(atom, new ArrayList<PythonObject>(currentList)); atom = currentObject; %>
+            | LBRACK 
+              subscriptlist 
+              RBRACK   <% atom = currentObject; %>
+            | DOT NAME <% currentObject = new Reference(atom, PythonString.valueOf(t.toString())); atom = currentObject; %>
+            }
+            <% PythonObject left = currentObject; %>
+            [ STARSTAR factor <% currentObject = new BinaryOp(left, currentObject, OperatorType.Pow); left = currentObject; %>
+            ]
+          ;
+
+    atom = ( <% scanner.pushNotInStatement(); %> LPAREN 
+                 [ yield_expr <% throw new UnsupportedOperationException("yield_expr"); %>
+                 | <% trailingComma = false; %> testlist_comp 
+                   <% 
+                      if (trailingComma || currentList.size() > 1) {
+                          currentObject = PythonTuple.constructor(currentList);
+                      } else {
+                          currentObject = currentList.get(0);
+                      }
+                   %>
+                 ] 
+             <% scanner.popNotInStatement(); %>  RPAREN 
+           | <% scanner.pushNotInStatement(); %>
+             LBRACK
+             <% currentList = new ArrayList<PythonObject>(); // just in case we don't get to testlist_comp %>
+                 [ testlist_comp ] 
+             <% 
+                currentObject = PythonList.constructor(currentList);
+                scanner.popNotInStatement(); 
+             %>
+             RBRACK
+           | <% scanner.pushNotInStatement(); %>
+             LKBRACK
+                 <% Map<PythonObject, PythonObject> map = new LinkedHashMap<PythonObject, PythonObject>(); %>
+                 [ test <% PythonObject key = currentObject; PythonObject value = null; %>
+                     [ COLON test <% value = currentObject; %> ]
+                     <% map.put(key, value); %> 
+                     ( comp_for <% throw new UnsupportedOperationException("comp_for"); %>
+                     | 
+                         { COMMA 
+                             [ test <% key = currentObject; value = null; %>
+                                 [ COLON test <% value = currentObject; %> ]
+                             ]
+                     <% map.put(key, value); %> 
+                         }
+                     ) 
+                 ] 
+                 
+             <%
+               currentObject = PythonDictionary.constructor(map); 
+               scanner.popNotInStatement();
+             %>  
+             RKBRACK
+           | NAME 
+             <%
+		        String id = t.toString();
+		        
+		        if ("True".equals(id)) {
+		            currentObject = PythonBoolean.TRUE;
+		        } else if ("False".equals(id)) {
+		            currentObject = PythonBoolean.FALSE;
+		        } else if ("None".equals(id)) {
+		            currentObject = PythonNone.NONE;
+		        } else if (BuiltInFunctions.isBuiltInFunction(id)) {
+		            currentObject = BuiltInFunctions.getFunctione(id);
+		        } else {
+                    currentObject = new Reference(null, PythonString.valueOf(id));
+                }
+             %>
+           
+           | NUMBER 
+             <%
+               String n = t.toString();
+               if (n.indexOf('.') > 0) {
+                   currentObject = PythonFloat.valueOf(n);
+               } else {
+                   currentObject = PythonInteger.valueOf(n);
+               }
+             %>
+           | STRING <% currentObject = PythonString.valueOf(t.toString()); %>
+               { STRING <% currentObject = PythonString.valueOf(((PythonString)currentObject).asString() + t.toString()); %>
+               } 
+           | ELLIPSIS 
+             <% throw new UnsupportedOperationException("ELLIPSIS"); %>
+           | "None" 
+		     <% currentObject = PythonNone.NONE; %>
+           | "True" 
+		     <% currentObject = PythonBoolean.TRUE; %>
+           | "False"
+		     <% currentObject = PythonBoolean.FALSE; %>
+           );
+
+    testlist_comp = ( test 
+                    | star_expr         <% throw new UnsupportedOperationException("star_expr"); %>
+                    )
+                    <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+                    ( comp_for          <% throw new UnsupportedOperationException("comp_for"); %>
+                    | 
+                        { COMMA <% trailingComma = true; %>
+                            [ test      <% args.add(currentObject); %>
+                            | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
+                            ] 
+                        }
+                    )
+                    <% currentList = args; %>
+                    ;
+
+    subscriptlist = subscript 
+                  { COMMA 
+                      [ subscript 
+                      ]
+                  } 
+                  ;
+
+    subscript = <% PythonObject target = currentObject; %> 
+              ( test <% currentObject = new Subscript(target, currentObject); %>
+              | <% 
+                   PythonObject from = null;
+                   PythonObject to = null;
+                %>
+                  [ test <% from = currentObject; %> ] 
+                  COLON 
+                  [ test <% to = currentObject; %> ] 
+                  [ sliceop ] 
+                  <% currentObject = new Subscript(target, from, to); %>
+              )
+              ;
+
+    sliceop = COLON [test] <% throw new UnsupportedOperationException("subscript slice"); %>;
+
+    exprlist = ( expr 
+               | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
+               ) <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+               { COMMA
+                 [ expr <% args.add(currentObject); %>
+                    | star_expr <% throw new UnsupportedOperationException("star_expr"); %> ] 
+               }
+               <% currentList = args; %>
+               ;
+
+    testlist = test <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+              { COMMA
+                  [ test <% args.add(currentObject); %> 
+                  ] 
+              }
+              <% currentList = args; %>
+              ;
+
+    classdef = "class" NAME <% PythonClassDef cls = new PythonClassDef(t.toString()); %>
+              [ LPAREN <% currentList = new ArrayList<PythonObject>(); %>
+                  [ arglist ] 
+                RPAREN 
+                  <% cls.setParentArgs(currentList); %>
+              ] 
+              COLON 
+              
+              <% 
+                 Suite save = currentSuite; currentSuite = cls.getSuite();
+              %>
+              suite
+              <% currentSuite = save; currentSuite.asList().add(cls); %>
+              ;
+
+    arglist = 
+            ( <% List<PythonObject> args = new ArrayList<PythonObject>(); %>
+              argument           <% args.add(currentObject); %>
+                { COMMA argument <% args.add(currentObject); %>
+                } 
+                [ STAR test { COMMA argument } [ COMMA STARSTAR test ] <% throw new UnsupportedOperationException("star arguments"); %>
+                | STARSTAR test                                        <% throw new UnsupportedOperationException("star star arguments"); %>
+                ]
+                <% currentList = args; %>
+            | STAR test { COMMA argument } [ COMMA STARSTAR test ] <% throw new UnsupportedOperationException("star arguments"); %>
+            | STARSTAR test                                        <% throw new UnsupportedOperationException("star star arguments"); %>
+            );
+
+    // The reason that keywords are test nodes instead of NAME is that using NAME
+    // results in an ambiguity. ast.c makes sure it's a NAME.
+    argument =  
+             ( test
+                 [ comp_for <% throw new UnsupportedOperationException("argument for comprehensions"); %>
+                 ] 
+             | test EQ test <% throw new UnsupportedOperationException("named arguments"); %>
+             );   // Really [keyword EQ] test;
+
+    comp_iter = comp_for 
+              | comp_if;
+
+    comp_for = "for" exprlist "in" or_test [comp_iter];
+
+    comp_if = "if" test_nocond [comp_iter];
+
+    testlist1 = test { COMMA test };
+
+    // not used in grammar, but may appear in "node" passed from Parser to Compiler
+    encoding_decl = NAME;
+
+    yield_expr = "yield" [ yield_arg ];
+
+    yield_arg = "from" test | testlist;
+
+}

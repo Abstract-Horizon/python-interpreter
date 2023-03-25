@@ -1,1 +1,5 @@
-/target
+**/target
+**/.classfile
+**/.project
+**/.settings
+**/.DS_store
