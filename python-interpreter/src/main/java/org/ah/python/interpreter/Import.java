@@ -31,9 +31,9 @@ public class Import extends PythonObject {
                     if (GlobalScope.moduleLoader != null) {
                         module = GlobalScope.moduleLoader.loadModule(name);
                         GlobalScope.MODULES.put(name, module);
+                    } else {
+                        throw new NoSuchElementException("Cannot find import " + name);
                     }
-
-                    throw new NoSuchElementException("Cannot find import " + name);
                 }
                 GlobalScope.currentScope().__setattr__(PythonString.valueOf(asName), module);
             } else {

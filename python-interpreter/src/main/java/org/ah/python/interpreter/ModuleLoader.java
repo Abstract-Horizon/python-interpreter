@@ -35,7 +35,7 @@ public abstract class ModuleLoader {
         } catch (IOException e) {
             throw new NoSuchElementException("Cannot load import " + moduleName + "; " + e.toString());
         } catch (Exception e) {
-            throw new RuntimeException("Exception while loading module " +  moduleName, e);
+            throw new RuntimeException("Exception while loading module " +  moduleName + "; " + e.toString(), e);
         }
 
     }
