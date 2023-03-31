@@ -207,6 +207,10 @@ public class PythonObject {
         }
     }
 
+    public void execute(ThreadContext context) {
+
+    }
+
     public PythonObject dereference() {
         return this;
     }

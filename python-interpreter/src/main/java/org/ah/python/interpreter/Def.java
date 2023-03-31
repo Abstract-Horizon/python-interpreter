@@ -8,19 +8,19 @@ public class Def extends PythonObject {
     private String name;
     private List<Reference> args = new ArrayList<Reference>();
     private boolean instanceMethod = false;
-    
+
     private Suite method = new Suite();
 
     public static PythonObject RETURN = null;
-    
+
     public Def(String name) {
         this.name = name;
     }
-    
+
     public boolean isInstanceMethod() {
         return instanceMethod;
     }
-    
+
     public Suite getSuite() {
         return method;
     }
@@ -36,13 +36,13 @@ public class Def extends PythonObject {
                 throw new IllegalStateException("Class def with no parameters");
             }
             scope.__setattr__(PythonString.valueOf(name), new InstanceMethod<PythonObject>() {
-    
+
                 @Override public PythonObject __call__(PythonObject self, PythonObject[] args) {
-                    
+
                     if (args.length < Def.this.args.size() - 1) {
                         throw new IllegalArgumentException("Not enough parameters for " + name);
                     }
-                    
+
                     Scope parentScope = GlobalScope.currentScope();
                     Scope scope = new ExecutionScope(parentScope);
                     GlobalScope.pushScope(scope);
@@ -53,7 +53,7 @@ public class Def extends PythonObject {
                         for (int i = 1; i < Def.this.args.size(); i++) {
                             Reference argReference = Def.this.args.get(i);
                             PythonObject argValue = args[i].dereference();
-                            
+
                             argReference.assign(argValue);
                         }
                         getSuite().__call__();
@@ -71,13 +71,13 @@ public class Def extends PythonObject {
             });
         } else {
             scope.__setattr__(PythonString.valueOf(name), new Function() {
-  
+
               @Override public PythonObject __call__(PythonObject[] args) {
-                  
+
                   if (args.length < Def.this.args.size()) {
                       throw new IllegalArgumentException("Not enough parameters for " + name);
                   }
-                  
+
                   Scope parentScope = GlobalScope.currentScope();
                   Scope scope = new ExecutionScope(parentScope);
                   GlobalScope.pushScope(scope);
@@ -85,7 +85,7 @@ public class Def extends PythonObject {
                       for (int i = 0; i < Def.this.args.size(); i++) {
                           Reference argReference = Def.this.args.get(i);
                           PythonObject argValue = args[i].dereference();
-                          
+
                           argReference.assign(argValue);
                       }
                       getSuite().__call__();
