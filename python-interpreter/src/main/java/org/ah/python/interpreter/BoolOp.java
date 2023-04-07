@@ -15,7 +15,18 @@ public class BoolOp extends PythonObject {
         this.values = values;
         this.op = op;
     }
-    
+
+    public PythonObject execute(ThreadContext context) {
+        if (op == BoolopType.And) {
+
+        } else if (op == BoolopType.Or) {
+
+        }
+
+        context.a = this;
+        return null;
+    }
+
     public PythonObject dereference() {
         return __call__();
     }
@@ -28,7 +39,7 @@ public class BoolOp extends PythonObject {
         }
         return true;
     }
-    
+
     public PythonObject dereferenceConstant() {
         return __call__();
     }
@@ -54,7 +65,7 @@ public class BoolOp extends PythonObject {
         }
         throw new UnsupportedOperationException("BoolOp[" + op + "]");
     }
-    
+
     public String toString() {
         StringBuilder res = new StringBuilder();
         res.append("(");

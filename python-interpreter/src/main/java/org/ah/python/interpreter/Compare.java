@@ -5,10 +5,10 @@ import java.util.List;
 
 public class Compare extends PythonList {
 
-    
+
     private PythonObject left;
     private List<CmpopType> ops = new ArrayList<CmpopType>();
-    
+
     public Compare(PythonObject left, List<PythonObject> operands, List<CmpopType> ops) {
         this.left = left;
         super.asList().addAll(operands);
@@ -30,15 +30,15 @@ public class Compare extends PythonList {
         }
         return true;
     }
-    
+
     public PythonObject dereferenceConstant() {
         return __call__();
     }
 
     public PythonObject __call__() {
-        
+
         PythonObject current = left.dereference();
-        
+
         for (int i = 0; i < ops.size(); i++) {
             CmpopType op = ops.get(i);
             PythonObject right = asList().get(i).dereference();
@@ -66,7 +66,7 @@ public class Compare extends PythonList {
         return current;
     }
 
-    
+
     public String toString() {
         StringBuilder res = new StringBuilder();
         res.append("(");

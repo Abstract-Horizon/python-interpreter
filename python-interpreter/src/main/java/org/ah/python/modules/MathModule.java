@@ -87,28 +87,28 @@ public class MathModule extends Proxy {
 
 
         TYPE.setAttribute("acos", new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.acos(arg.asDouble()));
+            return PythonFloat.valueOf(Math.acos(arg.asFloat()));
         }});
         TYPE.setAttribute("asin", new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.asin(arg.asDouble()));
+            return PythonFloat.valueOf(Math.asin(arg.asFloat()));
         }});
         TYPE.setAttribute("atan", new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.atan(arg.asDouble()));
+            return PythonFloat.valueOf(Math.atan(arg.asFloat()));
         }});
         TYPE.setAttribute("atan2", new Function() { @Override public PythonObject __call__() {
             throw new UnsupportedOperationException("Function atan2 not supported yet");
         }});
         TYPE.setAttribute("cos", new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.cos(arg.asDouble()));
+            return PythonFloat.valueOf(Math.cos(arg.asFloat()));
         }});
         TYPE.setAttribute("factorial", new Function() { @Override public PythonObject __call__() {
             throw new UnsupportedOperationException("Function factorial not supported yet");
         }});
         TYPE.setAttribute("sin", new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.sin(arg.asDouble()));
+            return PythonFloat.valueOf(Math.sin(arg.asFloat()));
         }});
         TYPE.setAttribute("tan", new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.tan(arg.asDouble()));
+            return PythonFloat.valueOf(Math.tan(arg.asFloat()));
         }});
 
 

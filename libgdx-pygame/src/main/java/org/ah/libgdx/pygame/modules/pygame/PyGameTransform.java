@@ -45,7 +45,7 @@ class PyGameTransform extends Proxy {
         TYPE.setAttribute("rotate", new Function() { @Override public PythonObject call0(PythonObject image, PythonObject angle) {
             Sprite sprite = new Sprite(((PyGameSurfaceSprite)image).getSprite());
             sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight() / 2);
-            sprite.rotate(-(float)angle.asDouble());
+            sprite.rotate(-(float)angle.asFloat());
             return new PyGameSurfaceSprite(sprite);
         }});
     }

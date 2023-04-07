@@ -35,7 +35,7 @@ public class Def extends PythonObject {
             if (args.size() == 0) {
                 throw new IllegalStateException("Class def with no parameters");
             }
-            scope.__setattr__(PythonString.valueOf(name), new InstanceMethod<PythonObject>() {
+            scope.__setattr__(name, new InstanceMethod<PythonObject>() {
 
                 @Override public PythonObject __call__(PythonObject self, PythonObject[] args) {
 
@@ -70,7 +70,7 @@ public class Def extends PythonObject {
                 }
             });
         } else {
-            scope.__setattr__(PythonString.valueOf(name), new Function() {
+            scope.__setattr__(name, new Function() {
 
               @Override public PythonObject __call__(PythonObject[] args) {
 

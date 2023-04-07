@@ -7,11 +7,15 @@ public class Module extends ExecutionScope {
 
     public Module() {
     }
-    
+
+    public Module(Scope parentScope) {
+        super(parentScope);
+    }
+
     public Suite getSuite() {
         return suite;
     }
-    
+
     public PythonObject __call__() {
         GlobalScope.pushScope(this);
         try {

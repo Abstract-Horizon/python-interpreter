@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.ah.python.interpreter.Call;
@@ -24,9 +25,10 @@ import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.PythonSlice;
 import org.ah.python.interpreter.PythonString;
 import org.ah.python.interpreter.PythonTuple;
+import org.ah.python.interpreter.Scope;
 import org.ah.python.interpreter.util.RangeIterator;
 
-public class BuiltInFunctions {
+public class BuiltInFunctions extends Scope {
 
     private static final Map<String, PythonObject> functions = new HashMap<String, PythonObject>();
 
@@ -62,6 +64,7 @@ public class BuiltInFunctions {
     };
 
     private static PrintStream getOutput() { return out; }
+    @SuppressWarnings("unused")
     private static InputStream getInput() { return in; }
 //    public static Scanner getScanner() { return scanner; }
 
@@ -76,8 +79,8 @@ public class BuiltInFunctions {
                 }
                 return a;
             } else if (a instanceof PythonFloat) {
-                if (a.asDouble() < 0) {
-                    return PythonFloat.valueOf(-a.asDouble());
+                if (a.asFloat() < 0) {
+                    return PythonFloat.valueOf(-a.asFloat());
                 }
                 return a;
             }
@@ -173,14 +176,14 @@ public class BuiltInFunctions {
             throw new UnsupportedOperationException("Function frozenset not supported yet");
         }});
         functions.put("getattr", new Function() { @Override public PythonObject call0(PythonObject object, PythonObject name) {
-            return object.__getattr__(name);
+            return object.__getattr__(name.asString());
         }});
         functions.put("globals", new Function() { @Override public PythonObject __call__() {
             throw new UnsupportedOperationException("Function globals not supported yet");
         }});
         functions.put("hasattr", new Function() { @Override public PythonObject call0(PythonObject object, PythonObject name) {
             try {
-                return PythonBoolean.valueOf(object.__getattr__(name) != null);
+                return PythonBoolean.valueOf(object.__getattr__(name.asString()) != null);
             } catch (Exception e) {
                 return FALSE;
             }
@@ -264,7 +267,7 @@ public class BuiltInFunctions {
                     PythonObject o = max;
                     while (o != null) {
                         o = iter.next();
-                        if (o.__cmp__(max).asInteger() > 0) {
+                        if (o.__gt__(max).asBoolean()) {
                             max = o;
                         }
                     }
@@ -272,7 +275,7 @@ public class BuiltInFunctions {
                 }
                 PythonObject max = args[0];
                 for (int i = 1; i < args.length; i++) {
-                    if (args[i].__cmp__(max).asInteger() > 0) {
+                    if (args[i].__gt__(max).asBoolean()) {
                         max = args[i];
                     }
                 }
@@ -290,7 +293,7 @@ public class BuiltInFunctions {
                     PythonObject o = min;
                     while (o != null) {
                         o = iter.next();
-                        if (o.__cmp__(min).asInteger() < 0) {
+                        if (o.__lt__(min).asBoolean()) {
                             min = o;
                         }
                     }
@@ -298,7 +301,7 @@ public class BuiltInFunctions {
                 }
                 PythonObject min = args[0];
                 for (int i = 1; i < args.length; i++) {
-                    if (args[i].__cmp__(min).asInteger() < 0) {
+                    if (args[i].__lt__(min).asBoolean()) {
                         min = args[i];
                     }
                 }
@@ -334,12 +337,16 @@ public class BuiltInFunctions {
         }});
         functions.put("print", new Function() {
             @Override public PythonObject __call__() {
+                printInterface.print("\n");
                 return PythonNone.NONE;
             }
-            @Override public PythonObject __call__(PythonObject[] args) {
-                for (PythonObject a : args) {
-                    PythonObject res = a.dereference();
-                    printInterface.print(res.asString());
+            @Override public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                if (args.size() > 0) {
+                    for (PythonObject a : args) {
+                        printInterface.print(a.asString());
+                    }
+                } else {
+                    printInterface.print("");
                 }
                 return PythonNone.NONE;
             }
@@ -365,13 +372,13 @@ public class BuiltInFunctions {
             return a.__reversed__();
         }});
         functions.put("round",  new Function() { @Override public PythonObject call0(PythonObject arg) {
-            return PythonFloat.valueOf(Math.round(arg.asDouble()));
+            return PythonFloat.valueOf(Math.round(arg.asFloat()));
         }});
         functions.put("set", new Function() { @Override public PythonObject __call__() {
             throw new UnsupportedOperationException("Function set not supported yet");
         }});
         functions.put("setattr", new Function() { @Override public PythonObject call0(PythonObject obj, PythonObject k, PythonObject v) {
-            obj.__setattr__(k, v);
+            obj.__setattr__(k.asString(), v);
             return NONE;
         }});
         functions.put("slice", new Function() {

@@ -6,7 +6,7 @@ public class PythonType extends Scope {
 
     private String name;
     private PythonType parent;
-    
+
     public PythonType(Class<? extends PythonObject> cls) {
         name = cls.getName();
         int i = name.lastIndexOf('.');
@@ -28,15 +28,15 @@ public class PythonType extends Scope {
         this(name);
         this.parent = parent;
     }
-    
+
     protected void setParent(PythonType parent) {
         this.parent = parent;
     }
-    
+
     protected PythonType getParent() {
         return parent;
     }
-    
+
     protected String getName() {
         return name;
     }

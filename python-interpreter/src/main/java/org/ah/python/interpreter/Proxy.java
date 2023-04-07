@@ -9,7 +9,7 @@ public abstract class Proxy extends PythonObject {
 
     @SuppressWarnings("unchecked")
     @Override
-    public PythonObject __getattr__(PythonObject name) {
+    public PythonObject __getattr__(String name) {
 
         PythonObject res = super.__getattr__(name);
 
@@ -22,11 +22,11 @@ public abstract class Proxy extends PythonObject {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void __setattr__(PythonObject name, PythonObject expr) {
-        PythonObject res = getType().attributes.get(name.asString());
+    public void __setattr__(String name, PythonObject expr) {
+        PythonObject res = getType().attributes.get(name);
 
         if (res == null) {
-            throw new NoSuchElementException(name.asString());
+            throw new NoSuchElementException(name);
         }
 
         if (res instanceof ProxyAttribute) {

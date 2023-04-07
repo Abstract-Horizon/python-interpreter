@@ -6,15 +6,15 @@ import java.util.List;
 public class PythonClassDef extends PythonObject {
 
     private String name;
-    
+
     private Suite methods = new Suite();
-    
+
     private PythonObject parent;
-    
+
     public PythonClassDef(String name) {
         this.name = name;
     }
-    
+
     public void setParentArgs(List<PythonObject> parents) {
         if (parents != null) {
             if (parents.size() == 1 ) {
@@ -31,7 +31,7 @@ public class PythonClassDef extends PythonObject {
 
     public PythonObject __call__() {
         Scope parentScope = GlobalScope.currentScope();
-        
+
         PythonClassType classType = new PythonClassType(name, parentScope) {
             final PythonClassType self = this;
 
@@ -39,28 +39,28 @@ public class PythonClassDef extends PythonObject {
                 // TODO Constructor!!!
                 // return PythonNone.NONE;
                 // throw new UnsupportedOperationException("Constructor not yet implemented");
-                
+
                 Proxy obj = new Proxy() {
                     @Override public PythonType getType() {
                         return self;
                     }
                 };
-                
+
                 return obj;
             }
         };
-        
+
         if (parent != null) {
             PythonObject dereferencedParent = parent.dereference();
-            
+
             if (!(dereferencedParent instanceof PythonType)) {
                 throw new IllegalArgumentException("Parent argument of a class must be another class.");
             }
-            
+
             classType.setParentType((PythonType)dereferencedParent);
         }
-        parentScope.__setattr__(PythonString.valueOf(name), classType);
-        
+        parentScope.__setattr__(name, classType);
+
         GlobalScope.pushScope(classType);
 
         try {

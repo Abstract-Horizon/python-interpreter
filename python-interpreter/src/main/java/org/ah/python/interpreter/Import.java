@@ -35,7 +35,7 @@ public class Import extends PythonObject {
                         throw new NoSuchElementException("Cannot find import " + name);
                     }
                 }
-                GlobalScope.currentScope().__setattr__(PythonString.valueOf(asName), module);
+                GlobalScope.currentScope().__setattr__(asName, module);
             } else {
                 throw new UnsupportedOperationException("import for qualified values.");
             }

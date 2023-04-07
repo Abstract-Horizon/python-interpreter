@@ -99,8 +99,8 @@ public class RandomModule extends Proxy {
             return PythonInteger.valueOf(r);
         }});
         TYPE.setAttribute("uniform", new Function() { @Override public PythonObject call0(PythonObject from, PythonObject to) {
-            double f = from.asDouble();
-            double t = to.asDouble();
+            double f = from.asFloat();
+            double t = to.asFloat();
             double r = random.nextDouble() * (t - f + 1) + f;
             return PythonFloat.valueOf(r);
         }});

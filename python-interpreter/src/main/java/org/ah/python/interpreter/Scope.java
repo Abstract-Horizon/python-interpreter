@@ -6,14 +6,13 @@ import java.util.NoSuchElementException;
 
 public abstract class Scope extends PythonObject {
 
-    protected Map<String, PythonObject> attributes;
+    protected Map<String, PythonObject> attributes = new HashMap<String, PythonObject>();
 
-    protected void ensureAttrs() {
-        if (attributes == null) {
-            attributes = new HashMap<String, PythonObject>();
-        }
+
+    public Scope() {
+
     }
-    
+
     protected PythonObject getAttribute(String name) {
         if (attributes != null && attributes.containsKey(name)) {
             return attributes.get(name);
@@ -22,17 +21,13 @@ public abstract class Scope extends PythonObject {
     }
 
     public void setAttribute(String name, PythonObject value) {
-        if (attributes == null) {
-            ensureAttrs();
-        }
         attributes.put(name, value);
     }
 
-    
+
     @Override
-    public PythonObject __getattr__(PythonObject name) {
-        String n = name.asString();
-        PythonObject res = getAttribute(n);
+    public PythonObject __getattr__(String name) {
+        PythonObject res = getAttribute(name);
         if (res == null) {
             throw new NoSuchElementException(name + " in " + this);
         }
@@ -40,9 +35,8 @@ public abstract class Scope extends PythonObject {
     }
 
     @Override
-    public void __setattr__(PythonObject name, PythonObject value) {
-        String n = name.asString();
-        setAttribute(n, value);
+    public void __setattr__(String name, PythonObject value) {
+        setAttribute(name, value);
     }
 
     @Override

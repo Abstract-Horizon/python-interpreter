@@ -9,7 +9,7 @@ public class UnaryOp extends PythonObject {
         this.operand = operand;
         this.op = op;
     }
-    
+
     public PythonObject dereference() {
         return __call__();
     }
@@ -17,7 +17,7 @@ public class UnaryOp extends PythonObject {
     public boolean isConstant() {
         return operand.isConstant();
     }
-    
+
     public PythonObject dereferenceConstant() {
         return __call__();
     }
@@ -37,7 +37,7 @@ public class UnaryOp extends PythonObject {
         }
         throw new UnsupportedOperationException("UnaryOp[" + op + "]");
     }
-    
+
     public String toString() {
         if (op == UnaryopType.USub) {
             return "-" + operand;

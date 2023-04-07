@@ -14,37 +14,37 @@ public class PythonList extends PythonSequence {
     public PythonList() {
         list = new ArrayList<PythonObject>();
     }
-    
+
     public PythonList(List<PythonObject> list) {
         this.list = list;
     }
-    
+
     static {
         TYPE.setAttribute("append", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self, PythonObject arg) {
             self.list.add(arg.dereference());
             return PythonNone.NONE;
         }});
-        
+
         TYPE.setAttribute("clear", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self) {
             self.list.clear();
             return PythonNone.NONE;
         }});
-        
+
         TYPE.setAttribute("remove", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self, PythonObject arg) {
             self.list.remove(arg.dereference());
             return PythonNone.NONE;
         }});
-        
+
     }
-    
+
     public PythonType getType() {
         return TYPE;
     }
-    
-    
+
+
     public static PythonObject constructor(final List<PythonObject> elements) {
         final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
-            return new Constructor() { 
+            return new Constructor() {
                 @Override public PythonObject __call__() {
                     PythonList list = new PythonList();
                     for (PythonObject o : storedElements) {
@@ -67,11 +67,11 @@ public class PythonList extends PythonSequence {
         }
         return true;
     }
-    
+
     public PythonObject dereferenceConstant() {
         return this;
     }
-    
+
     @Override
     public boolean asBoolean() {
         return list.size() != 0;
@@ -85,7 +85,7 @@ public class PythonList extends PythonSequence {
     public PythonInteger __len__() {
         return PythonInteger.valueOf(list.size());
     }
-    
+
     @Override
     public PythonObject __getitem__(PythonObject key) {
         if (key instanceof PythonSlice) {
@@ -114,7 +114,7 @@ public class PythonList extends PythonSequence {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
             int to = slice.getTo();
-            
+
             if (from == 0 && to == -1) {
                 list.clear();
                 if (value instanceof PythonList) {
@@ -138,7 +138,7 @@ public class PythonList extends PythonSequence {
                 } else {
                     list.add(from, value);
                 }
-                
+
             }
         } else {
             int i = key.dereference().asInteger();
@@ -173,12 +173,10 @@ public class PythonList extends PythonSequence {
     public PythonIterator __iter__() {
         return new PythonIterator(new ListIterator<PythonObject>(list));
     }
-    
+
 
     @Override
-    public PythonObject __getattr__(PythonObject nameObject) {
-        String name = nameObject.asString();
-        
+    public PythonObject __getattr__(String name) {
         PythonObject o = TYPE.getAttribute(name);
 
         if (o == null) {
@@ -208,12 +206,12 @@ public class PythonList extends PythonSequence {
         res.append("]");
         return res.toString();
     }
-    
+
     public static class ListIterator<T> implements Iterator<T> {
-        
+
         private List<T> list;
         int i = 0;
-        
+
         public ListIterator(List<T> list) {
             this.list = list;
         }

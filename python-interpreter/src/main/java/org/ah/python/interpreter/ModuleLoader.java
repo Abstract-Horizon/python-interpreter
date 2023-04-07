@@ -28,8 +28,8 @@ public abstract class ModuleLoader {
             parser.file_input();
 
             Module module = parser.getModule();
-            module.__setattr__(PythonString.valueOf("__name__"), PythonString.valueOf("__main__"));
-            module.__setattr__(PythonString.valueOf("__sourcecode__"), PythonString.valueOf(pythonCode));
+            module.__setattr__("__name__", PythonString.valueOf("__main__"));
+            module.__setattr__("__sourcecode__", PythonString.valueOf(pythonCode));
 
             return module;
         } catch (IOException e) {

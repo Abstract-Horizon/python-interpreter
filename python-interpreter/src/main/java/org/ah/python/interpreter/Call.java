@@ -1,5 +1,6 @@
 package org.ah.python.interpreter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,27 +15,71 @@ public class Call extends PythonObject {
     private PythonObject[] args3;
     private PythonObject[] args4;
     private PythonObject[] args5;
-    
+
+    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+
+        @Override public PythonObject execute(ThreadContext context) {
+            PythonObject function = context.popData();
+
+            if (function instanceof Function) {
+                int argNo = args.length;
+
+                if (!(context.a instanceof Scope)) {
+                    argNo += 1;
+                }
+
+                List<PythonObject> args = new ArrayList<PythonObject>();
+                for (int i = 0; i < argNo; i++) {
+                    args.add(context.popData());
+                }
+
+                boolean first = true;
+                for (PythonObject arg : args) {
+                    if (first) { first = false; } else { System.out.print(","); }
+                    System.out.print(arg);
+                }
+                System.out.println("]");
+                return ((Function)function).__call__(args, null);
+            }
+            throw new RuntimeException("TypeError: object '" + function.pythonClass + "' is not callable");
+
+        }
+    };
+
     public Call(PythonObject function, List<PythonObject> args) {
         this.function = function;
         this.args = new PythonObject[args.size()]; // System.out.println("*");
         args.toArray(this.args);
     }
-    
+
     public Call(PythonObject function, PythonObject[] args) {
         this.function = function;
         this.args = args;
     }
-    
+
+    public PythonObject execute(ThreadContext context) {
+        context.pushPC(continuation);
+        if (args.length == 0) {
+            return function.execute(context);
+        }
+
+        context.pushPC(function);
+        for (int i = 0; i < args.length - 1; i++) {
+            context.pushPC(args[i]);
+        }
+
+        return args[args.length - 1].execute(context);
+    }
+
     public PythonObject dereference() {
         // TODO this seems wrong! Why not passing parameters, and what kind of parameters would they be, then?
         return __call__();
     }
-    
+
     public PythonObject __call__() {
         PythonObject[] finalArgs;
         PythonObject derefFunct = function.dereference();
-        
+
         int l = this.args.length;
         if (l == 0) {
             finalArgs = EMPTY_ARRAY;
@@ -69,7 +114,7 @@ public class Call extends PythonObject {
             finalArgs[3] = this.args[3].dereference();
             finalArgs[4] = this.args[4].dereference();
         } else {
-            finalArgs = new PythonObject[this.args.length];/* System.out.println("*");*/ 
+            finalArgs = new PythonObject[this.args.length];/* System.out.println("*");*/
             int i = 0;
             for (PythonObject a : this.args) {
                 PythonObject d = a.dereference();
@@ -94,9 +139,9 @@ public class Call extends PythonObject {
             throw new IllegalStateException("Calling uncallable type: " + derefFunct.getClass().getName());
         }
     }
-    
-    
-//    @Override 
+
+
+//    @Override
 //    public PythonObject __call__(PythonObject[] args) {
 //        PythonObject[] finalArgs;
 //        if (args.length > 0) {
@@ -135,7 +180,7 @@ public class Call extends PythonObject {
 //                    finalArgs[3] = args[3].dereference();
 //                    finalArgs[4] = args[4].dereference();
 //                } else {
-//                    finalArgs = new PythonObject[this.args.length];/* System.out.println("*");*/ 
+//                    finalArgs = new PythonObject[this.args.length];/* System.out.println("*");*/
 //                    int i = 0;
 //                    for (PythonObject a : this.args) {
 //                        PythonObject d = a.dereference();
@@ -144,7 +189,7 @@ public class Call extends PythonObject {
 //                    }
 //                }
 //            } else {
-//                finalArgs = new PythonObject[this.args.length + args.length];/* System.out.println("*");*/ 
+//                finalArgs = new PythonObject[this.args.length + args.length];/* System.out.println("*");*/
 //                int i = 0;
 //                for (PythonObject a : this.args) {
 //                    PythonObject d = a.dereference();
@@ -173,9 +218,9 @@ public class Call extends PythonObject {
 //        } else {
 //            return __call__();
 //        }
-//        
+//
 //    }
-    
+
     public String toString() {
         return "Call[" + function + "](" + collectionToString(Arrays.asList(args), ", ") + ")";
     }

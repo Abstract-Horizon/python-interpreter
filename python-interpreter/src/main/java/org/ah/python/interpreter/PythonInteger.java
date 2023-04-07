@@ -4,10 +4,11 @@ import static org.ah.python.interpreter.PythonBoolean.FALSE;
 import static org.ah.python.interpreter.PythonBoolean.TRUE;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
-public class PythonInteger extends PythonObject {
+public class PythonInteger extends PythonNumber {
 
     private static final PythonInteger[] positiveCache = new PythonInteger[2048];
     private static final PythonInteger[] negativeCache = new PythonInteger[2048];
@@ -20,6 +21,8 @@ public class PythonInteger extends PythonObject {
     public static final PythonInteger FIVE;
 
     public static Map<Integer, PythonInteger> allIntegers = new HashMap<Integer, PythonInteger>();
+
+    public static PythonClass PYTHON_INTEGER_CLASS = new PythonClass("int");
 
     static {
         for (int i = 0; i < positiveCache.length; i++) {
@@ -34,6 +37,34 @@ public class PythonInteger extends PythonObject {
         THREE = positiveCache[3];
         FOUR = positiveCache[4];
         FIVE = positiveCache[5];
+
+        populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
+
+        PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInFunction() {
+            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__and__(args.get(1));
+            }
+        });
+        PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInFunction() {
+            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__or__(args.get(1));
+            }
+        });
+        PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInFunction() {
+            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__xor__(args.get(1));
+            }
+        });
+        PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInFunction() {
+            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__lshift__(args.get(1));
+            }
+        });
+        PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInFunction() {
+            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__rshift__(args.get(1));
+            }
+        });
     }
 
     public static PythonInteger valueOf(String s) {
@@ -61,6 +92,7 @@ public class PythonInteger extends PythonObject {
 
     protected PythonInteger(int value) {
         this.value = value;
+        this.pythonClass = PYTHON_INTEGER_CLASS;
     }
 
     public int asInteger() {
@@ -79,7 +111,7 @@ public class PythonInteger extends PythonObject {
         return true;
     }
 
-    public PythonString __str__() {
+    public PythonString __repr__() {
         return PythonString.valueOf(Integer.toString(value));
     }
 
@@ -91,6 +123,10 @@ public class PythonInteger extends PythonObject {
         return PythonFloat.valueOf(value);
     }
 
+    public PythonBoolean __bool__() {
+        return PythonBoolean.valueOf(value != 0);
+    }
+
     public PythonBoolean __nonzero__() {
         if (value != 0) {
             return TRUE;
@@ -99,18 +135,44 @@ public class PythonInteger extends PythonObject {
         }
     }
 
-    public PythonInteger __cmp__(PythonObject other) {
+    public PythonBoolean __lt__(PythonObject other) {
         PythonObject d = other.dereference();
         if (d instanceof PythonFloat) {
-            return d.__cmp__(this);
+            return d.__lt__(this);
         } else {
-            if (value < d.asInteger()) {
-                return PythonInteger.valueOf(-1);
-            } else if (value > d.asInteger()) {
-                return ONE;
-            }
+            if (value < d.asInteger()) { return TRUE; }
         }
-        return ZERO;
+        return FALSE;
+    }
+
+    public PythonBoolean __le__(PythonObject other) {
+        PythonObject d = other.dereference();
+        if (d instanceof PythonFloat) {
+            return d.__lt__(this);
+        } else {
+            if (value <= d.asInteger()) { return TRUE; }
+        }
+        return FALSE;
+    }
+
+    public PythonBoolean __gt__(PythonObject other) {
+        PythonObject d = other.dereference();
+        if (d instanceof PythonFloat) {
+            return d.__gt__(this);
+        } else {
+            if (value > d.asInteger()) { return TRUE; }
+        }
+        return FALSE;
+    }
+
+    public PythonBoolean __ge__(PythonObject other) {
+        PythonObject d = other.dereference();
+        if (d instanceof PythonFloat) {
+            return d.__lt__(this);
+        } else {
+            if (value >= d.asInteger()) { return TRUE; }
+        }
+        return FALSE;
     }
 
     public PythonBoolean __eq__(PythonObject other) {
@@ -123,13 +185,13 @@ public class PythonInteger extends PythonObject {
         return PythonBoolean.valueOf(value == r.asInteger());
     }
 
-    public PythonObject __neg__() {
+    public PythonNumber __neg__() {
         return PythonInteger.valueOf(-value);
     }
 
     public PythonObject __add__(PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value + other.asDouble());
+            return PythonFloat.valueOf(value + other.asFloat());
         } else {
             return PythonInteger.valueOf(value + other.asInteger());
         }
@@ -137,7 +199,7 @@ public class PythonInteger extends PythonObject {
 
     public PythonObject __sub__(PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value - other.asDouble());
+            return PythonFloat.valueOf(value - other.asFloat());
         } else {
             return PythonInteger.valueOf(value - other.asInteger());
         }
@@ -145,7 +207,7 @@ public class PythonInteger extends PythonObject {
 
     public PythonObject __mul__(PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value * other.asDouble());
+            return PythonFloat.valueOf(value * other.asFloat());
         } else {
             return PythonInteger.valueOf(value * other.asInteger());
         }
@@ -153,7 +215,7 @@ public class PythonInteger extends PythonObject {
 
     public PythonObject __div__(PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value / other.asDouble());
+            return PythonFloat.valueOf(value / other.asFloat());
         } else {
             return PythonInteger.valueOf(value / other.asInteger());
         }
@@ -215,5 +277,4 @@ public class PythonInteger extends PythonObject {
         }
         return false;
     }
-
 }

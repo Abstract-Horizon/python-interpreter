@@ -14,7 +14,7 @@ import org.junit.Before;
 public class BaseTestClass {
 
     private ByteArrayOutputStream res;
-    
+
     protected String result() {
         return new String(res.toByteArray());
     }
@@ -22,13 +22,13 @@ public class BaseTestClass {
     @Before
     public void setup() {
         GlobalScope.reset();
-        
+
         newmap(GlobalScope.MODULES)
-        .name("sys").val(new SysModule())
-        .name("math").val(new MathModule())
-        .name("random").val(new RandomModule())
-        .name("time").val(new TimeModule());
-        
+            .name("sys").val(new SysModule())
+            .name("math").val(new MathModule())
+            .name("random").val(new RandomModule())
+            .name("time").val(new TimeModule());
+
         res = new ByteArrayOutputStream();
         BuiltInFunctions.setOutput(res);
     }

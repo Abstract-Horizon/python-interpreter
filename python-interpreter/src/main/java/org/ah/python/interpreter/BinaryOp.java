@@ -2,7 +2,7 @@ package org.ah.python.interpreter;
 
 public class BinaryOp extends PythonObject {
 
-    
+
     private PythonObject left;
     private PythonObject right;
     private OperatorType op;
@@ -13,19 +13,28 @@ public class BinaryOp extends PythonObject {
         this.right = right;
         this.op = op;
     }
-    
+
+    public PythonObject execute(ThreadContext context) {
+        if (context.popped) {
+        } else {
+            context.pushPC(this);
+            context.pushPC(left);
+        }
+        return null;
+    }
+
     public PythonObject dereference() {
         return __call__();
     }
-    
+
     public boolean isConstant() {
         return left.isConstant() && right.isConstant();
     }
-    
+
     public PythonObject dereferenceConstant() {
         return __call__();
     }
-    
+
     public PythonObject __call__() {
         if (op == OperatorType.Add) {
             return left.dereference().__add__(right.dereference());
@@ -65,7 +74,7 @@ public class BinaryOp extends PythonObject {
         }
         throw new UnsupportedOperationException("BinOp[" + op + "]");
     }
-    
+
     public String toString() {
         if (op == OperatorType.Add) {
             return "(" + left.toString() + "+" + right.toString() + ")";
