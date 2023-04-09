@@ -16,31 +16,31 @@ import org.junit.Test;
 public class TestProxyAttributes {
 
     private ByteArrayOutputStream res;
-    
+
     private PythonType proxyType = new PythonType(PythonObject.TYPE, "TestModule");
-    
+
     protected String result() {
         return new String(res.toByteArray());
     }
-    
+
     @Before
     public void setup() {
         GlobalScope.reset();
-        
+
         newmap(GlobalScope.MODULES)
         .name("sys").val(new SysModule())
         .name("math").val(new MathModule())
         .name("random").val(new RandomModule())
         .name("time").val(new TimeModule());
-        
+
         res = new ByteArrayOutputStream();
         BuiltInFunctions.setOutput(res);
 
         GlobalScope.MODULES.put("test", new Proxy() {
             public PythonType getType() { return proxyType; }
         });
-        
-        proxyType.setAttribute("ExternalObject", new Function() {
+
+        proxyType.__setattr__("ExternalObject", new Function() {
             @Override public PythonObject call0() {
                 return new ExternalObject();
             }
@@ -54,9 +54,9 @@ public class TestProxyAttributes {
               + "x = test.ExternalObject()\n"
               + "print(x.value)\n"
               );
-        
+
         module.__call__();
-        
+
         assertEquals("initialValue\n", result());
     }
 
@@ -68,9 +68,9 @@ public class TestProxyAttributes {
               + "x.value = 'newValue'\n"
               + "print(x.value)\n"
               );
-        
+
         module.__call__();
-        
+
         assertEquals("newValue\n", result());
     }
 }

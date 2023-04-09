@@ -11,27 +11,27 @@ public class PythonString extends PythonObject {
 
     static {
         PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__add__(args.get(1));
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__len__();
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__int__();
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__float__();
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__bool__();
             }
         });

@@ -46,12 +46,12 @@ public class PythonTuple extends PythonList {
     }
 
     @Override
-    public void __setitem__(PythonObject key, PythonObject value) {
+    public PythonObject __setitem__(PythonObject key, PythonObject value) {
         throw new UnsupportedOperationException("__setitem__");
     }
 
     @Override
-    public void __delitem__(PythonObject key) {
+    public PythonObject __delitem__(PythonObject key) {
         throw new UnsupportedOperationException("__delitem__");
     }
 

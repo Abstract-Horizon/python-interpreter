@@ -5,7 +5,7 @@ public class ExternalObject extends Proxy {
     public static PythonType externalObjectType = new PythonType(PythonObject.TYPE, "ExternalObject");
 
     static {
-        externalObjectType.setAttribute("value", new ProxyAttribute<ExternalObject>() {
+        externalObjectType.__setattr__("value", new ProxyAttribute<ExternalObject>() {
 
             @Override
             protected PythonObject attribute(ExternalObject self) {

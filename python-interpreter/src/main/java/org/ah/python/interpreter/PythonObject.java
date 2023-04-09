@@ -280,10 +280,6 @@ public class PythonObject implements ThreadContext.Executable {
         throw new UnsupportedOperationException("__call__");
     }
 
-//    public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
-//        return __call__();
-//    }
-
     public PythonObject __del__() {
         throw new UnsupportedOperationException("__del__");
     }
@@ -336,11 +332,11 @@ public class PythonObject implements ThreadContext.Executable {
         return res;
     }
 
-    public void __setattr__(String name, PythonObject value) {
+    public PythonObject __setattr__(String name, PythonObject value) {
         throw new UnsupportedOperationException("__setattr__");
     }
 
-    public void __delattr__(PythonObject name) {
+    public PythonObject __delattr__(String name) {
         throw new UnsupportedOperationException("__delattr__");
     }
 
@@ -373,11 +369,11 @@ public class PythonObject implements ThreadContext.Executable {
         throw new UnsupportedOperationException("__getitem__");
     }
 
-    public void __setitem__(PythonObject key, PythonObject value) {
+    public PythonObject __setitem__(PythonObject key, PythonObject value) {
         throw new UnsupportedOperationException("__setitem__");
     }
 
-    public void __delitem__(PythonObject key) {
+    public PythonObject __delitem__(PythonObject key) {
         throw new UnsupportedOperationException("__delitem__");
     }
 

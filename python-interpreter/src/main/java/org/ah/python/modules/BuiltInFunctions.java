@@ -26,6 +26,7 @@ import org.ah.python.interpreter.PythonSlice;
 import org.ah.python.interpreter.PythonString;
 import org.ah.python.interpreter.PythonTuple;
 import org.ah.python.interpreter.Scope;
+import org.ah.python.interpreter.ThreadContext;
 import org.ah.python.interpreter.util.RangeIterator;
 
 public class BuiltInFunctions extends Scope {
@@ -141,7 +142,7 @@ public class BuiltInFunctions extends Scope {
             throw new UnsupportedOperationException("Function complex not supported yet");
         }});
         functions.put("delattr", new Function() { @Override public PythonObject call0(PythonObject object, PythonObject name) {
-            object.__delattr__(name);
+            object.__delattr__(name.asString());
             return NONE;
         }});
         functions.put("dict", new Function() { @Override public PythonObject __call__() {
@@ -340,7 +341,7 @@ public class BuiltInFunctions extends Scope {
                 printInterface.print("\n");
                 return PythonNone.NONE;
             }
-            @Override public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            @Override public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 if (args.size() > 0) {
                     for (PythonObject a : args) {
                         printInterface.print(a.asString());

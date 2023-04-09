@@ -2,7 +2,6 @@ package org.ah.python.interpreter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 public class PythonObjectInstance extends PythonObject {
 
@@ -25,13 +24,6 @@ public class PythonObjectInstance extends PythonObject {
         }
     }
 
-    protected PythonObject getAttribute(String name) {
-        if (attributes != null && attributes.containsKey(name)) {
-            return attributes.get(name);
-        }
-        return getType().getAttribute(name);
-    }
-
     public void setAttribute(String name, PythonObject value) {
         if (attributes == null) {
             ensureAttrs();
@@ -39,24 +31,22 @@ public class PythonObjectInstance extends PythonObject {
         attributes.put(name, value);
     }
 
-    @Override
     public PythonObject __getattr__(String name) {
-        PythonObject res = getAttribute(name);
-        if (res == null) {
-            throw new NoSuchElementException(name + " in " + this);
+        if (attributes != null && attributes.containsKey(name)) {
+            return attributes.get(name);
         }
-        return res;
+        return getType().__getattr__(name);
     }
 
-    @Override
-    public void __setattr__(String name, PythonObject value) {
+    public PythonObject __setattr__(String name, PythonObject value) {
         setAttribute(name, value);
+        return PythonNone.NONE;
     }
 
-    @Override
-    public void __delattr__(PythonObject key) {
+    public PythonObject __delattr__(PythonObject key) {
         if (attributes != null) {
             attributes.remove(key.asString());
         }
+        return PythonNone.NONE;
     }
 }

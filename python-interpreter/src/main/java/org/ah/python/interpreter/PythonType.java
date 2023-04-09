@@ -41,13 +41,12 @@ public class PythonType extends Scope {
         return name;
     }
 
-    @Override
-    protected PythonObject getAttribute(String name) {
+    public PythonObject __getattr__(String name) {
         if (attributes != null && attributes.containsKey(name)) {
             return attributes.get(name);
         }
         if (parent != null) {
-            return parent.getAttribute(name);
+            return parent.__getattr__(name);
         }
         return null;
     }

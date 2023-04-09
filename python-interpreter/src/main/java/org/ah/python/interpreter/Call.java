@@ -35,11 +35,10 @@ public class Call extends PythonObject {
 
                 boolean first = true;
                 for (PythonObject arg : args) {
-                    if (first) { first = false; } else { System.out.print(","); }
+                    if (first) { first = false; } else { System.out.print(", "); }
                     System.out.print(arg);
                 }
-                System.out.println("]");
-                return ((Function)function).__call__(args, null);
+                return ((Function)function).execute(context, args, null);
             }
             throw new RuntimeException("TypeError: object '" + function.pythonClass + "' is not callable");
 

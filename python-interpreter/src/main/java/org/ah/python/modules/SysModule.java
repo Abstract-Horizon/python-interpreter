@@ -26,7 +26,7 @@ public class SysModule extends Proxy {
     public PythonType getType() { return TYPE; }
 
     static {
-        TYPE.setAttribute("exit", new Function() {
+        TYPE.__setattr__("exit", new Function() {
             @Override public PythonObject call0() {
                 systemBridge.exit(0);
                 return null;

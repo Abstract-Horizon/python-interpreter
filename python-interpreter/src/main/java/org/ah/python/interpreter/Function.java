@@ -26,6 +26,11 @@ public class Function extends PythonObject implements CallableType {
         throw new UnsupportedFunction(this, "__call__");
     }
 
+    public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
+        // This is main method to be called to initiate function call
+        return __call__();
+    }
+
     public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
         // This is main method to be called to initiate function call
         return __call__();

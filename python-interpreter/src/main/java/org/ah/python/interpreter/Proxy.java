@@ -22,7 +22,7 @@ public abstract class Proxy extends PythonObject {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void __setattr__(String name, PythonObject expr) {
+    public PythonObject __setattr__(String name, PythonObject expr) {
         PythonObject res = getType().attributes.get(name);
 
         if (res == null) {
@@ -32,6 +32,7 @@ public abstract class Proxy extends PythonObject {
         if (res instanceof ProxyAttribute) {
             ((ProxyAttribute<Proxy>)res).assign(this, expr);
         }
+        return PythonNone.NONE;
     }
 
     public static abstract class ProxyAttribute<T extends PythonObject> extends InstanceMethod<T> {

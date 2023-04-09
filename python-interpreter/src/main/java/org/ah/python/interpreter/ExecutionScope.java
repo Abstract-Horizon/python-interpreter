@@ -29,7 +29,7 @@ public class ExecutionScope extends Scope {
         }
         if (parentScope != null) {
             // TODO item or attr? return parentScope.__getitem__(name);
-            return parentScope.getAttribute(name);
+            return parentScope.__getattr__(name);
         }
         return null;
     }
@@ -41,29 +41,32 @@ public class ExecutionScope extends Scope {
     @Override
     public PythonObject __getattr__(String name) {
         if (globals.contains(name)) {
-            return GlobalScope.globalScope().getAttribute(name);
+            return GlobalScope.globalScope().__getattr__(name);
         }
         return getAttribute(name);
     }
 
     @Override
-    public void __setattr__(String name, PythonObject value) {
+    public PythonObject __setattr__(String name, PythonObject value) {
         if (globals.contains(name)) {
-            GlobalScope.globalScope().setAttribute(name, value);
+            GlobalScope.globalScope().__setattr__(name, value);
         } else {
             setAttribute(name, value);
         }
+        return PythonNone.NONE;
     }
 
     @Override
-    public void __delattr__(PythonObject key) {
+    public PythonObject __delattr__(String key) {
         if (attributes != null) {
-            attributes.remove(key.asString());
+            attributes.remove(key);
         }
+        return PythonNone.NONE;
     }
 
     @Override
-    public void __delitem__(PythonObject name) {
+    public PythonObject __delitem__(PythonObject name) {
         __delitem__(name);
+        return PythonNone.NONE;
     }
 }

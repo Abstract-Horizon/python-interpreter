@@ -19,7 +19,7 @@ public class PythonDictionary extends PythonObject {
     }
 
     static {
-        TYPE.setAttribute("copy", new InstanceMethod<PythonDictionary>() { @Override public PythonObject call0(PythonDictionary self, PythonObject arg) {
+        TYPE.__setattr__("copy", new InstanceMethod<PythonDictionary>() { @Override public PythonObject call0(PythonDictionary self, PythonObject arg) {
             PythonDictionary newDict = new PythonDictionary();
             for (Map.Entry<PythonObject, PythonObject> entry : self.map.entrySet()) {
 
@@ -99,12 +99,14 @@ public class PythonDictionary extends PythonObject {
         return obj;
     }
 
-    public void __setitem__(PythonObject key, PythonObject value) {
+    public PythonObject __setitem__(PythonObject key, PythonObject value) {
         map.put(key, value);
+        return PythonNone.NONE;
     }
 
-    public void __delitem__(PythonObject key) {
+    public PythonObject __delitem__(PythonObject key) {
         map.remove(key);
+        return PythonNone.NONE;
     }
 
     public PythonObject __contains__(PythonObject value) {

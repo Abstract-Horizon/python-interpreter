@@ -20,17 +20,17 @@ public class PythonList extends PythonSequence {
     }
 
     static {
-        TYPE.setAttribute("append", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self, PythonObject arg) {
+        TYPE.__setattr__("append", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self, PythonObject arg) {
             self.list.add(arg.dereference());
             return PythonNone.NONE;
         }});
 
-        TYPE.setAttribute("clear", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self) {
+        TYPE.__setattr__("clear", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self) {
             self.list.clear();
             return PythonNone.NONE;
         }});
 
-        TYPE.setAttribute("remove", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self, PythonObject arg) {
+        TYPE.__setattr__("remove", new InstanceMethod<PythonList>() { @Override public PythonObject call0(PythonList self, PythonObject arg) {
             self.list.remove(arg.dereference());
             return PythonNone.NONE;
         }});
@@ -109,7 +109,7 @@ public class PythonList extends PythonSequence {
     }
 
     @Override
-    public void __setitem__(PythonObject key, PythonObject value) {
+    public PythonObject __setitem__(PythonObject key, PythonObject value) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
@@ -147,10 +147,11 @@ public class PythonList extends PythonSequence {
             }
             list.set(i, value);
         }
+        return PythonNone.NONE;
     }
 
     @Override
-    public void __delitem__(PythonObject key) {
+    public PythonObject __delitem__(PythonObject key) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
@@ -167,6 +168,7 @@ public class PythonList extends PythonSequence {
         } else {
             list.remove(key.asInteger());
         }
+        return PythonNone.NONE;
     }
 
     @Override
@@ -177,12 +179,13 @@ public class PythonList extends PythonSequence {
 
     @Override
     public PythonObject __getattr__(String name) {
-        PythonObject o = TYPE.getAttribute(name);
-
-        if (o == null) {
-            throw new NoSuchElementException(name);
-        }
-        return o;
+//        PythonObject o = TYPE.getAttribute(name);
+//
+//        if (o == null) {
+//            throw new NoSuchElementException(name);
+//        }
+//        return o;
+        return PythonNone.NONE;
     }
 
 //    public PythonObject __getattr__(PythonObject name) {

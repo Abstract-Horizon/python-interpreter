@@ -6,7 +6,7 @@ public class PythonClassType extends PythonType implements CallableType {
     public static final PythonObject[] EMPTY_ARGS = new PythonObject[0];
 
     private Scope parentScope;
-    
+
     public PythonClassType(String name, Scope parentScope) {
         super(name);
         this.parentScope = parentScope;
@@ -19,10 +19,10 @@ public class PythonClassType extends PythonType implements CallableType {
     public Scope getParentScope() {
         return parentScope;
     }
-    
+
     public PythonObject __call__(PythonObject[] args) {
         PythonObjectInstance self = new PythonObjectInstance(this);
-        
+
         PythonObject initMethod = getAttribute("__init__");
         if (initMethod != null) {
             if (initMethod instanceof InstanceMethod) {
@@ -43,10 +43,10 @@ public class PythonClassType extends PythonType implements CallableType {
         }
         PythonObject res = null;
         if (getParent() != null) {
-            res = getParent().getAttribute(name);
+            res = getParent().__getattr__(name);
         }
         if (res == null && parentScope != null) {
-            res = parentScope.getAttribute(name);
+            res = parentScope.__getattr__(name);
         }
 //        if (res == null) {
 //            throw new NoSuchElementException(name + " in " + this);

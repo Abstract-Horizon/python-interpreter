@@ -41,27 +41,27 @@ public class PythonInteger extends PythonNumber {
         populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
 
         PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__and__(args.get(1));
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__or__(args.get(1));
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__xor__(args.get(1));
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__lshift__(args.get(1));
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInFunction() {
-            public PythonObject __call__(List<PythonObject> args, Map<String, PythonObject> kwargs) {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__rshift__(args.get(1));
             }
         });
