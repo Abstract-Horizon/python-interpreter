@@ -2,6 +2,11 @@ package org.ah.python.grammar;
 
 
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.ah.python.grammar.PythonScanner.Token;
 import org.ah.python.interpreter.Assign;
 import org.ah.python.interpreter.Assignable;
@@ -39,11 +44,6 @@ import org.ah.python.interpreter.UnaryOp;
 import org.ah.python.interpreter.UnaryopType;
 import org.ah.python.interpreter.While;
 import org.ah.python.modules.BuiltInFunctions;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class PythonParser {
 
@@ -958,12 +958,12 @@ public class PythonParser {
 
     // public import_stmt<null> = (.k=1.) import_name|import_from CODE CODE;
     public void import_stmt() throws ParserError {
-        currentImport = new Import();
+ currentImport = new Import();
         if ((id == 33)) {
             import_name();
         } else if ((id == 7)) {
             import_from();
-            throw new UnsupportedOperationException("import_from");
+             throw new UnsupportedOperationException("import_from");
         } else {
             throw new ParserError(t, "'from','import'");
         }
