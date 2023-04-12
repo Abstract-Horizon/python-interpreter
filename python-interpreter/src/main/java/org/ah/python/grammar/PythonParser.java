@@ -2176,7 +2176,7 @@ public class PythonParser {
 		        } else if ("None".equals(id)) {
 		            currentObject = PythonNone.NONE;
 		        } else if (BuiltInFunctions.isBuiltInFunction(id)) {
-		            currentObject = BuiltInFunctions.getFunctione(id);
+		            currentObject = BuiltInFunctions.getFunction(id);
 		        } else {
                     currentObject = new Reference(null, PythonString.valueOf(id));
                 }

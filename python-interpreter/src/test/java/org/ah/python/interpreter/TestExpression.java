@@ -1,5 +1,8 @@
 package org.ah.python.interpreter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -9,6 +12,7 @@ public class TestExpression extends BaseTestClass {
 
     @Test public void testExpressionFromParsedCode() {
         PythonObject parsedModule = Interpreter.convertLines(
+                "print()",
                 "a = 5",
                 "a.__add__(6)",
                 "invoke()",
@@ -26,18 +30,14 @@ public class TestExpression extends BaseTestClass {
         Reference refAdd = new Reference(three, "__add__");
         Call callAdd = new Call(refAdd, Arrays.asList(two));
 
-        ThreadContext context = new ThreadContext();
-        Module module = new Module();
-        context.setCurrentScope(module);
 
         context.pushPC(callAdd);
 
-        while (context.next()) {
 
-        };
+        for (int i = 0; i < 10000 && context.next(); i++) {}
 
-
-        System.out.println(context.a);
+        assertEquals(context.a.asInteger(), 5);
+        contextIsEmpty();
     }
 
     @Test public void testSimpleIntegerAddSub() {
@@ -52,18 +52,16 @@ public class TestExpression extends BaseTestClass {
         Reference refSub = new Reference(callAdd, "__sub__");
         Call callSub = new Call(refSub, Arrays.asList(one));
 
-        ThreadContext context = new ThreadContext();
-        Module module = new Module();
-        context.setCurrentScope(module);
-
         context.pushPC(callSub);
 
-        while (context.next()) {
+        for (int i = 0; i < 10000 && context.next(); i++) {
 
-        };
+        }
 
+        assertEquals(context.a.asInteger(), 4);
+        assertTrue(context.a.__eq__(PythonInteger.valueOf(4)).asBoolean());
 
-        System.out.println(context.a);
+        contextIsEmpty();
     }
 
     @Test public void testExpressionAddingStrings() {
@@ -74,17 +72,15 @@ public class TestExpression extends BaseTestClass {
         Reference refAdd = new Reference(one, "__add__");
         Call callAdd = new Call(refAdd, Arrays.asList(two));
 
-        ThreadContext context = new ThreadContext();
-        Module module = new Module();
-        context.setCurrentScope(module);
-
         context.pushPC(callAdd);
 
-        while (context.next()) {
+        for (int i = 0; i < 5 && context.next(); i++) {
 
-        };
+        }
 
+        assertEquals(context.a.asString(), "123456");
 
-        System.out.println(context.a);
+        contextIsEmpty();
     }
+
 }

@@ -1,5 +1,6 @@
 package org.ah.python.modules;
 
+import org.ah.python.interpreter.BuiltInMethod;
 import org.ah.python.interpreter.Function;
 import org.ah.python.interpreter.Proxy;
 import org.ah.python.interpreter.PythonObject;
@@ -26,7 +27,7 @@ public class SysModule extends Proxy {
     public PythonType getType() { return TYPE; }
 
     static {
-        TYPE.__setattr__("exit", new Function() {
+        TYPE.__setattr__("exit", new BuiltInMethod() {
             @Override public PythonObject call0() {
                 systemBridge.exit(0);
                 return null;

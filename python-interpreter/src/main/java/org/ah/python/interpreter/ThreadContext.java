@@ -13,9 +13,15 @@ public class ThreadContext {
 
     public PythonObject a;
 
+    public Scope globalScope;
     public Scope currentScope;
 
     public boolean popped;
+
+    public ThreadContext(Scope globalScope) {
+        this.globalScope = globalScope;
+        this.currentScope = globalScope;
+    }
 
     public boolean next() {
         if (pcStack.isEmpty()) {
@@ -32,6 +38,17 @@ public class ThreadContext {
         }
 
         return true;
+    }
+
+    public void pushScope(Scope scope) {
+        scope.setParentScope(currentScope);
+        currentScope = scope;
+    }
+
+    public void popScope() {
+        if (globalScope != currentScope) {
+            currentScope = currentScope.getParentScope();
+        }
     }
 
     public void pushPC(Executable newPC) {

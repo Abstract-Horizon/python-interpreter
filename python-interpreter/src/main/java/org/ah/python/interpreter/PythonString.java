@@ -10,27 +10,27 @@ public class PythonString extends PythonObject {
     public static PythonClass PYTHON_STRING_CLASS = new PythonClass("str");
 
     static {
-        PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInFunction() {
+        PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__add__(args.get(1));
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInFunction() {
+        PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__len__();
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInFunction() {
+        PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__int__();
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInFunction() {
+        PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__float__();
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInFunction() {
+        PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__bool__();
             }
@@ -96,9 +96,8 @@ public class PythonString extends PythonObject {
     }
 
     public PythonObject __add__(PythonObject other) {
-        PythonObject o = other.dereference();
         if (other instanceof PythonString) {
-            return PythonString.valueOf(value + ((PythonString)o).asString());
+            return PythonString.valueOf(value + other.asString());
         } else {
             throw new IllegalArgumentException("TypeError: can only concatenate str (not \"" + other.pythonClass + "\") to str");
         }

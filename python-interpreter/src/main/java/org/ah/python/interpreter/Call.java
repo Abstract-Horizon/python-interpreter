@@ -21,27 +21,38 @@ public class Call extends PythonObject {
         @Override public PythonObject execute(ThreadContext context) {
             PythonObject function = context.popData();
 
-            if (function instanceof Function) {
+            if (function instanceof BuiltInMethod) {
                 int argNo = args.length;
-
-                if (!(context.a instanceof Scope)) {
-                    argNo += 1;
-                }
 
                 List<PythonObject> args = new ArrayList<PythonObject>();
                 for (int i = 0; i < argNo; i++) {
                     args.add(context.popData());
                 }
 
-                boolean first = true;
-                for (PythonObject arg : args) {
-                    if (first) { first = false; } else { System.out.print(", "); }
-                    System.out.print(arg);
+                return ((Function)function).execute(context, args, null);
+            } else if (function instanceof BuiltInBoundMethod) {
+                int argNo = args.length + 1;
+
+                List<PythonObject> args = new ArrayList<PythonObject>();
+                for (int i = 0; i < argNo; i++) {
+                    args.add(context.popData());
                 }
+
+                return ((Function)function).execute(context, args, null);
+            } else if (function instanceof BoundMethod) {
+
+            } else {
+                int argNo = args.length;
+
+                List<PythonObject> args = new ArrayList<PythonObject>();
+                for (int i = 0; i < argNo; i++) {
+                    args.add(context.popData());
+                }
+
                 return ((Function)function).execute(context, args, null);
             }
-            throw new RuntimeException("TypeError: object '" + function.pythonClass + "' is not callable");
 
+            throw new RuntimeException("TypeError: object '" + function.pythonClass + "' is not callable");
         }
     };
 
