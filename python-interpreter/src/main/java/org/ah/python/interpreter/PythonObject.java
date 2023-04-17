@@ -249,15 +249,15 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public PythonInteger __int__() {
-        throw new UnsupportedOperationException("__int__");
+        throw new UnsupportedOperationException("__int__ on " + getClass().getName());
     }
 
     public PythonFloat __float__() {
-        throw new UnsupportedOperationException("__float__");
+        throw new UnsupportedOperationException("__float__ on " + getClass().getName());
     }
 
     public PythonBoolean __bool__() {
-        throw new UnsupportedOperationException("__bool__");
+        throw new UnsupportedOperationException("__bool__ on " + getClass().getName());
     }
 
     public PythonString __str__() {
@@ -269,7 +269,7 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public PythonObject __init__() {
-        throw new UnsupportedOperationException("__init__");
+        throw new UnsupportedOperationException("__init__ on " + getClass().getName());
     }
 
     public PythonObject __self__() {

@@ -6,6 +6,9 @@ public class While extends Suite {
     private Suite els = new Suite();
     private Suite body = null;
 
+    private Block block = new Block();
+    private Block elseBlock = new Block();
+
     public While(PythonObject test) {
         this.test = test;
     }
@@ -14,15 +17,23 @@ public class While extends Suite {
         return els;
     }
 
+    public Block getBlock() {
+        return block;
+    }
+
+    public Block getElseBlock() {
+        return elseBlock;
+    }
+
     public Suite getBody() {
         if (body == null) {
             body = new Suite(asList());
         }
         return body;
     }
-    
+
     public PythonObject __call__() {
-        
+
         while (test.dereference().asBoolean() && !GlobalScope.BREAK) {
             super.__call__();
             if (GlobalScope.CONTINUE) {
@@ -30,7 +41,7 @@ public class While extends Suite {
                 Suite.BREAKOUT = false;
             }
         }
-        
+
         if (els != null && !GlobalScope.BREAK) {
             els.__call__();
         }
@@ -41,9 +52,9 @@ public class While extends Suite {
         }
         return PythonNone.NONE;
     }
-    
+
     public String toString() {
-        return "while " + test.toString() + ": " + super.toString() + 
+        return "while " + test.toString() + ": " + super.toString() +
                 (els != null ? " else: " + els.toString() : "");
     }
 

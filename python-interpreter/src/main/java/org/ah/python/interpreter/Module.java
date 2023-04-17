@@ -1,5 +1,6 @@
 package org.ah.python.interpreter;
 
+import org.ah.python.modules.BuiltInFunctions;
 
 public class Module extends Scope {
 
@@ -7,6 +8,7 @@ public class Module extends Scope {
     private Block block = new Block();
 
     public Module() {
+        super(BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE);
     }
 
     public Module(Scope parentScope) {

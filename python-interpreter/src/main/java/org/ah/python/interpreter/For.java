@@ -5,6 +5,8 @@ public class For extends Suite {
     private Reference target;
     private PythonObject iter;
     private Suite els = new Suite();
+    private Block block = new Block();
+    private Block elseBlock = new Block();
 
     public For(Reference target, PythonObject iter) {
         this.target = target;
@@ -13,6 +15,14 @@ public class For extends Suite {
 
     public Suite getElse() {
         return els;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public Block getElseBlock() {
+        return elseBlock;
     }
 
     public PythonObject __call__() {
@@ -29,11 +39,11 @@ public class For extends Suite {
                 Suite.BREAKOUT = false;
             }
         }
-        
+
         if (els != null && !GlobalScope.BREAK) {
             els.__call__();
         }
-        
+
         if (GlobalScope.BREAK) {
             GlobalScope.BREAK = false;
             Suite.BREAKOUT = false;
@@ -42,7 +52,7 @@ public class For extends Suite {
     }
 
     public String toString() {
-        return "for " + target.toString() + " in " + iter.toString() + ": " + super.toString() + 
+        return "for " + target.toString() + " in " + iter.toString() + ": " + super.toString() +
                 (els != null ? " else: " + els.toString() : "");
     }
 }

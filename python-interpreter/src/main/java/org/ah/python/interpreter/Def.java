@@ -11,7 +11,7 @@ public class Def extends PythonObject {
     private boolean instanceMethod = false;
 
     private Suite method = new Suite();
-    private Block block = new Block(true);
+    private Block block = new Block();
 
     public static PythonObject RETURN = null;
 
@@ -173,6 +173,14 @@ public class Def extends PythonObject {
             this.block = block;
         }
 
+        private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
+            @Override public PythonObject execute(ThreadContext context) {
+                context.popData();
+                context.currentScope.close();
+                return PythonNone.NONE;
+            }
+        };
+
         public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
             System.out.println("Executing function " + name + " with args " + functionArgs);
 
@@ -196,6 +204,7 @@ public class Def extends PythonObject {
                 }
             }
 
+            context.pushPC(closeScopeContinuation);
             return block.execute(context);
         }
     };

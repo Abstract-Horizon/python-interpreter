@@ -41,7 +41,6 @@ public class TestDef extends BaseTestClass {
 
         context.pushPC(block);
 
-
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
         System.out.println(result());
@@ -78,6 +77,31 @@ public class TestDef extends BaseTestClass {
         String resultString = result();
         System.out.println(resultString);
         assertEquals(resultString, "Print from method, x=value_of_x\n");
+        contextIsEmpty();
+    }
+
+    @Test public void testParsedDefAndInvocation() {
+        executeLines(
+            "def x():",
+            "    print(\"TRUE\")",
+            "",
+            "x()"
+        );
+
+        assertEquals("TRUE\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testParsedDefAndInvocation2() {
+        executeLines(
+            "def x(a):",
+            "    b = a + 1",
+            "    print(b)",
+            "",
+            "x(8)"
+        );
+
+        assertEquals("9\n", result());
         contextIsEmpty();
     }
 }

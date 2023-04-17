@@ -71,6 +71,15 @@ public class ThreadContext {
         return existingA;
     }
 
+    public void pushData(PythonObject value) {
+        if (a == null) {
+            a = value;
+        } else {
+            dataStack.push(a);
+            a = value;
+        }
+    }
+
     public Scope getCurrentScope() {
         return currentScope;
     }

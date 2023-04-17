@@ -34,7 +34,6 @@ public class PythonBoolean extends PythonNumber {
                 return args.get(0).__rshift__(args.get(1));
             }
         });
-
     }
 
     public static final PythonBoolean TRUE = new PythonBoolean(true);

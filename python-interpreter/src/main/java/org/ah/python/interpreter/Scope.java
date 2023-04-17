@@ -60,6 +60,9 @@ public class Scope extends PythonObject {
         if (attributes.containsKey(attr)) {
             return attributes.get(attr);
         }
+        if (parentScope != null) {
+            return parentScope.__getattr__(attr);
+        }
         return PythonNone.NONE;
     }
 

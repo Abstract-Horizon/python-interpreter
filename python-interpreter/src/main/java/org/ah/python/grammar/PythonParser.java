@@ -2,53 +2,18 @@ package org.ah.python.grammar;
 
 
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.ah.python.grammar.PythonScanner.Token;
-import org.ah.python.interpreter.Assign;
-import org.ah.python.interpreter.Assignable;
-import org.ah.python.interpreter.BinaryOp;
-import org.ah.python.interpreter.BoolOp;
-import org.ah.python.interpreter.BoolopType;
-import org.ah.python.interpreter.Break;
-import org.ah.python.interpreter.Call;
-import org.ah.python.interpreter.CmpopType;
-import org.ah.python.interpreter.Compare;
-import org.ah.python.interpreter.Continue;
-import org.ah.python.interpreter.Def;
-import org.ah.python.interpreter.Del;
-import org.ah.python.interpreter.For;
-import org.ah.python.interpreter.Global;
-import org.ah.python.interpreter.If;
-import org.ah.python.interpreter.Import;
+
+import org.ah.python.interpreter.*;
 import org.ah.python.interpreter.Module;
-import org.ah.python.interpreter.OperatorType;
-import org.ah.python.interpreter.PythonBoolean;
-import org.ah.python.interpreter.PythonClassDef;
-import org.ah.python.interpreter.PythonDictionary;
-import org.ah.python.interpreter.PythonFloat;
-import org.ah.python.interpreter.PythonInteger;
-import org.ah.python.interpreter.PythonList;
-import org.ah.python.interpreter.PythonNone;
-import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonString;
-import org.ah.python.interpreter.PythonTuple;
-import org.ah.python.interpreter.Reference;
-import org.ah.python.interpreter.Return;
-import org.ah.python.interpreter.Subscript;
-import org.ah.python.interpreter.Suite;
-import org.ah.python.interpreter.UnaryOp;
-import org.ah.python.interpreter.UnaryopType;
-import org.ah.python.interpreter.While;
-import org.ah.python.modules.BuiltInFunctions;
+import java.util.*;
+import static java.util.Arrays.asList;
 
 public class PythonParser {
 
 
     private Suite currentSuite;
+    private Block currentBlock;
     private OperatorType operatorType;
     private CmpopType cmpopType;
     private PythonObject currentObject;
@@ -59,8 +24,10 @@ public class PythonParser {
 
     private Module module;
     private boolean trailingComma = false;
-
+    
     public Module getModule() { return module; }
+
+    public void setModule(Module module) { this.module = module; }
 
 
 
@@ -104,7 +71,7 @@ public class PythonParser {
     public void parse() throws ParserError {
         next(); // <-- here
             single_input();
-    }
+    } 
 
     // public single_input<null> = (.k=1.) NEWLINE|simple_stmt|compound_stmt NEWLINE {NEWLINE};
     public void single_input() throws ParserError {
@@ -129,7 +96,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "NEWLINE");
                 }
-            } // while
+            } // while 
         } else {
             throw new ParserError(t, "'del','pass','continue','break','return','raise','from','global','nonlocal','assert','if','for','while','def','yield','class','None','True','False','with','lambda','not','try','import',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,AT,PLUS,MINUS,TILDA,NEWLINE,NAME,NUMBER,STRING");
         }
@@ -137,7 +104,7 @@ public class PythonParser {
 
     // public file_input<null> = {(.k=1.) NEWLINE|stmt};
     public void file_input() throws ParserError {
- module = new Module(); currentSuite = module.getSuite();
+ module = new Module(); currentSuite = module.getSuite(); currentBlock = module.getBlock(); 
         while (((id >= 1) && (id <=11)) || ((id >= 14) && (id <=21)) || (id == 25) || ((id >= 27) && (id <=28)) || (id == 31) || (id == 33) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_ELLIPSIS) && (id <=PythonScanner.TOKEN_AT)) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || (id == PythonScanner.TOKEN_NEWLINE) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             if ((id == PythonScanner.TOKEN_NEWLINE)) {
                 if (id == PythonScanner.TOKEN_NEWLINE) {
@@ -150,8 +117,26 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, "'del','pass','continue','break','return','raise','from','global','nonlocal','assert','if','for','while','def','yield','class','None','True','False','with','lambda','not','try','import',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,AT,PLUS,MINUS,TILDA,NEWLINE,NAME,NUMBER,STRING");
             }
-        } // while
+        } // while 
     } // file_input
+
+    // public existing_module_file_input<null> = {(.k=1.) NEWLINE|stmt};
+    public void existing_module_file_input() throws ParserError {
+ currentSuite = module.getSuite(); currentBlock = module.getBlock(); 
+        while (((id >= 1) && (id <=11)) || ((id >= 14) && (id <=21)) || (id == 25) || ((id >= 27) && (id <=28)) || (id == 31) || (id == 33) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_ELLIPSIS) && (id <=PythonScanner.TOKEN_AT)) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || (id == PythonScanner.TOKEN_NEWLINE) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
+            if ((id == PythonScanner.TOKEN_NEWLINE)) {
+                if (id == PythonScanner.TOKEN_NEWLINE) {
+                    next(); // <-- here 2
+                } else {
+                    throw new ParserError(t, nt, "NEWLINE");
+                }
+            } else if (((id >= 1) && (id <=11)) || ((id >= 14) && (id <=21)) || (id == 25) || ((id >= 27) && (id <=28)) || (id == 31) || (id == 33) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_ELLIPSIS) && (id <=PythonScanner.TOKEN_AT)) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
+                stmt();
+            } else {
+                throw new ParserError(t, "'del','pass','continue','break','return','raise','from','global','nonlocal','assert','if','for','while','def','yield','class','None','True','False','with','lambda','not','try','import',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,AT,PLUS,MINUS,TILDA,NEWLINE,NAME,NUMBER,STRING");
+            }
+        } // while 
+    } // existing_module_file_input
 
     // public eval_input<null> = testlist {NEWLINE};
     public void eval_input() throws ParserError {
@@ -162,7 +147,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NEWLINE");
             }
-        } // while
+        } // while 
     } // eval_input
 
     // public decorator<null> = AT dotted_name [LPAREN [arglist] RPAREN] NEWLINE CODE;
@@ -181,19 +166,19 @@ public class PythonParser {
             }
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || ((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 arglist();
-            }
+            } 
             if (id == PythonScanner.TOKEN_RPAREN) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "RPAREN");
             }
-        }
+        } 
         if (id == PythonScanner.TOKEN_NEWLINE) {
             next(); // <-- here 2
         } else {
             throw new ParserError(t, nt, "NEWLINE");
         }
-         throw new UnsupportedOperationException("decorator");
+         throw new UnsupportedOperationException("decorator"); 
     } // decorator
 
     // public decorators<null> = decorator {decorator} CODE;
@@ -201,8 +186,8 @@ public class PythonParser {
         decorator();
         while ((id == PythonScanner.TOKEN_AT)) {
             decorator();
-        } // while
-         throw new UnsupportedOperationException("decorators");
+        } // while 
+         throw new UnsupportedOperationException("decorators"); 
     } // decorators
 
     // public decorated<null> = decorators (.k=1.) classdef|funcdef CODE;
@@ -215,7 +200,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, "'def','class'");
         }
-         throw new UnsupportedOperationException("decorated");
+         throw new UnsupportedOperationException("decorated"); 
     } // decorated
 
     // public funcdef<null> = "def" NAME CODE parameters CODE [DASH_GT test CODE] COLON CODE suite CODE;
@@ -230,17 +215,17 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         Def def = new Def(t.toString());
+         Def def = new Def(t.toString()); 
         parameters();
-
+        
                  for (PythonObject arg : currentList) {
-                     if (arg instanceof Reference) {
+                     if (arg instanceof Reference) { 
                          def.getArguments().add((Reference)arg);
                      } else {
                          throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
                      }
                  }
-
+              
         if ((id == PythonScanner.TOKEN_DASH_GT)) {
             if (id == PythonScanner.TOKEN_DASH_GT) {
                 next(); // <-- here 2
@@ -248,18 +233,22 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"->\"");
             }
             test();
-             throw new UnsupportedOperationException("->");
-        }
+             throw new UnsupportedOperationException("->"); 
+        } 
         if (id == PythonScanner.TOKEN_COLON) {
             next(); // <-- here 2
         } else {
             throw new ParserError(t, nt, "COLON");
         }
-
-                 Suite save = currentSuite; currentSuite = def.getSuite();
-
+         
+                  Suite save = currentSuite; currentSuite = def.getSuite();
+                  Block savedBlock = currentBlock; currentBlock = def.getBlock();
+              
         suite();
-         currentSuite = save; currentSuite.asList().add(def);
+         
+                  currentSuite = save; currentSuite.asList().add(def); 
+                  currentBlock = savedBlock; currentBlock.getStatements().add(def);
+              
     } // funcdef
 
     // public parameters<null> = LPAREN CODE [typedargslist] RPAREN;
@@ -269,10 +258,10 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "LPAREN");
         }
-         currentList = new ArrayList<PythonObject>();
+         currentList = new ArrayList<PythonObject>(); 
         if (((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_NAME)) {
             typedargslist();
-        }
+        } 
         if (id == PythonScanner.TOKEN_RPAREN) {
             next(); // <-- here 2
         } else {
@@ -284,7 +273,7 @@ public class PythonParser {
     public void typedargslist() throws ParserError {
         if ((id == PythonScanner.TOKEN_NAME)) {
             tfpdef();
-             List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject);
+             List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
             if ((id == PythonScanner.TOKEN_EQ)) {
                 if (id == PythonScanner.TOKEN_EQ) {
                     next(); // <-- here 2
@@ -292,8 +281,8 @@ public class PythonParser {
                     throw new ParserError(t, nt, "EQ");
                 }
                 test();
-                 throw new UnsupportedOperationException("named parameters");
-            }
+                 throw new UnsupportedOperationException("named parameters"); 
+            } 
             while ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -301,7 +290,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COMMA");
                 }
                 tfpdef();
-                 args.add(currentObject);
+                 args.add(currentObject); 
                 if ((id == PythonScanner.TOKEN_EQ)) {
                     if (id == PythonScanner.TOKEN_EQ) {
                         next(); // <-- here 2
@@ -309,9 +298,9 @@ public class PythonParser {
                         throw new ParserError(t, nt, "EQ");
                     }
                     test();
-                     throw new UnsupportedOperationException("named parameters");
-                }
-            } // while
+                     throw new UnsupportedOperationException("named parameters"); 
+                } 
+            } // while 
             if ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -327,7 +316,7 @@ public class PythonParser {
                         }
                         if ((id == PythonScanner.TOKEN_NAME)) {
                             tfpdef();
-                        }
+                        } 
                         while ((id == PythonScanner.TOKEN_COMMA)) {
                             if (id == PythonScanner.TOKEN_COMMA) {
                                 next(); // <-- here 2
@@ -342,8 +331,8 @@ public class PythonParser {
                                     throw new ParserError(t, nt, "EQ");
                                 }
                                 test();
-                            }
-                        } // while
+                            } 
+                        } // while 
                         if ((id == PythonScanner.TOKEN_COMMA)) {
                             if (id == PythonScanner.TOKEN_COMMA) {
                                 next(); // <-- here 2
@@ -356,7 +345,7 @@ public class PythonParser {
                                 throw new ParserError(t, nt, "\"**\"");
                             }
                             tfpdef();
-                        }
+                        } 
                     } else if ((id == PythonScanner.TOKEN_STARSTAR)) {
                         if (id == PythonScanner.TOKEN_STARSTAR) {
                             next(); // <-- here 2
@@ -367,9 +356,9 @@ public class PythonParser {
                     } else {
                         throw new ParserError(t, "STAR,STARSTAR");
                     }
-                }
-            }
-             currentList = args;
+                } 
+            } 
+             currentList = args; 
         } else if ((id == PythonScanner.TOKEN_STAR)) {
             if (id == PythonScanner.TOKEN_STAR) {
                 next(); // <-- here 2
@@ -378,7 +367,7 @@ public class PythonParser {
             }
             if ((id == PythonScanner.TOKEN_NAME)) {
                 tfpdef();
-            }
+            } 
             while ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -393,8 +382,8 @@ public class PythonParser {
                         throw new ParserError(t, nt, "EQ");
                     }
                     test();
-                }
-            } // while
+                } 
+            } // while 
             if ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -407,8 +396,8 @@ public class PythonParser {
                     throw new ParserError(t, nt, "\"**\"");
                 }
                 tfpdef();
-            }
-             throw new UnsupportedOperationException("star parameters");
+            } 
+             throw new UnsupportedOperationException("star parameters"); 
         } else if ((id == PythonScanner.TOKEN_STARSTAR)) {
             if (id == PythonScanner.TOKEN_STARSTAR) {
                 next(); // <-- here 2
@@ -416,7 +405,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"**\"");
             }
             tfpdef();
-             throw new UnsupportedOperationException("starstar parameters");
+             throw new UnsupportedOperationException("starstar parameters"); 
         } else {
             throw new ParserError(t, "STAR,STARSTAR,NAME");
         }
@@ -429,7 +418,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         currentObject = new Reference(null, PythonString.valueOf(t.toString()));
+         currentObject = new Reference(null, PythonString.valueOf(t.toString())); 
         if ((id == PythonScanner.TOKEN_COLON)) {
             if (id == PythonScanner.TOKEN_COLON) {
                 next(); // <-- here 2
@@ -437,8 +426,8 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COLON");
             }
             test();
-             throw new UnsupportedOperationException("parameter types");
-        }
+             throw new UnsupportedOperationException("parameter types"); 
+        } 
     } // tfpdef
 
     // public varargslist<null> = (.k=1.) vfpdef [EQ test] {COMMA vfpdef [EQ test]} [COMMA [(.k=1.) STAR [vfpdef] {COMMA vfpdef [EQ test]} [COMMA STARSTAR vfpdef]|STARSTAR vfpdef]]|STAR [vfpdef] {COMMA vfpdef [EQ test]} [COMMA STARSTAR vfpdef]|STARSTAR vfpdef;
@@ -452,7 +441,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "EQ");
                 }
                 test();
-            }
+            } 
             while ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -467,8 +456,8 @@ public class PythonParser {
                         throw new ParserError(t, nt, "EQ");
                     }
                     test();
-                }
-            } // while
+                } 
+            } // while 
             if ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -484,7 +473,7 @@ public class PythonParser {
                         }
                         if ((id == PythonScanner.TOKEN_NAME)) {
                             vfpdef();
-                        }
+                        } 
                         while ((id == PythonScanner.TOKEN_COMMA)) {
                             if (id == PythonScanner.TOKEN_COMMA) {
                                 next(); // <-- here 2
@@ -499,8 +488,8 @@ public class PythonParser {
                                     throw new ParserError(t, nt, "EQ");
                                 }
                                 test();
-                            }
-                        } // while
+                            } 
+                        } // while 
                         if ((id == PythonScanner.TOKEN_COMMA)) {
                             if (id == PythonScanner.TOKEN_COMMA) {
                                 next(); // <-- here 2
@@ -513,7 +502,7 @@ public class PythonParser {
                                 throw new ParserError(t, nt, "\"**\"");
                             }
                             vfpdef();
-                        }
+                        } 
                     } else if ((id == PythonScanner.TOKEN_STARSTAR)) {
                         if (id == PythonScanner.TOKEN_STARSTAR) {
                             next(); // <-- here 2
@@ -524,8 +513,8 @@ public class PythonParser {
                     } else {
                         throw new ParserError(t, "STAR,STARSTAR");
                     }
-                }
-            }
+                } 
+            } 
         } else if ((id == PythonScanner.TOKEN_STAR)) {
             if (id == PythonScanner.TOKEN_STAR) {
                 next(); // <-- here 2
@@ -534,7 +523,7 @@ public class PythonParser {
             }
             if ((id == PythonScanner.TOKEN_NAME)) {
                 vfpdef();
-            }
+            } 
             while ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -549,8 +538,8 @@ public class PythonParser {
                         throw new ParserError(t, nt, "EQ");
                     }
                     test();
-                }
-            } // while
+                } 
+            } // while 
             if ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -563,7 +552,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "\"**\"");
                 }
                 vfpdef();
-            }
+            } 
         } else if ((id == PythonScanner.TOKEN_STARSTAR)) {
             if (id == PythonScanner.TOKEN_STARSTAR) {
                 next(); // <-- here 2
@@ -606,14 +595,14 @@ public class PythonParser {
                 throw new ParserError(t, nt, "SEMICOLON");
             }
             small_stmt();
-        } // while
+        } // while 
         if ((id == PythonScanner.TOKEN_SEMICOLON)) {
             if (id == PythonScanner.TOKEN_SEMICOLON) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "SEMICOLON");
             }
-        }
+        } 
         if (id == PythonScanner.TOKEN_NEWLINE) {
             next(); // <-- here 2
         } else {
@@ -625,7 +614,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NEWLINE");
             }
-        } // while
+        } // while 
     } // simple_stmt
 
     // public small_stmt<null> = (.k=1.) expr_stmt|del_stmt|pass_stmt CODE|flow_stmt|import_stmt|global_stmt|nonlocal_stmt CODE|assert_stmt CODE;
@@ -636,7 +625,7 @@ public class PythonParser {
             del_stmt();
         } else if ((id == 2)) {
             pass_stmt();
-             throw new UnsupportedOperationException("pass_stmt");
+             throw new UnsupportedOperationException("pass_stmt"); 
         } else if (((id >= 3) && (id <=6)) || (id == 17)) {
             flow_stmt();
         } else if ((id == 7) || (id == 33)) {
@@ -645,47 +634,56 @@ public class PythonParser {
             global_stmt();
         } else if ((id == 9)) {
             nonlocal_stmt();
-             throw new UnsupportedOperationException("nonlocal_stmt");
+             throw new UnsupportedOperationException("nonlocal_stmt"); 
         } else if ((id == 10)) {
             assert_stmt();
-             throw new UnsupportedOperationException("assert_stmt");
+             throw new UnsupportedOperationException("assert_stmt"); 
         } else {
             throw new ParserError(t, "'del','pass','continue','break','return','raise','from','global','nonlocal','assert','yield','None','True','False','lambda','not','import',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
     } // small_stmt
 
-    // public expr_stmt<null> = testlist_star_expr CODE (.k=1.) augassign (.k=1.) yield_expr CODE|testlist CODE|{EQ (.k=1.) yield_expr CODE|testlist_star_expr CODE} CODE;
+    // public expr_stmt<null> = testlist_star_expr CODE (.k=1.) augassign (.k=1.) yield_expr CODE|testlist CODE|CODE {EQ (.k=1.) yield_expr CODE|testlist_star_expr CODE} CODE;
     public void expr_stmt() throws ParserError {
         testlist_star_expr();
-         List<PythonObject> targets = currentList;
+         List<PythonObject> targets = currentList; 
         if (((id >= 34) && (id <=45))) {
             augassign();
             if ((id == 17)) {
                 yield_expr();
-                 throw new UnsupportedOperationException("yield_expr");
+                 throw new UnsupportedOperationException("yield_expr"); 
             } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 testlist();
-
+                
                             if (currentList.size() != targets.size()) {
                                 throw new UnsupportedOperationException("Target assignment list size " + targets.size() + " does not match values size " + currentList.size());
                             }
+                            
                             for (int i = 0; i < targets.size(); i++) {
                                 PythonObject target = targets.get(i);
                                 PythonObject value = currentList.get(i);
                                 BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
-
+                                
                                 if (!(target instanceof Assignable)) {
                                     throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
                                 }
-
-                                Assign assign = new Assign((Assignable)target, binaryOp);
+                                
+                                // TODO Add this!!!
+                                Assign assign = new Assign(target, binaryOp);
                                 currentSuite.asList().add(assign);
                             }
-
+                         
             } else {
                 throw new ParserError(t, "'yield','None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
             }
         } else if ((id == PythonScanner.TOKEN_EQ) || (id == PythonScanner.TOKEN_SEMICOLON) || (id == PythonScanner.TOKEN_NEWLINE)) {
+            
+                         if (targets.size() > 1) {
+                             PythonObject tuple = PythonTuple.constructor(targets);
+                             targets.clear();
+                             targets.add(tuple);
+                         }
+                    
             while ((id == PythonScanner.TOKEN_EQ)) {
                 if (id == PythonScanner.TOKEN_EQ) {
                     next(); // <-- here 2
@@ -694,44 +692,32 @@ public class PythonParser {
                 }
                 if ((id == 17)) {
                     yield_expr();
-                     throw new UnsupportedOperationException("yield_expr");
+                     throw new UnsupportedOperationException("yield_expr"); 
                 } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     testlist_star_expr();
-
-                            if (currentList.size() != targets.size()) {
-                                throw new UnsupportedOperationException("Target assignment list size " + targets.size() + " does not match values size " + currentList.size());
+                    
+                            if (currentList.size() == 1) {
+                                targets.add(currentList.get(0));
+                            } else {
+                                PythonObject tuple = PythonTuple.constructor(currentList);
+                                targets.add(tuple);
                             }
-                            List<PythonObject> assigns = new ArrayList<PythonObject>();
-                            for (int i = 0; i < targets.size(); i++) {
-                                PythonObject target = targets.get(i);
-                                PythonObject value = currentList.get(i);
-                                Assign assign;
-                                if (target instanceof Assign) {
-                                    Assign lastAssign = (Assign)target;
-                                    if (!(lastAssign.getExpression() instanceof Assignable)) {
-                                        throw new UnsupportedOperationException("Illegal left side of assignment; " + lastAssign.getExpression());
-                                    }
-                                    assign = new Assign(lastAssign.getReference(), new Assign((Assignable)lastAssign.getExpression(), value));
-                                } else {
-                                    if (!(target instanceof Assignable)) {
-                                        throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
-                                    }
-
-                                    assign = new Assign((Assignable)target, value);
-                                }
-                                assigns.add(assign);
-                            }
-                            targets = assigns;
-
+                            currentList.clear();
+                        
                 } else {
                     throw new ParserError(t, "'yield','None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
                 }
-            } // while
-
-                           for (PythonObject res : targets) {
-                               currentSuite.asList().add(res);
-                           }
-
+            } // while 
+            
+                        while (targets.size() > 1) {
+                            Assign assign = new Assign(targets.get(targets.size() - 2), targets.get(targets.size() - 1));
+                            targets.remove(targets.size() - 1);
+                            targets.remove(targets.size() - 1);
+                            targets.add(assign);
+                        }
+                        currentSuite.asList().add(targets.get(0));
+                        currentBlock.getStatements().add(targets.get(0));
+                    
         }
     } // expr_stmt
 
@@ -741,11 +727,11 @@ public class PythonParser {
             test();
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             star_expr();
-             throw new UnsupportedOperationException("star_expr");
+             throw new UnsupportedOperationException("star_expr"); 
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject);
+         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -755,16 +741,16 @@ public class PythonParser {
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     test();
-                     args.add(currentObject);
+                     args.add(currentObject); 
                 } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     star_expr();
-                     throw new UnsupportedOperationException("star_expr");
+                     throw new UnsupportedOperationException("star_expr"); 
                 } else {
                     throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
                 }
-            }
-        } // while
-         currentList = args;
+            } 
+        } // while 
+         currentList = args; 
     } // testlist_star_expr
 
     // public augassign<null> = (.k=1.) "+=" CODE|"-=" CODE|"*=" CODE|"/=" CODE|"%=" CODE|"&=" CODE|"|=" CODE|"^=" CODE|"<<=" CODE|">>=" CODE|"**=" CODE|"//=" CODE;
@@ -775,84 +761,84 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "\"+=\"");
             }
-             operatorType = OperatorType.Add;
+             operatorType = OperatorType.Add; 
         } else if ((id == 35)) {
             if (id == 35) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"-=\"");
             }
-             operatorType = OperatorType.Sub;
+             operatorType = OperatorType.Sub; 
         } else if ((id == 36)) {
             if (id == 36) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"*=\"");
             }
-             operatorType = OperatorType.Mult;
+             operatorType = OperatorType.Mult; 
         } else if ((id == 37)) {
             if (id == 37) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"/=\"");
             }
-             operatorType = OperatorType.Div;
+             operatorType = OperatorType.Div; 
         } else if ((id == 38)) {
             if (id == 38) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"%=\"");
             }
-             operatorType = OperatorType.Mod;
+             operatorType = OperatorType.Mod; 
         } else if ((id == 39)) {
             if (id == 39) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"&=\"");
             }
-             operatorType = OperatorType.BitAnd;
+             operatorType = OperatorType.BitAnd; 
         } else if ((id == 40)) {
             if (id == 40) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"|=\"");
             }
-             operatorType = OperatorType.BitOr;
+             operatorType = OperatorType.BitOr; 
         } else if ((id == 41)) {
             if (id == 41) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"^=\"");
             }
-             operatorType = OperatorType.BitXor;
+             operatorType = OperatorType.BitXor; 
         } else if ((id == 42)) {
             if (id == 42) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"<<=\"");
             }
-             operatorType = OperatorType.LShift;
+             operatorType = OperatorType.LShift; 
         } else if ((id == 43)) {
             if (id == 43) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\">>=\"");
             }
-             operatorType = OperatorType.RShift;
+             operatorType = OperatorType.RShift; 
         } else if ((id == 44)) {
             if (id == 44) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"**=\"");
             }
-             operatorType = OperatorType.Pow;
+             operatorType = OperatorType.Pow; 
         } else if ((id == 45)) {
             if (id == 45) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"//=\"");
             }
-             operatorType = OperatorType.FloorDiv;
+             operatorType = OperatorType.FloorDiv; 
         } else {
             throw new ParserError(t, "'+=','-=','*=','/=','%=','&=','|=','^=','<<=','>>=','**=','//='");
         }
@@ -866,7 +852,11 @@ public class PythonParser {
             throw new ParserError(t, nt, "\"del\"");
         }
         exprlist();
-         currentObject = new Del(currentList); currentSuite.asList().add(currentObject);
+        
+                    currentObject = new Del(currentList);
+                    currentSuite.asList().add(currentObject);
+                    currentBlock.getStatements().add(currentObject);
+                
     } // del_stmt
 
     // public pass_stmt<null> = "pass";
@@ -902,7 +892,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "\"break\"");
         }
-         currentSuite.asList().add(new Break());
+         currentSuite.asList().add(new Break()); currentBlock.getStatements().add(new Break()); 
     } // break_stmt
 
     // public continue_stmt<null> = "continue" CODE;
@@ -912,7 +902,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "\"continue\"");
         }
-         currentSuite.asList().add(new Continue());
+         currentSuite.asList().add(new Continue()); currentBlock.getStatements().add(new Continue()); 
     } // continue_stmt
 
     // public return_stmt<null> = "return" CODE [testlist] CODE;
@@ -922,17 +912,17 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "\"return\"");
         }
-         currentObject = PythonNone.NONE;
+         currentObject = PythonNone.NONE; 
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             testlist();
-        }
-         currentSuite.asList().add(new Return(currentObject));
+        } 
+         currentSuite.asList().add(new Return(currentObject)); currentBlock.getStatements().add(new Return(currentObject)); 
     } // return_stmt
 
     // public yield_stmt<null> = yield_expr CODE;
     public void yield_stmt() throws ParserError {
         yield_expr();
-         throw new UnsupportedOperationException("yield_stmt");
+         throw new UnsupportedOperationException("yield_stmt"); 
     } // yield_stmt
 
     // public raise_stmt<null> = "raise" [test ["from" test]] CODE;
@@ -951,23 +941,23 @@ public class PythonParser {
                     throw new ParserError(t, nt, "\"from\"");
                 }
                 test();
-            }
-        }
-         throw new UnsupportedOperationException("raise_stmt");
+            } 
+        } 
+         throw new UnsupportedOperationException("raise_stmt"); 
     } // raise_stmt
 
     // public import_stmt<null> = (.k=1.) import_name|import_from CODE CODE;
     public void import_stmt() throws ParserError {
- currentImport = new Import();
+ currentImport = new Import(); 
         if ((id == 33)) {
             import_name();
         } else if ((id == 7)) {
             import_from();
-             throw new UnsupportedOperationException("import_from");
+             throw new UnsupportedOperationException("import_from"); 
         } else {
             throw new ParserError(t, "'from','import'");
         }
-         currentSuite.asList().add(currentImport);
+         currentSuite.asList().add(currentImport); currentBlock.getStatements().add(currentImport); 
     } // import_stmt
 
     // public import_name<null> = "import" dotted_as_names;
@@ -1004,7 +994,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, "DOT,ELLIPSIS");
                 }
-            } // while
+            } // while 
             dotted_name();
         } else if (((id >= PythonScanner.TOKEN_DOT) && (id <=PythonScanner.TOKEN_ELLIPSIS))) {
             if ((id == PythonScanner.TOKEN_DOT)) {
@@ -1038,7 +1028,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, "DOT,ELLIPSIS");
                 }
-            } // while
+            } // while 
         } else {
             throw new ParserError(t, "DOT,ELLIPSIS,NAME");
         }
@@ -1090,13 +1080,13 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
-        }
+        } 
     } // import_as_name
 
     // public dotted_as_name<null> = dotted_name CODE ["as" NAME CODE] CODE;
     public void dotted_as_name() throws ParserError {
         dotted_name();
-         String as = null;
+         String as = null; 
         if ((id == 24)) {
             if (id == 24) {
                 next(); // <-- here 2
@@ -1108,9 +1098,9 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
-             as = t.toString();
-        }
-         currentImport.addImport(as, stringList);
+             as = t.toString(); 
+        } 
+         currentImport.addImport(as, stringList); 
     } // dotted_as_name
 
     // public import_as_names<null> = import_as_name {COMMA import_as_name};
@@ -1123,7 +1113,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COMMA");
             }
             import_as_name();
-        } // while
+        } // while 
     } // import_as_names
 
     // public dotted_as_names<null> = dotted_as_name {COMMA dotted_as_name};
@@ -1136,7 +1126,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COMMA");
             }
             dotted_as_name();
-        } // while
+        } // while 
     } // dotted_as_names
 
     // public dotted_name<null> = NAME CODE {DOT NAME CODE};
@@ -1146,7 +1136,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         stringList = new ArrayList<String>(); stringList.add(t.toString());
+         stringList = new ArrayList<String>(); stringList.add(t.toString()); 
         while ((id == PythonScanner.TOKEN_DOT)) {
             if (id == PythonScanner.TOKEN_DOT) {
                 next(); // <-- here 2
@@ -1158,8 +1148,8 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
-             stringList.add(t.toString());
-        } // while
+             stringList.add(t.toString()); 
+        } // while 
     } // dotted_name
 
     // public global_stmt<null> = "global" NAME CODE {COMMA NAME CODE} CODE;
@@ -1174,7 +1164,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         stringList = new ArrayList<String>(); stringList.add(t.toString());
+         stringList = new ArrayList<String>(); stringList.add(t.toString()); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -1186,9 +1176,9 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
-             stringList.add(t.toString());
-        } // while
-         currentSuite.asList().add(new Global(stringList));
+             stringList.add(t.toString()); 
+        } // while 
+         currentSuite.asList().add(new Global(stringList)); currentBlock.getStatements().add(new Global(stringList)); 
     } // global_stmt
 
     // public nonlocal_stmt<null> = "nonlocal" NAME {COMMA NAME};
@@ -1214,7 +1204,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
-        } // while
+        } // while 
     } // nonlocal_stmt
 
     // public assert_stmt<null> = "assert" test [COMMA test];
@@ -1232,7 +1222,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COMMA");
             }
             test();
-        }
+        } 
     } // assert_stmt
 
     // public compound_stmt<null> = (.k=1.) if_stmt|while_stmt|for_stmt|try_stmt CODE|with_stmt CODE|funcdef|classdef|decorated CODE;
@@ -1245,17 +1235,17 @@ public class PythonParser {
             for_stmt();
         } else if ((id == 31)) {
             try_stmt();
-             throw new UnsupportedOperationException("try_stmt");
+             throw new UnsupportedOperationException("try_stmt"); 
         } else if ((id == 25)) {
             with_stmt();
-             throw new UnsupportedOperationException("with_stmt");
+             throw new UnsupportedOperationException("with_stmt"); 
         } else if ((id == 16)) {
             funcdef();
         } else if ((id == 18)) {
             classdef();
         } else if ((id == PythonScanner.TOKEN_AT)) {
             decorated();
-             throw new UnsupportedOperationException("decorated");
+             throw new UnsupportedOperationException("decorated"); 
         } else {
             throw new ParserError(t, "'if','for','while','def','class','with','try',AT");
         }
@@ -1274,11 +1264,12 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "COLON");
         }
-
+        
                       If iff = new If(currentObject);
                       If originalIf = iff;
                       Suite save = currentSuite; currentSuite = iff;
-
+                      Block savedBlock = currentBlock; currentBlock = iff.getBlock();
+                   
         suite();
         while ((id == 12)) {
             if (id == 12) {
@@ -1292,14 +1283,15 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-
+             
                       If elif = new If(currentObject);
                       iff.getElse().asList().add(elif);
                       iff = elif;
                       currentSuite = elif;
-
+                      currentBlock = elif.getBlock();
+                   
             suite();
-        } // while
+        } // while 
         if ((id == 13)) {
             if (id == 13) {
                 next(); // <-- here 2
@@ -1311,10 +1303,15 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-             currentSuite = iff.getElse();
+             currentSuite = iff.getElse(); currentBlock = iff.getElseBlock(); 
             suite();
-        }
-         currentSuite = save;  currentSuite.asList().add(originalIf);
+        } 
+        
+                       currentSuite = save;
+                       currentSuite.asList().add(originalIf);
+                       currentBlock = savedBlock;
+                       currentBlock.getStatements().add(originalIf.getBlock());
+                   
     } // if_stmt
 
     // public while_stmt<null> = "while" test COLON CODE suite ["else" COLON CODE suite] CODE;
@@ -1330,10 +1327,11 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "COLON");
         }
-
+        
                       While whle = new While(currentObject);
                       Suite save = currentSuite; currentSuite = whle;
-
+                      Block savedBlock = currentBlock; currentBlock = whle.getBlock();
+                   
         suite();
         if ((id == 13)) {
             if (id == 13) {
@@ -1346,10 +1344,10 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-             currentSuite = whle.getElse();
+             currentSuite = whle.getElse(); currentBlock = whle.getElseBlock(); 
             suite();
-        }
-         currentSuite = save; currentSuite.asList().add(whle);
+        } 
+         currentSuite = save; currentSuite.asList().add(whle); currentBlock = savedBlock; currentBlock.getStatements().add(whle); 
     } // while_stmt
 
     // public for_stmt<null> = "for" exprlist CODE "in" testlist COLON CODE suite ["else" COLON CODE suite] CODE;
@@ -1360,7 +1358,7 @@ public class PythonParser {
             throw new ParserError(t, nt, "\"for\"");
         }
         exprlist();
-         PythonObject target = currentObject;
+         PythonObject target = currentObject; 
         if (id == 22) {
             next(); // <-- here 2
         } else {
@@ -1372,13 +1370,14 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "COLON");
         }
-
+        
                       if (!(target instanceof Reference)) {
                           throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
                       }
                       For fr = new For((Reference)target, currentObject);
                       Suite save = currentSuite; currentSuite = fr;
-
+                      Block savedBlock = currentBlock; currentBlock = fr.getBlock();
+                   
         suite();
         if ((id == 13)) {
             if (id == 13) {
@@ -1391,10 +1390,10 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-             currentSuite = fr.getElse();
+             currentSuite = fr.getElse(); currentBlock = fr.getElseBlock(); 
             suite();
-        }
-         currentSuite = save;  currentSuite.asList().add(fr);
+        } 
+         currentSuite = save;  currentSuite.asList().add(fr); currentBlock = savedBlock; currentBlock.getStatements().add(fr); 
     } // for_stmt
 
     // public try_stmt<null> = "try" COLON suite (.k=1.) except_clause COLON suite {except_clause COLON suite} ["else" COLON suite] ["finally" COLON suite]|"finally" COLON suite;
@@ -1426,7 +1425,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COLON");
                 }
                 suite();
-            } // while
+            } // while 
             if ((id == 13)) {
                 if (id == 13) {
                     next(); // <-- here 2
@@ -1439,7 +1438,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COLON");
                 }
                 suite();
-            }
+            } 
             if ((id == 32)) {
                 if (id == 32) {
                     next(); // <-- here 2
@@ -1452,7 +1451,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COLON");
                 }
                 suite();
-            }
+            } 
         } else if ((id == 32)) {
             if (id == 32) {
                 next(); // <-- here 2
@@ -1485,7 +1484,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COMMA");
             }
             with_item();
-        } // while
+        } // while 
         if (id == PythonScanner.TOKEN_COLON) {
             next(); // <-- here 2
         } else {
@@ -1504,7 +1503,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"as\"");
             }
             expr();
-        }
+        } 
     } // with_item
 
     // public except_clause<null> = "except" [test ["as" NAME]];
@@ -1527,8 +1526,8 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "NAME");
                 }
-            }
-        }
+            } 
+        } 
     } // except_clause
 
     // public suite<null> = (.k=1.) simple_stmt|NEWLINE {NEWLINE} INDENT stmt {stmt} DEDENT;
@@ -1547,7 +1546,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "NEWLINE");
                 }
-            } // while
+            } // while 
             if (id == PythonScanner.TOKEN_INDENT) {
                 next(); // <-- here 2
             } else {
@@ -1556,7 +1555,7 @@ public class PythonParser {
             stmt();
             while (((id >= 1) && (id <=11)) || ((id >= 14) && (id <=21)) || (id == 25) || ((id >= 27) && (id <=28)) || (id == 31) || (id == 33) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_ELLIPSIS) && (id <=PythonScanner.TOKEN_AT)) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 stmt();
-            } // while
+            } // while 
             if (id == PythonScanner.TOKEN_DEDENT) {
                 next(); // <-- here 2
             } else {
@@ -1567,7 +1566,7 @@ public class PythonParser {
         }
     } // suite
 
-    // public test<null> = (.k=1.) or_test ["if" or_test "else" test]|lambdef CODE;
+    // public test<null> = (.k=1.) or_test ["if" CODE or_test CODE "else" test CODE]|lambdef CODE;
     public void test() throws ParserError {
         if (((id >= 19) && (id <=21)) || (id == 28) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             or_test();
@@ -1577,17 +1576,20 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "\"if\"");
                 }
+                 PythonObject ifExpression = currentObject; 
                 or_test();
+                 PythonObject condition = currentObject; 
                 if (id == 13) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\"else\"");
                 }
                 test();
-            }
+                 currentObject = new TernaryOperator(condition, ifExpression, currentObject); 
+            } 
         } else if ((id == 27)) {
             lambdef();
-             throw new UnsupportedOperationException("lambdef");
+             throw new UnsupportedOperationException("lambdef"); 
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
@@ -1613,7 +1615,7 @@ public class PythonParser {
         }
         if (((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_NAME)) {
             varargslist();
-        }
+        } 
         if (id == PythonScanner.TOKEN_COLON) {
             next(); // <-- here 2
         } else {
@@ -1631,7 +1633,7 @@ public class PythonParser {
         }
         if (((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_NAME)) {
             varargslist();
-        }
+        } 
         if (id == PythonScanner.TOKEN_COLON) {
             next(); // <-- here 2
         } else {
@@ -1643,7 +1645,7 @@ public class PythonParser {
     // public or_test<null> = and_test CODE {"or" and_test CODE} CODE;
     public void or_test() throws ParserError {
         and_test();
-         List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject);
+         List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); 
         while ((id == 30)) {
             if (id == 30) {
                 next(); // <-- here 2
@@ -1651,15 +1653,15 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"or\"");
             }
             and_test();
-             list.add(currentObject);
-        } // while
-         if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.Or); }
+             list.add(currentObject); 
+        } // while 
+         if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.Or); } 
     } // or_test
 
     // public and_test<null> = not_test CODE {"and" not_test CODE} CODE;
     public void and_test() throws ParserError {
         not_test();
-         List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject);
+         List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); 
         while ((id == 29)) {
             if (id == 29) {
                 next(); // <-- here 2
@@ -1667,9 +1669,9 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"and\"");
             }
             not_test();
-             list.add(currentObject);
-        } // while
-         if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.And); }
+             list.add(currentObject); 
+        } // while 
+         if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.And); } 
     } // and_test
 
     // public not_test<null> = (.k=1.) "not" not_test CODE|comparison;
@@ -1681,7 +1683,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"not\"");
             }
             not_test();
-             currentObject = new UnaryOp(currentObject, UnaryopType.Not);
+             currentObject = new UnaryOp(currentObject, UnaryopType.Not); 
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             comparison();
         } else {
@@ -1692,18 +1694,50 @@ public class PythonParser {
     // public comparison<null> = star_expr CODE {comp_op CODE star_expr CODE} CODE;
     public void comparison() throws ParserError {
         star_expr();
-
+        
                        PythonObject left = currentObject;
                        List<CmpopType> ops = new ArrayList<CmpopType>();
                        List<PythonObject> operands = new ArrayList<PythonObject>();
-
+                   
         while (((id >= 22) && (id <=23)) || (id == 28) || ((id >= PythonScanner.TOKEN_EQUAL) && (id <=PythonScanner.TOKEN_LT))) {
             comp_op();
-             ops.add(cmpopType);
+             ops.add(cmpopType); 
             star_expr();
-             operands.add(currentObject);
-        } // while
-         if (ops.size() > 0) { currentObject = new Compare(left, operands, ops); }
+             operands.add(currentObject); 
+        } // while 
+        
+                     if (ops.size() > 1) {
+                     } else if (ops.size() == 1) {
+                         CmpopType cmpop = ops.get(0);
+                         if (cmpop == CmpopType.Lt) {
+                             currentObject = new Call(new Reference(left, "__lt__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.Gt) {
+                             currentObject = new Call(new Reference(left, "__gt__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.Eq) {
+                             currentObject = new Call(new Reference(left, "__eq__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.GtE) {
+                             currentObject = new Call(new Reference(left, "__ge__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.LtE) {
+                             currentObject = new Call(new Reference(left, "__le__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.NotEq) {
+                             currentObject = new Call(new Reference(left, "__ne__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.In) {
+                             currentObject = new Call(new Reference(left, "__contains__"), asList(currentObject));
+                         } else if (cmpop == CmpopType.NotIn) {
+                             currentObject = new Call(
+                                 new Reference(
+                                     new Call(new Reference(left, "__contains__"), asList(currentObject)),
+                                     "__not__"
+                                 ),
+                                 Arrays.<PythonObject>asList()
+                             );
+                         } else if (cmpop == CmpopType.Is) {
+                             // TODO
+                         } else if (cmpop == CmpopType.IsNot) {
+                             // TODO
+                         }
+                     }
+                   
     } // comparison
 
     // public comp_op<null> = (.k=1.) LT CODE|GT CODE|EQUAL CODE|GE CODE|LE CODE|NOT_EQUAL2 CODE|NOT_EQUAL CODE|"in" CODE|"not" CODE|"is" CODE|"is" "not" CODE;
@@ -1714,70 +1748,70 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "LT");
             }
-             cmpopType = CmpopType.Lt;
+             cmpopType = CmpopType.Lt; 
         } else if ((id == PythonScanner.TOKEN_GT)) {
             if (id == PythonScanner.TOKEN_GT) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "GT");
             }
-             cmpopType = CmpopType.Gt;
+             cmpopType = CmpopType.Gt; 
         } else if ((id == PythonScanner.TOKEN_EQUAL)) {
             if (id == PythonScanner.TOKEN_EQUAL) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"==\"");
             }
-             cmpopType = CmpopType.Eq;
+             cmpopType = CmpopType.Eq; 
         } else if ((id == PythonScanner.TOKEN_GE)) {
             if (id == PythonScanner.TOKEN_GE) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\">=\"");
             }
-             cmpopType = CmpopType.GtE;
+             cmpopType = CmpopType.GtE; 
         } else if ((id == PythonScanner.TOKEN_LE)) {
             if (id == PythonScanner.TOKEN_LE) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"<=\"");
             }
-             cmpopType = CmpopType.LtE;
+             cmpopType = CmpopType.LtE; 
         } else if ((id == PythonScanner.TOKEN_NOT_EQUAL2)) {
             if (id == PythonScanner.TOKEN_NOT_EQUAL2) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"<>\"");
             }
-             cmpopType = CmpopType.NotEq;
+             cmpopType = CmpopType.NotEq; 
         } else if ((id == PythonScanner.TOKEN_NOT_EQUAL)) {
             if (id == PythonScanner.TOKEN_NOT_EQUAL) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"!=\"");
             }
-             cmpopType = CmpopType.NotEq;
+             cmpopType = CmpopType.NotEq; 
         } else if ((id == 22)) {
             if (id == 22) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"in\"");
             }
-             cmpopType = CmpopType.In;
+             cmpopType = CmpopType.In; 
         } else if ((id == 28)) {
             if (id == 28) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"not\"");
             }
-             cmpopType = CmpopType.NotIn;
+             cmpopType = CmpopType.NotIn; 
         } else if ((id == 23)) {
             if (id == 23) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"is\"");
             }
-             cmpopType = CmpopType.Is;
+             cmpopType = CmpopType.Is; 
         } else if ((id == 23)) {
             if (id == 23) {
                 next(); // <-- here 2
@@ -1789,7 +1823,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "\"not\"");
             }
-             cmpopType = CmpopType.IsNot;
+             cmpopType = CmpopType.IsNot; 
         } else {
             throw new ParserError(t, "'in','is','not',EQUAL,NOT_EQUAL,NOT_EQUAL2,GE,GT,LE,LT");
         }
@@ -1803,15 +1837,15 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "STAR");
             }
-             throw new UnsupportedOperationException("star_expr");
-        }
+             throw new UnsupportedOperationException("star_expr"); 
+        } 
         expr();
     } // star_expr
 
     // public expr<null> = xor_expr CODE {OR xor_expr CODE};
     public void expr() throws ParserError {
         xor_expr();
-         PythonObject left = currentObject;
+         PythonObject left = currentObject; 
         while ((id == PythonScanner.TOKEN_OR)) {
             if (id == PythonScanner.TOKEN_OR) {
                 next(); // <-- here 2
@@ -1819,14 +1853,14 @@ public class PythonParser {
                 throw new ParserError(t, nt, "OR");
             }
             xor_expr();
-             currentObject = new BinaryOp(left, currentObject, OperatorType.BitOr); left = currentObject;
-        } // while
+             currentObject = new Call(new Reference(left, "__or__"), asList(currentObject)); 
+        } // while 
     } // expr
 
     // public xor_expr<null> = and_expr CODE {XOR and_expr CODE};
     public void xor_expr() throws ParserError {
         and_expr();
-         PythonObject left = currentObject;
+         PythonObject left = currentObject; 
         while ((id == PythonScanner.TOKEN_XOR)) {
             if (id == PythonScanner.TOKEN_XOR) {
                 next(); // <-- here 2
@@ -1834,14 +1868,14 @@ public class PythonParser {
                 throw new ParserError(t, nt, "XOR");
             }
             and_expr();
-             currentObject = new BinaryOp(left, currentObject, OperatorType.BitXor); left = currentObject;
-        } // while
+             currentObject = new Call(new Reference(left, "__xor__"), asList(currentObject)); 
+        } // while 
     } // xor_expr
 
     // public and_expr<null> = shift_expr CODE {AND shift_expr CODE};
     public void and_expr() throws ParserError {
         shift_expr();
-         PythonObject left = currentObject;
+         PythonObject left = currentObject; 
         while ((id == PythonScanner.TOKEN_AND)) {
             if (id == PythonScanner.TOKEN_AND) {
                 next(); // <-- here 2
@@ -1849,111 +1883,133 @@ public class PythonParser {
                 throw new ParserError(t, nt, "AND");
             }
             shift_expr();
-             currentObject = new BinaryOp(left, currentObject, OperatorType.BitAnd); left = currentObject;
-        } // while
+             currentObject = new Call(new Reference(left, "__and__"), asList(currentObject)); 
+        } // while 
     } // and_expr
 
     // public shift_expr<null> = arith_expr CODE {CODE (.k=1.) LSHIFT CODE|RSHIFT CODE arith_expr CODE};
     public void shift_expr() throws ParserError {
         arith_expr();
-         PythonObject left = currentObject;
+         PythonObject left = currentObject; 
         while (((id >= PythonScanner.TOKEN_LSHIFT) && (id <=PythonScanner.TOKEN_RSHIFT))) {
-             OperatorType op;
+             OperatorType op; 
             if ((id == PythonScanner.TOKEN_LSHIFT)) {
                 if (id == PythonScanner.TOKEN_LSHIFT) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\"<<\"");
                 }
-                 op = OperatorType.LShift;
+                 op = OperatorType.LShift; 
             } else if ((id == PythonScanner.TOKEN_RSHIFT)) {
                 if (id == PythonScanner.TOKEN_RSHIFT) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\">>\"");
                 }
-                 op = OperatorType.RShift;
+                 op = OperatorType.RShift; 
             } else {
                 throw new ParserError(t, "LSHIFT,RSHIFT");
             }
             arith_expr();
-             currentObject = new BinaryOp(left, currentObject, op); left = currentObject;
-        } // while
+            
+                            if (op == OperatorType.LShift) {
+                                currentObject = new Call(new Reference(left, "__lshift__"), asList(currentObject));
+                            } else {
+                                currentObject = new Call(new Reference(left, "__rshift__"), asList(currentObject));
+                            }
+                              
+        } // while 
     } // shift_expr
 
     // public arith_expr<null> = term CODE {CODE (.k=1.) PLUS CODE|MINUS CODE term CODE};
     public void arith_expr() throws ParserError {
         term();
-         PythonObject left = currentObject;
+         PythonObject left = currentObject; 
         while (((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS))) {
-             OperatorType op;
+             OperatorType op; 
             if ((id == PythonScanner.TOKEN_PLUS)) {
                 if (id == PythonScanner.TOKEN_PLUS) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "PLUS");
                 }
-                 op = OperatorType.Add;
+                 op = OperatorType.Add; 
             } else if ((id == PythonScanner.TOKEN_MINUS)) {
                 if (id == PythonScanner.TOKEN_MINUS) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "MINUS");
                 }
-                 op = OperatorType.Sub;
+                 op = OperatorType.Sub; 
             } else {
                 throw new ParserError(t, "PLUS,MINUS");
             }
             term();
-             currentObject = new BinaryOp(left, currentObject, op); left = currentObject;
-        } // while
+             
+                            if (op == OperatorType.Add) {
+                                currentObject = new Call(new Reference(left, "__add__"), asList(currentObject));
+                            } else {
+                                currentObject = new Call(new Reference(left, "__sub__"), asList(currentObject));
+                            }
+                        
+        } // while 
     } // arith_expr
 
     // public term<null> = factor CODE {CODE (.k=1.) STAR CODE|SLASH CODE|MOD CODE|SLASHSLASH CODE factor CODE};
     public void term() throws ParserError {
         factor();
-         PythonObject left = currentObject;
+         PythonObject left = currentObject; 
         while ((id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_MOD) && (id <=PythonScanner.TOKEN_SLASHSLASH))) {
-             OperatorType op;
+             OperatorType op; 
             if ((id == PythonScanner.TOKEN_STAR)) {
                 if (id == PythonScanner.TOKEN_STAR) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "STAR");
                 }
-                 op = OperatorType.Mult;
+                 op = OperatorType.Mult; 
             } else if ((id == PythonScanner.TOKEN_SLASH)) {
                 if (id == PythonScanner.TOKEN_SLASH) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "SLASH");
                 }
-                 op = OperatorType.Div;
+                 op = OperatorType.Div; 
             } else if ((id == PythonScanner.TOKEN_MOD)) {
                 if (id == PythonScanner.TOKEN_MOD) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "MOD");
                 }
-                 op = OperatorType.Mod;
+                 op = OperatorType.Mod; 
             } else if ((id == PythonScanner.TOKEN_SLASHSLASH)) {
                 if (id == PythonScanner.TOKEN_SLASHSLASH) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\"//\"");
                 }
-                 op = OperatorType.FloorDiv;
+                 op = OperatorType.FloorDiv; 
             } else {
                 throw new ParserError(t, "STAR,MOD,SLASH,SLASHSLASH");
             }
             factor();
-             currentObject = new BinaryOp(left, currentObject, op); left = currentObject;
-        } // while
+            
+                            if (op == OperatorType.Mult) {
+                                currentObject = new Call(new Reference(left, "__mul__"), asList(currentObject));
+                            } else if (op == OperatorType.Div) {
+                                currentObject = new Call(new Reference(left, "__div__"), asList(currentObject));
+                            } else if (op == OperatorType.Mod) {
+                                currentObject = new Call(new Reference(left, "__mod__"), asList(currentObject));
+                            } else if (op == OperatorType.FloorDiv) {
+                                currentObject = new Call(new Reference(left, "__floordiv__"), asList(currentObject));
+                            }
+                    
+        } // while 
     } // term
 
     // public factor<null> = (.k=1.) (.k=1.) PLUS CODE|MINUS CODE|TILDA CODE factor CODE|power;
     public void factor() throws ParserError {
- UnaryopType op;
+ UnaryopType op; 
         if (((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA)) {
             if ((id == PythonScanner.TOKEN_PLUS)) {
                 if (id == PythonScanner.TOKEN_PLUS) {
@@ -1961,26 +2017,34 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "PLUS");
                 }
-                 op = UnaryopType.UAdd;
+                 op = UnaryopType.UAdd; 
             } else if ((id == PythonScanner.TOKEN_MINUS)) {
                 if (id == PythonScanner.TOKEN_MINUS) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "MINUS");
                 }
-                 op = UnaryopType.USub;
+                 op = UnaryopType.USub; 
             } else if ((id == PythonScanner.TOKEN_TILDA)) {
                 if (id == PythonScanner.TOKEN_TILDA) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "TILDA");
                 }
-                 op = UnaryopType.Not;
+                 op = UnaryopType.Not; 
             } else {
                 throw new ParserError(t, "PLUS,MINUS,TILDA");
             }
             factor();
-             currentObject = new UnaryOp(currentObject, op);
+            
+                            if (op == UnaryopType.UAdd) {
+                                currentObject = new Call(new Reference(currentObject, "__pos__"), asList(currentObject));
+                            } else if (op == UnaryopType.USub) {
+                                currentObject = new Call(new Reference(currentObject, "__neg__"), asList(currentObject));
+                            } else if (op == UnaryopType.Not) {
+                                currentObject = new Call(new Reference(currentObject, "__invert__"), asList(currentObject));
+                            }
+                      
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             power();
         } else {
@@ -1991,7 +2055,7 @@ public class PythonParser {
     // public power<null> = atom CODE {(.k=1.) LPAREN CODE [arglist] RPAREN CODE|LBRACK subscriptlist RBRACK CODE|DOT NAME CODE} CODE [STARSTAR factor CODE];
     public void power() throws ParserError {
         atom();
-         PythonObject atom = currentObject;
+         PythonObject atom = currentObject; 
         while ((id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_DOT)) {
             if ((id == PythonScanner.TOKEN_LPAREN)) {
                 if (id == PythonScanner.TOKEN_LPAREN) {
@@ -1999,16 +2063,16 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "LPAREN");
                 }
-                 currentList = new ArrayList<PythonObject>(); // since arglist is optional - to ensure empty list!
+                 currentList = new ArrayList<PythonObject>(); // since arglist is optional - to ensure empty list! 
                 if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || ((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     arglist();
-                }
+                } 
                 if (id == PythonScanner.TOKEN_RPAREN) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "RPAREN");
                 }
-                 currentObject = new Call(atom, new ArrayList<PythonObject>(currentList)); atom = currentObject;
+                 currentObject = new Call(atom, new ArrayList<PythonObject>(currentList)); atom = currentObject; 
             } else if ((id == PythonScanner.TOKEN_LBRACK)) {
                 if (id == PythonScanner.TOKEN_LBRACK) {
                     next(); // <-- here 2
@@ -2021,7 +2085,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "RBRACK");
                 }
-                 atom = currentObject;
+                 atom = currentObject; 
             } else if ((id == PythonScanner.TOKEN_DOT)) {
                 if (id == PythonScanner.TOKEN_DOT) {
                     next(); // <-- here 2
@@ -2033,12 +2097,12 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "NAME");
                 }
-                 currentObject = new Reference(atom, PythonString.valueOf(t.toString())); atom = currentObject;
+                 currentObject = new Reference(atom, PythonString.valueOf(t.toString())); atom = currentObject; 
             } else {
                 throw new ParserError(t, "LPAREN,LBRACK,DOT");
             }
-        } // while
-         PythonObject left = currentObject;
+        } // while 
+         PythonObject left = currentObject; 
         if ((id == PythonScanner.TOKEN_STARSTAR)) {
             if (id == PythonScanner.TOKEN_STARSTAR) {
                 next(); // <-- here 2
@@ -2046,14 +2110,14 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"**\"");
             }
             factor();
-             currentObject = new BinaryOp(left, currentObject, OperatorType.Pow); left = currentObject;
-        }
+             currentObject = new BinaryOp(left, currentObject, OperatorType.Pow); left = currentObject; 
+        } 
     } // power
 
     // public atom<null> = (.k=1.) CODE LPAREN [(.k=1.) yield_expr CODE|CODE testlist_comp CODE] CODE RPAREN|CODE LBRACK CODE [testlist_comp] CODE RBRACK|CODE LKBRACK CODE [test CODE [COLON test CODE] CODE (.k=1.) comp_for CODE|{COMMA [test CODE [COLON test CODE]] CODE}] CODE RKBRACK|NAME CODE|NUMBER CODE|STRING CODE {STRING CODE}|ELLIPSIS CODE|"None" CODE|"True" CODE|"False" CODE;
     public void atom() throws ParserError {
         if ((id == PythonScanner.TOKEN_LPAREN)) {
-             scanner.pushNotInStatement();
+             scanner.pushNotInStatement(); 
             if (id == PythonScanner.TOKEN_LPAREN) {
                 next(); // <-- here 2
             } else {
@@ -2062,58 +2126,58 @@ public class PythonParser {
             if ((id == 17) || ((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 if ((id == 17)) {
                     yield_expr();
-                     throw new UnsupportedOperationException("yield_expr");
+                     throw new UnsupportedOperationException("yield_expr"); 
                 } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
-                     trailingComma = false;
+                     trailingComma = false; 
                     testlist_comp();
-
+                     
                       if (trailingComma || currentList.size() > 1) {
                           currentObject = PythonTuple.constructor(currentList);
                       } else {
                           currentObject = currentList.get(0);
                       }
-
+                   
                 } else {
                     throw new ParserError(t, "'yield','None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
                 }
-            }
-             scanner.popNotInStatement();
+            } 
+             scanner.popNotInStatement(); 
             if (id == PythonScanner.TOKEN_RPAREN) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "RPAREN");
             }
         } else if ((id == PythonScanner.TOKEN_LBRACK)) {
-             scanner.pushNotInStatement();
+             scanner.pushNotInStatement(); 
             if (id == PythonScanner.TOKEN_LBRACK) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "LBRACK");
             }
-             currentList = new ArrayList<PythonObject>(); // just in case we don't get to testlist_comp
+             currentList = new ArrayList<PythonObject>(); // just in case we don't get to testlist_comp 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 testlist_comp();
-            }
-
+            } 
+             
                 currentObject = PythonList.constructor(currentList);
-                scanner.popNotInStatement();
-
+                scanner.popNotInStatement(); 
+             
             if (id == PythonScanner.TOKEN_RBRACK) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "RBRACK");
             }
         } else if ((id == PythonScanner.TOKEN_LKBRACK)) {
-             scanner.pushNotInStatement();
+             scanner.pushNotInStatement(); 
             if (id == PythonScanner.TOKEN_LKBRACK) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "LKBRACK");
             }
-             Map<PythonObject, PythonObject> map = new LinkedHashMap<PythonObject, PythonObject>();
+             Map<PythonObject, PythonObject> map = new LinkedHashMap<PythonObject, PythonObject>(); 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 PythonObject key = currentObject; PythonObject value = null;
+                 PythonObject key = currentObject; PythonObject value = null; 
                 if ((id == PythonScanner.TOKEN_COLON)) {
                     if (id == PythonScanner.TOKEN_COLON) {
                         next(); // <-- here 2
@@ -2121,12 +2185,12 @@ public class PythonParser {
                         throw new ParserError(t, nt, "COLON");
                     }
                     test();
-                     value = currentObject;
-                }
-                 map.put(key, value);
+                     value = currentObject; 
+                } 
+                 map.put(key, value); 
                 if ((id == 14)) {
                     comp_for();
-                     throw new UnsupportedOperationException("comp_for");
+                     throw new UnsupportedOperationException("comp_for"); 
                 } else if ((id == PythonScanner.TOKEN_COMMA) || (id == PythonScanner.TOKEN_RKBRACK)) {
                     while ((id == PythonScanner.TOKEN_COMMA)) {
                         if (id == PythonScanner.TOKEN_COMMA) {
@@ -2136,7 +2200,7 @@ public class PythonParser {
                         }
                         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                             test();
-                             key = currentObject; value = null;
+                             key = currentObject; value = null; 
                             if ((id == PythonScanner.TOKEN_COLON)) {
                                 if (id == PythonScanner.TOKEN_COLON) {
                                     next(); // <-- here 2
@@ -2144,17 +2208,17 @@ public class PythonParser {
                                     throw new ParserError(t, nt, "COLON");
                                 }
                                 test();
-                                 value = currentObject;
-                            }
-                        }
-                         map.put(key, value);
-                    } // while
+                                 value = currentObject; 
+                            } 
+                        } 
+                         map.put(key, value); 
+                    } // while 
                 }
-            }
-
-               currentObject = PythonDictionary.constructor(map);
+            } 
+            
+               currentObject = PythonDictionary.constructor(map); 
                scanner.popNotInStatement();
-
+             
             if (id == PythonScanner.TOKEN_RKBRACK) {
                 next(); // <-- here 2
             } else {
@@ -2166,78 +2230,78 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
-
+            
 		        String id = t.toString();
-
+		        
 		        if ("True".equals(id)) {
 		            currentObject = PythonBoolean.TRUE;
 		        } else if ("False".equals(id)) {
 		            currentObject = PythonBoolean.FALSE;
 		        } else if ("None".equals(id)) {
 		            currentObject = PythonNone.NONE;
-		        } else if (BuiltInFunctions.isBuiltInFunction(id)) {
-		            currentObject = BuiltInFunctions.getFunction(id);
+		        //} else if (BuiltInFunctions.isBuiltInFunction(id)) {
+		        //    currentObject = BuiltInFunctions.getFunction(id);
 		        } else {
                     currentObject = new Reference(null, PythonString.valueOf(id));
                 }
-
+             
         } else if ((id == PythonScanner.TOKEN_NUMBER)) {
             if (id == PythonScanner.TOKEN_NUMBER) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "NUMBER");
             }
-
+            
                String n = t.toString();
                if (n.indexOf('.') > 0) {
                    currentObject = PythonFloat.valueOf(n);
                } else {
                    currentObject = PythonInteger.valueOf(n);
                }
-
+             
         } else if ((id == PythonScanner.TOKEN_STRING)) {
             if (id == PythonScanner.TOKEN_STRING) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "STRING");
             }
-             currentObject = PythonString.valueOf(t.toString());
+             currentObject = PythonString.valueOf(t.toString()); 
             while ((id == PythonScanner.TOKEN_STRING)) {
                 if (id == PythonScanner.TOKEN_STRING) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "STRING");
                 }
-                 currentObject = PythonString.valueOf(((PythonString)currentObject).asString() + t.toString());
-            } // while
+                 currentObject = PythonString.valueOf(((PythonString)currentObject).asString() + t.toString()); 
+            } // while 
         } else if ((id == PythonScanner.TOKEN_ELLIPSIS)) {
             if (id == PythonScanner.TOKEN_ELLIPSIS) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"...\"");
             }
-             throw new UnsupportedOperationException("ELLIPSIS");
+             throw new UnsupportedOperationException("ELLIPSIS"); 
         } else if ((id == 19)) {
             if (id == 19) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"None\"");
             }
-             currentObject = PythonNone.NONE;
+             currentObject = PythonNone.NONE; 
         } else if ((id == 20)) {
             if (id == 20) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"True\"");
             }
-             currentObject = PythonBoolean.TRUE;
+             currentObject = PythonBoolean.TRUE; 
         } else if ((id == 21)) {
             if (id == 21) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"False\"");
             }
-             currentObject = PythonBoolean.FALSE;
+             currentObject = PythonBoolean.FALSE; 
         } else {
             throw new ParserError(t, "'None','True','False',LPAREN,LBRACK,LKBRACK,ELLIPSIS,NAME,NUMBER,STRING");
         }
@@ -2249,14 +2313,14 @@ public class PythonParser {
             test();
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             star_expr();
-             throw new UnsupportedOperationException("star_expr");
+             throw new UnsupportedOperationException("star_expr"); 
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject);
+         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
         if ((id == 14)) {
             comp_for();
-             throw new UnsupportedOperationException("comp_for");
+             throw new UnsupportedOperationException("comp_for"); 
         } else if ((id == PythonScanner.TOKEN_COMMA)) {
             while ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
@@ -2264,21 +2328,21 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "COMMA");
                 }
-                 trailingComma = true;
+                 trailingComma = true; 
                 if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                         test();
-                         args.add(currentObject);
+                         args.add(currentObject); 
                     } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                         star_expr();
-                         throw new UnsupportedOperationException("star_expr");
+                         throw new UnsupportedOperationException("star_expr"); 
                     } else {
                         throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
                     }
-                }
-            } // while
+                } 
+            } // while 
         }
-         currentList = args;
+         currentList = args; 
     } // testlist_comp
 
     // public subscriptlist<null> = subscript {COMMA [subscript]};
@@ -2292,25 +2356,25 @@ public class PythonParser {
             }
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_COLON) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 subscript();
-            }
-        } // while
+            } 
+        } // while 
     } // subscriptlist
 
     // public subscript<null> = (.k=1.) test CODE|CODE [test CODE] COLON [test CODE] [sliceop] CODE;
     public void subscript() throws ParserError {
- PythonObject target = currentObject;
+ PythonObject target = currentObject; 
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             test();
-             currentObject = new Subscript(target, currentObject);
+             currentObject = new Subscript(target, currentObject); 
         } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_COLON) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
-
+             
                    PythonObject from = null;
                    PythonObject to = null;
-
+                
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 from = currentObject;
-            }
+                 from = currentObject; 
+            } 
             if (id == PythonScanner.TOKEN_COLON) {
                 next(); // <-- here 2
             } else {
@@ -2318,12 +2382,12 @@ public class PythonParser {
             }
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 to = currentObject;
-            }
+                 to = currentObject; 
+            } 
             if ((id == PythonScanner.TOKEN_COLON)) {
                 sliceop();
-            }
-             currentObject = new Subscript(target, from, to);
+            } 
+             currentObject = new Subscript(target, from, to); 
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,COLON,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
@@ -2338,8 +2402,8 @@ public class PythonParser {
         }
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             test();
-        }
-         throw new UnsupportedOperationException("subscript slice");
+        } 
+         throw new UnsupportedOperationException("subscript slice"); 
     } // sliceop
 
     // public exprlist<null> = (.k=1.) expr|star_expr CODE CODE {COMMA [(.k=1.) expr CODE|star_expr CODE]} CODE;
@@ -2348,11 +2412,11 @@ public class PythonParser {
             expr();
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             star_expr();
-             throw new UnsupportedOperationException("star_expr");
+             throw new UnsupportedOperationException("star_expr"); 
         } else {
             throw new ParserError(t, "'None','True','False',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject);
+         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -2362,22 +2426,22 @@ public class PythonParser {
             if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     expr();
-                     args.add(currentObject);
+                     args.add(currentObject); 
                 } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     star_expr();
-                     throw new UnsupportedOperationException("star_expr");
+                     throw new UnsupportedOperationException("star_expr"); 
                 } else {
                     throw new ParserError(t, "'None','True','False',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
                 }
-            }
-        } // while
-         currentList = args;
+            } 
+        } // while 
+         currentList = args; 
     } // exprlist
 
     // public testlist<null> = test CODE {COMMA [test CODE]} CODE;
     public void testlist() throws ParserError {
         test();
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject);
+         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -2386,10 +2450,10 @@ public class PythonParser {
             }
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 args.add(currentObject);
-            }
-        } // while
-         currentList = args;
+                 args.add(currentObject); 
+            } 
+        } // while 
+         currentList = args; 
     } // testlist
 
     // public classdef<null> = "class" NAME CODE [LPAREN CODE [arglist] RPAREN CODE] COLON CODE suite CODE;
@@ -2404,42 +2468,43 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         PythonClassDef cls = new PythonClassDef(t.toString());
+         PythonClassDef cls = new PythonClassDef(t.toString()); 
         if ((id == PythonScanner.TOKEN_LPAREN)) {
             if (id == PythonScanner.TOKEN_LPAREN) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "LPAREN");
             }
-             currentList = new ArrayList<PythonObject>();
+             currentList = new ArrayList<PythonObject>(); 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || ((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 arglist();
-            }
+            } 
             if (id == PythonScanner.TOKEN_RPAREN) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "RPAREN");
             }
-             cls.setParentArgs(currentList);
-        }
+             cls.setParentArgs(currentList); 
+        } 
         if (id == PythonScanner.TOKEN_COLON) {
             next(); // <-- here 2
         } else {
             throw new ParserError(t, nt, "COLON");
         }
-
+         
                  Suite save = currentSuite; currentSuite = cls.getSuite();
-
+                 Block savedBlock = currentBlock; currentBlock = cls.getBlock();
+              
         suite();
-         currentSuite = save; currentSuite.asList().add(cls);
+         currentSuite = save; currentSuite.asList().add(cls); currentBlock = savedBlock; currentBlock.getStatements().add(cls); 
     } // classdef
 
     // public arglist<null> = (.k=1.) CODE argument CODE {COMMA argument CODE} [(.k=1.) STAR test {COMMA argument} [COMMA STARSTAR test] CODE|STARSTAR test CODE] CODE|STAR test {COMMA argument} [COMMA STARSTAR test] CODE|STARSTAR test CODE;
     public void arglist() throws ParserError {
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
-             List<PythonObject> args = new ArrayList<PythonObject>();
+             List<PythonObject> args = new ArrayList<PythonObject>(); 
             argument();
-             args.add(currentObject);
+             args.add(currentObject); 
             while ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -2447,8 +2512,8 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COMMA");
                 }
                 argument();
-                 args.add(currentObject);
-            } // while
+                 args.add(currentObject); 
+            } // while 
             if (((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR))) {
                 if ((id == PythonScanner.TOKEN_STAR)) {
                     if (id == PythonScanner.TOKEN_STAR) {
@@ -2464,7 +2529,7 @@ public class PythonParser {
                             throw new ParserError(t, nt, "COMMA");
                         }
                         argument();
-                    } // while
+                    } // while 
                     if ((id == PythonScanner.TOKEN_COMMA)) {
                         if (id == PythonScanner.TOKEN_COMMA) {
                             next(); // <-- here 2
@@ -2477,8 +2542,8 @@ public class PythonParser {
                             throw new ParserError(t, nt, "\"**\"");
                         }
                         test();
-                    }
-                     throw new UnsupportedOperationException("star arguments");
+                    } 
+                     throw new UnsupportedOperationException("star arguments"); 
                 } else if ((id == PythonScanner.TOKEN_STARSTAR)) {
                     if (id == PythonScanner.TOKEN_STARSTAR) {
                         next(); // <-- here 2
@@ -2486,12 +2551,12 @@ public class PythonParser {
                         throw new ParserError(t, nt, "\"**\"");
                     }
                     test();
-                     throw new UnsupportedOperationException("star star arguments");
+                     throw new UnsupportedOperationException("star star arguments"); 
                 } else {
                     throw new ParserError(t, "STAR,STARSTAR");
                 }
-            }
-             currentList = args;
+            } 
+             currentList = args; 
         } else if ((id == PythonScanner.TOKEN_STAR)) {
             if (id == PythonScanner.TOKEN_STAR) {
                 next(); // <-- here 2
@@ -2506,7 +2571,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COMMA");
                 }
                 argument();
-            } // while
+            } // while 
             if ((id == PythonScanner.TOKEN_COMMA)) {
                 if (id == PythonScanner.TOKEN_COMMA) {
                     next(); // <-- here 2
@@ -2519,8 +2584,8 @@ public class PythonParser {
                     throw new ParserError(t, nt, "\"**\"");
                 }
                 test();
-            }
-             throw new UnsupportedOperationException("star arguments");
+            } 
+             throw new UnsupportedOperationException("star arguments"); 
         } else if ((id == PythonScanner.TOKEN_STARSTAR)) {
             if (id == PythonScanner.TOKEN_STARSTAR) {
                 next(); // <-- here 2
@@ -2528,7 +2593,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"**\"");
             }
             test();
-             throw new UnsupportedOperationException("star star arguments");
+             throw new UnsupportedOperationException("star star arguments"); 
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,STARSTAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
@@ -2540,8 +2605,8 @@ public class PythonParser {
             test();
             if ((id == 14)) {
                 comp_for();
-                 throw new UnsupportedOperationException("argument for comprehensions");
-            }
+                 throw new UnsupportedOperationException("argument for comprehensions"); 
+            } 
         } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             test();
             if (id == PythonScanner.TOKEN_EQ) {
@@ -2550,7 +2615,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "EQ");
             }
             test();
-             throw new UnsupportedOperationException("named arguments");
+             throw new UnsupportedOperationException("named arguments"); 
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
@@ -2583,7 +2648,7 @@ public class PythonParser {
         or_test();
         if ((id == 11) || (id == 14)) {
             comp_iter();
-        }
+        } 
     } // comp_for
 
     // public comp_if<null> = "if" test_nocond [comp_iter];
@@ -2596,7 +2661,7 @@ public class PythonParser {
         test_nocond();
         if ((id == 11) || (id == 14)) {
             comp_iter();
-        }
+        } 
     } // comp_if
 
     // public testlist1<null> = test {COMMA test};
@@ -2609,7 +2674,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COMMA");
             }
             test();
-        } // while
+        } // while 
     } // testlist1
 
     // public encoding_decl<null> = NAME;
@@ -2630,7 +2695,7 @@ public class PythonParser {
         }
         if ((id == 7) || ((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             yield_arg();
-        }
+        } 
     } // yield_expr
 
     // public yield_arg<null> = (.k=1.) "from" test|testlist;

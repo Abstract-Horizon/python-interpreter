@@ -9,13 +9,14 @@ public class PythonClass extends Scope {
 
     public PythonClass(String name) {
         this.name = name;
+        populateCommonMethods();
     }
 
     public String toString() {
         return "<class '" + name + "'>";
     }
 
-    protected void populateMethods() {
+    protected void populateCommonMethods() {
         __setattr__("__repr__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
                 return args.get(0).__repr__();

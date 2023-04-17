@@ -21,12 +21,8 @@ public class TestExecution extends BaseTestClass {
 
         context.pushPC(block);
 
+        for (int i = 0; i < 10000 && context.next(); i++) { }
 
-        for (int i = 0; i < 10000 && context.next(); i++) {
-
-        }
-
-        // System.out.println("Testing for j=" + j + "; string.len=" + b.length());
         assertEquals(b.toString(), result());
 
         contextIsEmpty();

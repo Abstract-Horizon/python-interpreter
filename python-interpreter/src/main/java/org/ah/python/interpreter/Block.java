@@ -13,7 +13,7 @@ public class Block implements ThreadContext.Executable {
             if (statements.size() > 2) {
                 context.pushPC(threeStatementsContinuation);
             }
-            return doExecute(context, statements.get(1));
+            return statements.get(1).execute(context);
         }
 
     };
@@ -24,7 +24,7 @@ public class Block implements ThreadContext.Executable {
             if (statements.size() > 3) {
                 context.pushPC(new MoreStatementsContinuation());
             }
-            return doExecute(context, statements.get(2));
+            return statements.get(2).execute(context);
         }
 
     };
@@ -56,22 +56,15 @@ public class Block implements ThreadContext.Executable {
         if (size == 0) {
             return null;
         }
+        if (closeScope) {
+            context.pushPC(closeScopeContinuation);
+        }
         if (size == 1) {
-            return doExecute(context, statements.get(0));
+            return statements.get(0).execute(context);
         }
 
         context.pushPC(twoStatementsContinuation);
-        return doExecute(context, statements.get(0));
-    }
-
-    public PythonObject doExecute(ThreadContext context, ThreadContext.Executable executable) {
-        if (closeScope) {
-            context.pushPC(closeScopeContinuation);
-//            PythonObject result = executable.execute(context);
-//            context.currentScope.close();
-//            return result;
-        }
-        return executable.execute(context);
+        return statements.get(0).execute(context);
     }
 
     private class MoreStatementsContinuation implements ThreadContext.Executable {
@@ -83,7 +76,7 @@ public class Block implements ThreadContext.Executable {
             if (ptr < statements.size() - 1) {
                 context.pushPC(this);
             }
-            return doExecute(context, statements.get(ptr));
+            return statements.get(ptr).execute(context);
         }
     };
 

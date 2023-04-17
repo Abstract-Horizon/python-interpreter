@@ -8,11 +8,16 @@ public class PythonClassDef extends PythonObject {
     private String name;
 
     private Suite methods = new Suite();
+    private Block block = new Block();
 
     private PythonObject parent;
 
     public PythonClassDef(String name) {
         this.name = name;
+    }
+
+    public Block getBlock() {
+        return block;
     }
 
     public void setParentArgs(List<PythonObject> parents) {

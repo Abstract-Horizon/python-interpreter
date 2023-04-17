@@ -3,10 +3,29 @@ package org.ah.python.interpreter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-public class PythonTuple extends PythonList {
+public class PythonTuple extends PythonSequence {
+
+    public static PythonClass PYTHON_TUPLE_CLASS = new PythonClass("tuple");
+
+    static {
+        PYTHON_TUPLE_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__add__(args.get(1));
+            }
+        });
+        PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod() {
+            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
+                return args.get(0).__getitem__(args.get(1));
+            }
+        });
+    }
+
+    private final List<PythonObject> list;
 
     public PythonTuple() {
+        list = new ArrayList<PythonObject>();
     }
 
     public static PythonObject constructor(final List<PythonObject> elements) {
@@ -43,6 +62,31 @@ public class PythonTuple extends PythonList {
 
     public boolean isConstant() {
         return true;
+    }
+
+    public List<PythonObject> asList() {
+        return list;
+    }
+
+    public PythonObject __getitem__(PythonObject key) {
+        if (key instanceof PythonSlice) {
+            PythonSlice slice = (PythonSlice)key;
+            int from = slice.getFrom();
+            int to = slice.getTo();
+            if (from == 0 && to == -1) {
+                return this;
+            } else {
+                if (to == -1) { to = list.size() - 1; }
+                return new PythonList(list.subList(from, to));
+            }
+        } else {
+            int i = key.asInteger();
+            if (i < list.size()) {
+                return list.get(i);
+            } else {
+                throw new RuntimeException("IndexError: list index out of range");
+            }
+        }
     }
 
     @Override

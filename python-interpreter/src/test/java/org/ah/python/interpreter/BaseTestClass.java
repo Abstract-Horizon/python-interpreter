@@ -4,7 +4,10 @@ import static org.ah.python.interpreter.util.MapBuilder.newmap;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 
+import org.ah.python.grammar.PythonParser;
+import org.ah.python.grammar.PythonScannerFixed;
 import org.ah.python.modules.BuiltInFunctions;
 import org.ah.python.modules.MathModule;
 import org.ah.python.modules.RandomModule;
@@ -26,6 +29,7 @@ public class BaseTestClass {
     @Before
     public void setUp() {
         module = new Module();
+        module.__setattr__("__name__", PythonString.valueOf("__main__"));
         context = new ThreadContext(module);
         context.setCurrentScope(module);
     }
@@ -42,6 +46,29 @@ public class BaseTestClass {
 
         res = new ByteArrayOutputStream();
         BuiltInFunctions.setOutput(res);
+    }
+
+    public void parseLines(String... lines) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String line : lines) {
+            stringBuilder.append(line).append('\n');
+        }
+        String code = stringBuilder.toString();
+
+        PythonScannerFixed scanner = new PythonScannerFixed(new StringReader(code));
+        PythonParser parser = new PythonParser(scanner);
+        parser.setModule(module);
+
+        parser.next();
+        parser.existing_module_file_input();
+    }
+
+    public void executeLines(String... lines) {
+        parseLines(lines);
+
+        context.pushPC(module.getBlock());
+
+        for (int i = 0; i < 10000 && context.next(); i++) {}
     }
 
     public void contextIsEmpty() {

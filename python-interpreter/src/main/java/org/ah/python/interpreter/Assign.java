@@ -2,13 +2,15 @@ package org.ah.python.interpreter;
 
 public class Assign extends PythonObject {
 
-    private Reference reference;
+    private PythonObject reference;
     private PythonObject expression;
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
         @Override public PythonObject execute(ThreadContext context) {
             PythonObject ref;
 
-            if (reference.getScope() != null) {
+            Reference referenceObject = (Reference)reference;
+
+            if (referenceObject.getScope() != null) {
                 ref = context.popData();
             } else {
                 ref = context.getCurrentScope();
@@ -17,27 +19,31 @@ public class Assign extends PythonObject {
             PythonObject expression = context.popData();
 
             // System.out.println("Assigning to " + ref + " with name " + reference.getName() + " value of " + expression);
-            ref.__setattr__(reference.getName(), expression);
+            ref.__setattr__(referenceObject.getName(), expression);
             return expression;
         }
     };
 
-    public Assign(Reference reference, PythonObject expression) {
+    public Assign(PythonObject reference, PythonObject expression) {
         this.reference = reference;
         this.expression = expression;
     }
 
     @Override public PythonObject execute(ThreadContext context) {
         context.pushPC(continuation);
-        if (reference.getScope() != null) {
-            context.pushPC(reference.getScope());
+        if (reference instanceof Reference) {
+            if (((Reference)reference).getScope() != null) {
+                context.pushPC(((Reference)reference).getScope());
+            }
+        } else {
+            throw new RuntimeException("Expected reference");
         }
         return expression.execute(context);
     }
 
-    public Reference getReference() {
-        return reference;
-    }
+//    public Reference getReference() {
+//        return reference;
+//    }
 
     public PythonObject getExpression() {
         return expression;
