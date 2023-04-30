@@ -15,7 +15,7 @@ public class TernaryOperator extends PythonObject {
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
         @Override public PythonObject execute(ThreadContext context) {
             PythonObject cond = context.popData();
-            if (cond.asBoolean()) {
+            if (cond.asBoolean(context)) {
                 return ifExpression.execute(context);
             } else {
                 return elseExpression.execute(context);

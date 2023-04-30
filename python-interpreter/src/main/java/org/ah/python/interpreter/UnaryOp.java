@@ -11,7 +11,8 @@ public class UnaryOp extends PythonObject {
     }
 
     public PythonObject dereference() {
-        return __call__();
+        // return __call__();
+        throw new UnsupportedOperationException("UnaryOp.dereference");
     }
 
     public boolean isConstant() {
@@ -19,13 +20,14 @@ public class UnaryOp extends PythonObject {
     }
 
     public PythonObject dereferenceConstant() {
-        return __call__();
+        // return __call__();
+        throw new UnsupportedOperationException("UnaryOp.dereferenceConstant");
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         if (op == UnaryopType.USub) {
             PythonObject value = operand.dereference();
-            return value.__neg__();
+            return value.__neg__(context);
         }
         if (op == UnaryopType.UAdd) {
             PythonObject value = operand.dereference();
@@ -33,7 +35,7 @@ public class UnaryOp extends PythonObject {
         }
         if (op == UnaryopType.Not) {
             PythonObject value = operand.dereference();
-            return value.__neg__();
+            return value.__neg__(context);
         }
         throw new UnsupportedOperationException("UnaryOp[" + op + "]");
     }

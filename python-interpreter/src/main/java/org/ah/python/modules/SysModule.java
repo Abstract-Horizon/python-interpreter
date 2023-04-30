@@ -1,10 +1,10 @@
 package org.ah.python.modules;
 
 import org.ah.python.interpreter.BuiltInMethod;
-import org.ah.python.interpreter.Function;
 import org.ah.python.interpreter.Proxy;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
 public class SysModule extends Proxy {
 
@@ -28,12 +28,12 @@ public class SysModule extends Proxy {
 
     static {
         TYPE.__setattr__("exit", new BuiltInMethod() {
-            @Override public PythonObject call0() {
+            @Override public PythonObject call0(ThreadContext context) {
                 systemBridge.exit(0);
                 return null;
             }
-            @Override public PythonObject call0(PythonObject arg) {
-                systemBridge.exit(arg.asInteger());
+            @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
+                systemBridge.exit(arg.asInteger(context));
                 return null;
             }
         });

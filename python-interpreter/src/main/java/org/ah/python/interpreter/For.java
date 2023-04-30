@@ -25,15 +25,15 @@ public class For extends Suite {
         return elseBlock;
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         PythonObject dereferencedIter = iter.dereference();
-        PythonIterator iter = dereferencedIter.__iter__();
+        PythonIterator iter = dereferencedIter.__iter__(context);
 
-        PythonObject next = iter.next();
+        PythonObject next = iter.next(context);
         while (next != null && !GlobalScope.BREAK) {
-            target.assign(next);
-            super.__call__();
-            next = iter.next();
+            target.assign(context, next);
+            super.__call__(context);
+            next = iter.next(context);
             if (GlobalScope.CONTINUE) {
                 GlobalScope.CONTINUE = false;
                 Suite.BREAKOUT = false;
@@ -41,7 +41,7 @@ public class For extends Suite {
         }
 
         if (els != null && !GlobalScope.BREAK) {
-            els.__call__();
+            els.__call__(context);
         }
 
         if (GlobalScope.BREAK) {

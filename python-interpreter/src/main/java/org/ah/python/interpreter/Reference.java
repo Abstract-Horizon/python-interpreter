@@ -9,7 +9,7 @@ public class Reference extends PythonObject implements Assignable {
 
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
         @Override public PythonObject execute(ThreadContext context) {
-            return context.a.pythonClass.__getattr__(name.toString());
+            return context.a.pythonClass.__getattr__(context, name.toString());
         }
     };
 
@@ -37,7 +37,7 @@ public class Reference extends PythonObject implements Assignable {
             return scope.execute(context);
         } else {
             PythonObject scope = context.getCurrentScope();
-            return scope.__getattr__(name);
+            return scope.__getattr__(context, name);
         }
     }
 
@@ -45,11 +45,11 @@ public class Reference extends PythonObject implements Assignable {
         return dereferencedScope;
     }
 
-    public void assign(PythonObject expr) {
+    public void assign(ThreadContext context, PythonObject expr) {
         if (scope == null) {
             GlobalScope.currentScope().__setattr__(name, expr);
         } else {
-            scope.dereference().__setattr__(name, expr);
+            scope.dereference().__setattr__(context, name, expr);
         }
     }
 

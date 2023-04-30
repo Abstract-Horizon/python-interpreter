@@ -14,7 +14,7 @@ public class TestIf extends BaseTestClass {
                 "    print(\"TRUE\")"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("TRUE\n", result());
     }
@@ -26,7 +26,7 @@ public class TestIf extends BaseTestClass {
                 "    print(\"FALSE\")"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("", result());
     }
@@ -40,7 +40,7 @@ public class TestIf extends BaseTestClass {
                 "    print(\"TRUE\")"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("TRUE\n", result());
     }
@@ -54,7 +54,7 @@ public class TestIf extends BaseTestClass {
                 "    print(\"FALSE\")"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("TRUE\n", result());
     }
@@ -70,7 +70,7 @@ public class TestIf extends BaseTestClass {
                 "    print(\"FALSE\")"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("TRUE\n", result());
     }
@@ -86,7 +86,7 @@ public class TestIf extends BaseTestClass {
                 "    print(\"TRUE\")"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("TRUE\n", result());
     }

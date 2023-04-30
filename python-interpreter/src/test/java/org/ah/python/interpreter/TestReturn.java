@@ -16,7 +16,7 @@ public class TestReturn extends BaseTestClass {
         );
 
         System.out.println(result());
-        assertEquals(module.__getattr__("a").asInteger(), 6);
+        assertEquals(module.__getattr__(context, "a").asInteger(context), 6);
         contextIsEmpty();
     }
 

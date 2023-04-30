@@ -34,13 +34,13 @@ public class PythonClassDef extends PythonObject {
         return methods;
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         Scope parentScope = GlobalScope.currentScope();
 
         PythonClassType classType = new PythonClassType(name, parentScope) {
             final PythonClassType self = this;
 
-            @Override public PythonObject __call__() {
+            @Override public PythonObject __call__(ThreadContext context) {
                 // TODO Constructor!!!
                 // return PythonNone.NONE;
                 // throw new UnsupportedOperationException("Constructor not yet implemented");
@@ -64,12 +64,12 @@ public class PythonClassDef extends PythonObject {
 
             classType.setParentType((PythonType)dereferencedParent);
         }
-        parentScope.__setattr__(name, classType);
+        parentScope.__setattr__(context, name, classType);
 
         GlobalScope.pushScope(classType);
 
         try {
-            getSuite().__call__();
+            getSuite().__call__(context);
             return PythonNone.NONE;
         } finally {
             GlobalScope.popScope();

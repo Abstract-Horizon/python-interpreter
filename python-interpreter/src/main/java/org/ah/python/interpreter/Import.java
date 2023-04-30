@@ -17,7 +17,7 @@ public class Import extends PythonObject {
     }
 
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         for (Map.Entry<String, List<String>> entry : imports.entrySet()) {
             String asName = entry.getKey();
             List<String> qname = entry.getValue();
@@ -35,7 +35,7 @@ public class Import extends PythonObject {
                         throw new NoSuchElementException("Cannot find import " + name);
                     }
                 }
-                GlobalScope.currentScope().__setattr__(asName, module);
+                GlobalScope.currentScope().__setattr__(context, asName, module);
             } else {
                 throw new UnsupportedOperationException("import for qualified values.");
             }

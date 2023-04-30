@@ -33,7 +33,7 @@ public class Def extends PythonObject {
 
             Function function = new DefFunction(name, functionArgs, context.currentScope, block);
 
-            context.currentScope.__setattr__(name, function);
+            context.currentScope.__setattr__(context, name, function);
             return null;
         }
     };
@@ -79,15 +79,15 @@ public class Def extends PythonObject {
         return continuation.execute(context);
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         Scope scope = GlobalScope.currentScope();
         if (scope instanceof PythonClassType) {
             if (args.size() == 0) {
                 throw new IllegalStateException("Class def with no parameters");
             }
-            scope.__setattr__(name, new InstanceMethod<PythonObject>() {
+            scope.__setattr__(context, name, new InstanceMethod<PythonObject>() {
 
-                @Override public PythonObject __call__(PythonObject self, PythonObject[] args) {
+                @Override public PythonObject __call__(ThreadContext context, PythonObject self, PythonObject[] args) {
 
                     if (args.length < Def.this.args.size() - 1) {
                         throw new IllegalArgumentException("Not enough parameters for " + name);
@@ -98,15 +98,15 @@ public class Def extends PythonObject {
                     GlobalScope.pushScope(scope);
                     try {
                         Reference selfArgReference = Def.this.args.get(0);
-                        selfArgReference.assign(self);
+                        selfArgReference.assign(context, self);
 
                         for (int i = 1; i < Def.this.args.size(); i++) {
                             Reference argReference = Def.this.args.get(i);
                             PythonObject argValue = args[i].dereference();
 
-                            argReference.assign(argValue);
+                            argReference.assign(context, argValue);
                         }
-                        getSuite().__call__();
+                        getSuite().__call__(context);
                         if (RETURN != null) {
                             Suite.BREAKOUT = false;
                             PythonObject ret = RETURN;
@@ -120,9 +120,9 @@ public class Def extends PythonObject {
                 }
             });
         } else {
-            scope.__setattr__(name, new Function() {
+            scope.__setattr__(context, name, new Function() {
 
-              @Override public PythonObject __call__(PythonObject[] args) {
+              @Override public PythonObject __call__(ThreadContext context, PythonObject[] args) {
 
                   if (args.length < Def.this.args.size()) {
                       throw new IllegalArgumentException("Not enough parameters for " + name);
@@ -136,9 +136,9 @@ public class Def extends PythonObject {
                           Reference argReference = Def.this.args.get(i);
                           PythonObject argValue = args[i].dereference();
 
-                          argReference.assign(argValue);
+                          argReference.assign(context, argValue);
                       }
-                      getSuite().__call__();
+                      getSuite().__call__(context);
                       if (RETURN != null) {
                           Suite.BREAKOUT = false;
                           PythonObject ret = RETURN;
@@ -194,11 +194,11 @@ public class Def extends PythonObject {
                 Reference r = functionArgs.get(i);
                 String name = r.getName();
                 if (i < argsSize) {
-                    frame.__setattr__(name, args.get(i));
+                    frame.__setattr__(context, name, args.get(i));
                 } else if (r.getScope() != null) {
-                    frame.__setattr__(name, r.getScope());
+                    frame.__setattr__(context, name, r.getScope());
                 } else if (kwargs != null && kwargs.containsKey(name)) {
-                    frame.__setattr__(name, kwargs.get(name));
+                    frame.__setattr__(context, name, kwargs.get(name));
                 } else {
                     throw new IllegalArgumentException(name + " is not satisfied nor with default value");
                 }

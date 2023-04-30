@@ -22,7 +22,8 @@ public class PythonDictionary extends PythonObject {
         TYPE.__setattr__("copy", new InstanceMethod<PythonDictionary>() { @Override public PythonObject call0(PythonDictionary self, PythonObject arg) {
             PythonDictionary newDict = new PythonDictionary();
             for (Map.Entry<PythonObject, PythonObject> entry : self.map.entrySet()) {
-
+                // TODO
+                throw new UnsupportedOperationException("PythonDictionary.copy");
             }
             return newDict;
         }});
@@ -31,7 +32,7 @@ public class PythonDictionary extends PythonObject {
 
     public static PythonObject constructor(final Map<PythonObject, PythonObject> values) {
         return new Constructor() {
-            @Override public PythonObject __call__() {
+            @Override public PythonObject __call__(ThreadContext context) {
                 PythonDictionary dict = new PythonDictionary();
                 for (Map.Entry<PythonObject, PythonObject> entry : values.entrySet()) {
                     PythonObject key = entry.getKey().dereference();
@@ -59,7 +60,7 @@ public class PythonDictionary extends PythonObject {
 
     public static PythonObject constructor(final List<PythonObject> keys, final List<PythonObject> values) {
         return new Constructor() {
-            @Override public PythonObject __call__() {
+            @Override public PythonObject __call__(ThreadContext context) {
             PythonDictionary dict = new PythonDictionary();
             for (int i = 0; i < keys.size(); i++) {
                 PythonObject key = keys.get(i).dereference();
@@ -87,11 +88,11 @@ public class PythonDictionary extends PythonObject {
         return map.size() != 0;
     }
 
-    public PythonInteger __len__() {
+    public PythonInteger __len__(ThreadContext context) {
         return PythonInteger.valueOf(map.size());
     }
 
-    public PythonObject __getitem__(PythonObject key) {
+    public PythonObject __getitem__(ThreadContext context, PythonObject key) {
         PythonObject obj = map.get(key);
         if (obj == null) {
             throw new NoSuchElementException(key + " in " + this);
@@ -99,17 +100,17 @@ public class PythonDictionary extends PythonObject {
         return obj;
     }
 
-    public PythonObject __setitem__(PythonObject key, PythonObject value) {
+    public PythonObject __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
         map.put(key, value);
         return PythonNone.NONE;
     }
 
-    public PythonObject __delitem__(PythonObject key) {
+    public PythonObject __delitem__(ThreadContext context, PythonObject key) {
         map.remove(key);
         return PythonNone.NONE;
     }
 
-    public PythonObject __contains__(PythonObject value) {
+    public PythonObject __contains__(ThreadContext context, PythonObject value) {
         return PythonBoolean.valueOf(map.containsKey(value));
     }
 

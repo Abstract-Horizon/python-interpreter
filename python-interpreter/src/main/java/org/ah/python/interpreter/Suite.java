@@ -14,12 +14,12 @@ public class Suite extends PythonList {
         asList().addAll(body);
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         for (PythonObject o : asList()) {
             if (BREAKOUT) {
                 return PythonNone.NONE;
             }
-            o.__call__();
+            o.__call__(context);
         }
 
         return PythonNone.NONE;

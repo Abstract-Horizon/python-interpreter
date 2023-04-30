@@ -21,7 +21,7 @@ public class TestExpression extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
-        assertEquals(context.a.asInteger(), 5);
+        assertEquals(context.a.asInteger(context), 5);
         contextIsEmpty();
     }
 
@@ -41,8 +41,8 @@ public class TestExpression extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
-        assertEquals(context.a.asInteger(), 4);
-        assertTrue(context.a.__eq__(PythonInteger.valueOf(4)).asBoolean());
+        assertEquals(context.a.asInteger(context), 4);
+        assertTrue(context.a.__eq__(context, PythonInteger.valueOf(4)).asBoolean(context));
 
         contextIsEmpty();
     }
@@ -59,7 +59,7 @@ public class TestExpression extends BaseTestClass {
 
         for (int i = 0; i < 5 && context.next(); i++) { }
 
-        assertEquals(context.a.asString(), "123456");
+        assertEquals(context.a.asString(context), "123456");
 
         contextIsEmpty();
     }
@@ -72,7 +72,7 @@ public class TestExpression extends BaseTestClass {
             "print(a)"
         );
 
-        assertEquals(module.__getattr__("a").asInteger(), 12);
+        assertEquals(module.__getattr__(context, "a").asInteger(context), 12);
         assertEquals("12\n", result());
         contextIsEmpty();
     }
@@ -87,8 +87,8 @@ public class TestExpression extends BaseTestClass {
             "print(d)"
         );
 
-        assertEquals(module.__getattr__("c").asBoolean(), false);
-        assertEquals(module.__getattr__("d").asBoolean(), true);
+        assertEquals(module.__getattr__(context, "c").asBoolean(context), false);
+        assertEquals(module.__getattr__(context, "d").asBoolean(context), true);
         assertEquals("False\nTrue\n", result());
         contextIsEmpty();
     }

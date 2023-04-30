@@ -28,10 +28,10 @@ public class Module extends Scope {
         return block.execute(context);
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         GlobalScope.pushScope(this);
         try {
-            return suite.__call__();
+            return suite.__call__(context);
         } finally {
             GlobalScope.popScope();
         }

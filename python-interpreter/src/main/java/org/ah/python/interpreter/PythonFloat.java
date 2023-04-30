@@ -23,15 +23,15 @@ public class PythonFloat extends PythonNumber {
         this.pythonClass = PYTHON_FLOAT_CLASS;
     }
 
-    public double asFloat() {
+    public double asFloat(ThreadContext context) {
         return value;
     }
 
-    public int asInteger() {
+    public int asInteger(ThreadContext context) {
         return (int)value;
     }
 
-    public boolean asBoolean() {
+    public boolean asBoolean(ThreadContext context) {
         return value != 0.0;
     }
 
@@ -39,65 +39,65 @@ public class PythonFloat extends PythonNumber {
         return true;
     }
 
-    public PythonBoolean __eq__(PythonObject other) {
+    public PythonBoolean __eq__(ThreadContext context, PythonObject other) {
         PythonObject r = other.dereference();
 
-        return PythonBoolean.valueOf(value == r.asFloat());
+        return PythonBoolean.valueOf(value == r.asFloat(context));
     }
 
-    public PythonString __repr__() {
+    public PythonString __repr__(ThreadContext context) {
         return PythonString.valueOf(Double.toString(value));
     }
 
-    public PythonInteger __int__() {
+    public PythonInteger __int__(ThreadContext context) {
         return PythonInteger.valueOf((int)value);
     }
 
-    public PythonFloat __float__() {
+    public PythonFloat __float__(ThreadContext context) {
         return this;
     }
 
-    public PythonBoolean __bool__() {
+    public PythonBoolean __bool__(ThreadContext context) {
         return PythonBoolean.valueOf(value != 0.0d);
     }
 
-    public PythonNumber __neg__() {
+    public PythonNumber __neg__(ThreadContext context) {
         return PythonFloat.valueOf(-value);
     }
 
-    public PythonObject __add__(PythonObject other) {
-        return PythonFloat.valueOf(value + other.asFloat());
+    public PythonObject __add__(ThreadContext context, PythonObject other) {
+        return PythonFloat.valueOf(value + other.asFloat(context));
     }
 
-    public PythonObject __sub__(PythonObject other) {
-        return PythonFloat.valueOf(value - other.asFloat());
+    public PythonObject __sub__(ThreadContext context, PythonObject other) {
+        return PythonFloat.valueOf(value - other.asFloat(context));
     }
 
-    public PythonObject __mul__(PythonObject other) {
-        return PythonFloat.valueOf(value * other.asFloat());
+    public PythonObject __mul__(ThreadContext context, PythonObject other) {
+        return PythonFloat.valueOf(value * other.asFloat(context));
     }
 
-    public PythonObject __div__(PythonObject other) {
-        return PythonFloat.valueOf(value / other.asFloat());
+    public PythonObject __div__(ThreadContext context, PythonObject other) {
+        return PythonFloat.valueOf(value / other.asFloat(context));
     }
 
-    public PythonObject __floordiv__(PythonObject other) {
-        return PythonFloat.valueOf(value / other.asFloat());
+    public PythonObject __floordiv__(ThreadContext context, PythonObject other) {
+        return PythonFloat.valueOf(value / other.asFloat(context));
     }
 
-    public PythonObject __mod__(PythonObject other) {
-        return PythonFloat.valueOf(value % other.asFloat());
+    public PythonObject __mod__(ThreadContext context, PythonObject other) {
+        return PythonFloat.valueOf(value % other.asFloat(context));
     }
 
-    public PythonObject __divmod__(PythonObject other) {
+    public PythonObject __divmod__(ThreadContext context, PythonObject other) {
         throw new UnsupportedOperationException("__divmod__");
     }
 
-    public PythonObject __pow__(PythonObject other) {
+    public PythonObject __pow__(ThreadContext context, PythonObject other) {
         throw new UnsupportedOperationException("__pow__");
     }
 
-    public PythonObject __pow__(PythonObject other, PythonObject moduo) {
+    public PythonObject __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
         throw new UnsupportedOperationException("__pow__");
     }
 
@@ -109,7 +109,7 @@ public class PythonFloat extends PythonNumber {
     @Override
     public boolean equals(Object o) {
         if (o instanceof PythonObject) {
-            return __eq__((PythonObject)o).asBoolean();
+            return __eq__(null, (PythonObject)o).asBoolean(null);
         }
         return false;
     }

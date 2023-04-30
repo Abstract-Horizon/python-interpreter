@@ -20,16 +20,16 @@ public class PythonClassType extends PythonType implements CallableType {
         return parentScope;
     }
 
-    public PythonObject __call__(PythonObject[] args) {
+    public PythonObject __call__(ThreadContext context, PythonObject[] args) {
         PythonObjectInstance self = new PythonObjectInstance(this);
 
-        PythonObject initMethod = getAttribute("__init__");
+        PythonObject initMethod = getAttribute(context, "__init__");
         if (initMethod != null) {
             if (initMethod instanceof InstanceMethod) {
                 @SuppressWarnings("unchecked")
                 InstanceMethod<PythonObjectInstance> initInstanceMethod = (InstanceMethod<PythonObjectInstance>)initMethod;
 
-                initInstanceMethod.__call__(self, EMPTY_ARGS);
+                initInstanceMethod.__call__(context, self, EMPTY_ARGS);
             } else {
                 throw new IllegalStateException("__init__ method is not instance method!");
             }
@@ -37,16 +37,16 @@ public class PythonClassType extends PythonType implements CallableType {
         return self;
     }
 
-    public PythonObject getAttribute(String name) {
+    public PythonObject getAttribute(ThreadContext context, String name) {
         if (attributes != null && attributes.containsKey(name)) {
             return attributes.get(name);
         }
         PythonObject res = null;
         if (getParent() != null) {
-            res = getParent().__getattr__(name);
+            res = getParent().__getattr__(context, name);
         }
         if (res == null && parentScope != null) {
-            res = parentScope.__getattr__(name);
+            res = parentScope.__getattr__(context, name);
         }
 //        if (res == null) {
 //            throw new NoSuchElementException(name + " in " + this);

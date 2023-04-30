@@ -23,13 +23,13 @@ public class ExecutionScope extends Scope {
         this.parentScope = parentScope;
     }
 
-    protected PythonObject getAttribute(String name) {
+    protected PythonObject getAttribute(ThreadContext context, String name) {
         if (attributes != null && attributes.containsKey(name)) {
             return attributes.get(name);
         }
         if (parentScope != null) {
             // TODO item or attr? return parentScope.__getitem__(name);
-            return parentScope.__getattr__(name);
+            return parentScope.__getattr__(context, name);
         }
         return null;
     }
@@ -39,17 +39,17 @@ public class ExecutionScope extends Scope {
     }
 
     @Override
-    public PythonObject __getattr__(String name) {
+    public PythonObject __getattr__(ThreadContext context, String name) {
         if (globals.contains(name)) {
-            return GlobalScope.globalScope().__getattr__(name);
+            return GlobalScope.globalScope().__getattr__(context, name);
         }
-        return getAttribute(name);
+        return getAttribute(context, name);
     }
 
     @Override
-    public PythonObject __setattr__(String name, PythonObject value) {
+    public PythonObject __setattr__(ThreadContext context, String name, PythonObject value) {
         if (globals.contains(name)) {
-            GlobalScope.globalScope().__setattr__(name, value);
+            GlobalScope.globalScope().__setattr__(context, name, value);
         } else {
             setAttribute(name, value);
         }
@@ -57,7 +57,7 @@ public class ExecutionScope extends Scope {
     }
 
     @Override
-    public PythonObject __delattr__(String key) {
+    public PythonObject __delattr__(ThreadContext context, String key) {
         if (attributes != null) {
             attributes.remove(key);
         }
@@ -65,8 +65,9 @@ public class ExecutionScope extends Scope {
     }
 
     @Override
-    public PythonObject __delitem__(PythonObject name) {
-        __delitem__(name);
-        return PythonNone.NONE;
+    public PythonObject __delitem__(ThreadContext context, PythonObject name) {
+        // __delitem__(context, name);
+        // return PythonNone.NONE;
+        throw new UnsupportedOperationException("ExecutionScope.__delitem__");
     }
 }

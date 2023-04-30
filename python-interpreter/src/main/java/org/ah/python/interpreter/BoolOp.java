@@ -28,7 +28,7 @@ public class BoolOp extends PythonObject {
     }
 
     public PythonObject dereference() {
-        return __call__();
+        throw new UnsupportedOperationException("dereference");
     }
 
     public boolean isConstant() {
@@ -41,14 +41,14 @@ public class BoolOp extends PythonObject {
     }
 
     public PythonObject dereferenceConstant() {
-        return __call__();
+        throw new UnsupportedOperationException("BoolOp.dereference");
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         if (op == BoolopType.And) {
             for (PythonObject e : values) {
                 PythonObject o = e.dereference();
-                if (!o.asBoolean()) {
+                if (!o.asBoolean(context)) {
                     return FALSE;
                 }
             }
@@ -57,7 +57,7 @@ public class BoolOp extends PythonObject {
         if (op == BoolopType.Or) {
             for (PythonObject e : values) {
                 PythonObject o = e.dereference();
-                if (o.asBoolean()) {
+                if (o.asBoolean(context)) {
                     return TRUE;
                 }
             }

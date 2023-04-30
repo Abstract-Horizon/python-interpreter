@@ -18,7 +18,7 @@ public class TestClass extends BaseTestClass {
               + "c.x()\n"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("TRUE\n", result());
     }
@@ -39,7 +39,7 @@ public class TestClass extends BaseTestClass {
               + "c.y()\n"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("x\ny\n", result());
     }
@@ -54,7 +54,7 @@ public class TestClass extends BaseTestClass {
               + "c = Cls()\n"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("Constructor invoked\n", result());
     }

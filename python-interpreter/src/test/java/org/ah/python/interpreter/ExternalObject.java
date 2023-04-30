@@ -14,7 +14,7 @@ public class ExternalObject extends Proxy {
 
             @Override
             protected void assign(ExternalObject self, PythonObject expr) {
-                self.value = expr.asString();
+                self.value = expr.asString(null);
             }
 
         });

@@ -9,9 +9,9 @@ public abstract class Proxy extends PythonObject {
 
     @SuppressWarnings("unchecked")
     @Override
-    public PythonObject __getattr__(String name) {
+    public PythonObject __getattr__(ThreadContext context, String name) {
 
-        PythonObject res = super.__getattr__(name);
+        PythonObject res = super.__getattr__(context, name);
 
         if (res instanceof ProxyAttribute) {
             res = ((ProxyAttribute<Proxy>)res).attribute(this);
@@ -22,7 +22,7 @@ public abstract class Proxy extends PythonObject {
 
     @SuppressWarnings("unchecked")
     @Override
-    public PythonObject __setattr__(String name, PythonObject expr) {
+    public PythonObject __setattr__(ThreadContext context, String name, PythonObject expr) {
         PythonObject res = getType().attributes.get(name);
 
         if (res == null) {

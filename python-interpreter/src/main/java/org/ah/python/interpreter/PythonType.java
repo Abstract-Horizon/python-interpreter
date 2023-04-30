@@ -41,12 +41,12 @@ public class PythonType extends Scope {
         return name;
     }
 
-    public PythonObject __getattr__(String name) {
+    public PythonObject __getattr__(ThreadContext context, String name) {
         if (attributes != null && attributes.containsKey(name)) {
             return attributes.get(name);
         }
         if (parent != null) {
-            return parent.__getattr__(name);
+            return parent.__getattr__(context, name);
         }
         return null;
     }

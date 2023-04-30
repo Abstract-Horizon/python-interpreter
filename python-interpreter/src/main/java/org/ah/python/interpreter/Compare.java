@@ -16,7 +16,7 @@ public class Compare extends PythonList {
     }
 
     public PythonObject dereference() {
-        return __call__();
+        throw new UnsupportedOperationException("Compare.dereference");
     }
 
     public boolean isConstant() {
@@ -32,10 +32,10 @@ public class Compare extends PythonList {
     }
 
     public PythonObject dereferenceConstant() {
-        return __call__();
+        throw new UnsupportedOperationException("Compare.dereferenceConstant");
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
 
         PythonObject current = left.dereference();
 
@@ -43,21 +43,21 @@ public class Compare extends PythonList {
             CmpopType op = ops.get(i);
             PythonObject right = asList().get(i).dereference();
             if (op == CmpopType.Eq) {
-                current = current.__eq__(right);
+                current = current.__eq__(context, right);
             } else if (op == CmpopType.NotEq) {
-                current = current.__ne__(right);
+                current = current.__ne__(context, right);
             } else if (op == CmpopType.Lt) {
-                current = current.__lt__(right);
+                current = current.__lt__(context, right);
             } else if (op == CmpopType.LtE) {
-                current = current.__le__(right);
+                current = current.__le__(context, right);
             } else if (op == CmpopType.Gt) {
-                current = current.__gt__(right);
+                current = current.__gt__(context, right);
             } else if (op == CmpopType.GtE) {
-                current = current.__ge__(right);
+                current = current.__ge__(context, right);
             } else if (op == CmpopType.In) {
-                current = current.__contains__(right);
+                current = current.__contains__(context, right);
             } else if (op == CmpopType.NotIn) {
-                current = current.__contains__(right).__neg__();
+                current = current.__contains__(context, right).__neg__(context);
             } else if (op == CmpopType.Is) {
                 throw new UnsupportedOperationException("Is");
             }

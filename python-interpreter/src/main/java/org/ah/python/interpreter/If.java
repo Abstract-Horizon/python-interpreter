@@ -24,12 +24,12 @@ public class If extends Suite {
         return elseBlock;
     }
 
-    public PythonObject __call__() {
-        if (test.dereference().asBoolean()) {
-            super.__call__();
+    public PythonObject __call__(ThreadContext context) {
+        if (test.dereference().asBoolean(context)) {
+            super.__call__(context);
         } else {
             if (!els.asList().isEmpty()) {
-                els.__call__();
+                els.__call__(context);
             }
         }
 

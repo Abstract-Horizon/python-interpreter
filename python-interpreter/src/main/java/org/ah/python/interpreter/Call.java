@@ -83,10 +83,11 @@ public class Call extends PythonObject {
 
     public PythonObject dereference() {
         // TODO this seems wrong! Why not passing parameters, and what kind of parameters would they be, then?
-        return __call__();
+        // return __call__();
+        throw new UnsupportedOperationException("Call.dereference");
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         PythonObject[] finalArgs;
         PythonObject derefFunct = function.dereference();
 
@@ -138,13 +139,13 @@ public class Call extends PythonObject {
                 Reference reference = (Reference)function;
                 @SuppressWarnings("unchecked")
                 InstanceMethod<PythonObject> instanceMethod = (InstanceMethod<PythonObject>)derefFunct;
-                return instanceMethod.__call__(reference.getDereferencedScope(), finalArgs);
+                return instanceMethod.__call__(context, reference.getDereferencedScope(), finalArgs);
             } else {
                 throw new UnsupportedOperationException("__call__ on instance method and not on a referenced object. Obj: " +  function);
             }
         } else if (derefFunct instanceof CallableType) {
             CallableType function = (CallableType)derefFunct;
-            return function.__call__(finalArgs);
+            return function.__call__(context, finalArgs);
         } else {
             throw new IllegalStateException("Calling uncallable type: " + derefFunct.getClass().getName());
         }

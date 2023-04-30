@@ -3,11 +3,11 @@ package org.ah.python.interpreter;
 public class PythonNoop extends PythonObject {
 
     public static final PythonNoop NOOP = new PythonNoop();
-    
+
     private PythonNoop() {
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         return PythonNone.NONE;
     }
 }

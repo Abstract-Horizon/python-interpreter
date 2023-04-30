@@ -11,15 +11,15 @@ public class PythonIterator extends PythonType {
         this.it = it;
     }
 
-    public PythonIterator __iter__() {
+    public PythonIterator __iter__(ThreadContext context) {
         return this;
     }
 
-    public PythonObject __next__() {
-        return next();
+    public PythonObject __next__(ThreadContext context) {
+        return next(context);
     }
 
-    public PythonObject next() {
+    public PythonObject next(ThreadContext context) {
         if (it.hasNext()) {
             return it.next();
         } else {
@@ -27,13 +27,13 @@ public class PythonIterator extends PythonType {
         }
     }
 
-    public PythonObject __getattr__(String name) {
+    public PythonObject __getattr__(final ThreadContext context, String name) {
         if (!"__next__".equals(name)) {
-            return super.__getattr__(name);
+            return super.__getattr__(context, name);
         }
 
         PythonObject res = attributes.get(name);
-        if ("__int__".equals(name)) { res = new Function() { @Override public PythonObject call0() { return __int__(); }}; attributes.put(name,  res); }
+        if ("__int__".equals(name)) { res = new Function() { @Override public PythonObject call0(ThreadContext context) { return __int__(context); }}; attributes.put(name,  res); }
         return res;
     }
 }

@@ -8,7 +8,7 @@ public class Return extends PythonObject {
         this.ret = ret;
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         Suite.BREAKOUT = true;
         Def.RETURN = ret.dereference();
         return PythonNone.NONE;

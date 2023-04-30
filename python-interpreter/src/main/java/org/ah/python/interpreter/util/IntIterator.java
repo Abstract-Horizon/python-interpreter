@@ -4,26 +4,29 @@ import java.util.Iterator;
 
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonObject;
+import org.ah.python.interpreter.ThreadContext;
 
 public class IntIterator implements Iterator<PythonObject> {
 
     private PythonObject object;
+    private ThreadContext context;
     private int pos = 0;
-    
-    public IntIterator(PythonObject object) {
+
+    public IntIterator(ThreadContext context, PythonObject object) {
         this.object = object;
+        this.context = context;
     }
 
     @Override
     public boolean hasNext() {
-        return pos < object.__len__().asInteger();
+        return pos < object.__len__(context).asInteger(context);
     }
 
     @Override
     public PythonObject next() {
         int p = pos;
         pos++;
-        return object.__getitem__(PythonInteger.valueOf(p));
+        return object.__getitem__(context, PythonInteger.valueOf(p));
     }
 
     @Override

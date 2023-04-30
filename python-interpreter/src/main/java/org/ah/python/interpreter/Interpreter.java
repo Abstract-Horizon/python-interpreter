@@ -29,7 +29,7 @@ public class Interpreter {
         parser.file_input();
 
         Module module = parser.getModule();
-        module.__setattr__("__name__", PythonString.valueOf(name));
+        module.__setattr__(context, "__name__", PythonString.valueOf(name));
         return module;
     }
 

@@ -2,6 +2,6 @@ package org.ah.python.interpreter;
 
 public interface Assignable {
 
-    void assign(PythonObject expr);
+    void assign(ThreadContext context, PythonObject expr);
 
 }

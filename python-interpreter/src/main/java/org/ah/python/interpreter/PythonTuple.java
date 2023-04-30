@@ -1,5 +1,8 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonBaseException.exception;
+import static org.ah.python.interpreter.PythonNone.NONE;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,12 +15,12 @@ public class PythonTuple extends PythonSequence {
     static {
         PYTHON_TUPLE_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__add__(args.get(1));
+                return args.get(0).__add__(context, args.get(1));
             }
         });
         PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod() {
             public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__getitem__(args.get(1));
+                return args.get(0).__getitem__(context, args.get(1));
             }
         });
     }
@@ -45,7 +48,7 @@ public class PythonTuple extends PythonSequence {
             return tuple;
         } else {
             return new Constructor() {
-                @Override public PythonObject __call__() {
+                @Override public PythonObject __call__(ThreadContext context) {
                     PythonTuple tuple = new PythonTuple();
                     for (PythonObject o : storedElements) {
                         PythonObject r = o.dereference();
@@ -68,7 +71,7 @@ public class PythonTuple extends PythonSequence {
         return list;
     }
 
-    public PythonObject __getitem__(PythonObject key) {
+    public PythonObject __getitem__(ThreadContext context, PythonObject key) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
@@ -80,7 +83,7 @@ public class PythonTuple extends PythonSequence {
                 return new PythonList(list.subList(from, to));
             }
         } else {
-            int i = key.asInteger();
+            int i = key.asInteger(context);
             if (i < list.size()) {
                 return list.get(i);
             } else {
@@ -90,13 +93,15 @@ public class PythonTuple extends PythonSequence {
     }
 
     @Override
-    public PythonObject __setitem__(PythonObject key, PythonObject value) {
-        throw new UnsupportedOperationException("__setitem__");
+    public PythonObject __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__setitem__")));
+        return NONE;
     }
 
     @Override
-    public PythonObject __delitem__(PythonObject key) {
-        throw new UnsupportedOperationException("__delitem__");
+    public PythonObject __delitem__(ThreadContext context, PythonObject key) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__delitem__")));
+        return NONE;
     }
 
     public String toString() {

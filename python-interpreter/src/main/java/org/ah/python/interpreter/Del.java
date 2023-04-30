@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Del extends PythonObject {
-    
+
     private List<Subscript> targets = new ArrayList<Subscript>();;
-    
+
     public Del(List<PythonObject> targets) {
         for (PythonObject target : targets) {
             if (target instanceof Subscript) {
@@ -16,9 +16,9 @@ public class Del extends PythonObject {
             }
         }
     }
-    
+
     @Override
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         for (Subscript subscipt : targets) {
             PythonObject scope = subscipt.getScope().dereference();
             PythonObject from = subscipt.getFrom();
@@ -26,15 +26,15 @@ public class Del extends PythonObject {
             if (from != null) { from = from.dereference(); }
             if (to != null) { to = to.dereference(); }
             if (from != null && from.equals(to)) {
-                scope.__delitem__(from);
+                scope.__delitem__(context, from);
             } else {
-                PythonSlice slice = PythonSlice.range(from, to);
-                scope.__delitem__(slice);
+                PythonSlice slice = PythonSlice.range(context, from, to);
+                scope.__delitem__(context, slice);
             }
         }
         return PythonNone.NONE;
     }
-    
+
     public String toString() {
         return "del " + collectionToString(targets, ",");
     }

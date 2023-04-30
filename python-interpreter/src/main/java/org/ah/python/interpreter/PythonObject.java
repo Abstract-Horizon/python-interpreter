@@ -1,8 +1,11 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonBaseException.exception;
 import static org.ah.python.interpreter.PythonBoolean.FALSE;
 import static org.ah.python.interpreter.PythonBoolean.TRUE;
+import static org.ah.python.interpreter.PythonNone.NONE;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -220,20 +223,20 @@ public class PythonObject implements ThreadContext.Executable {
         return this;
     }
 
-    public String asString() {
-        return __str__().asString();
+    public String asString(ThreadContext context) {
+        return __str__(context).asString();
     }
 
-    public int asInteger() {
-        return __int__().asInteger();
+    public int asInteger(ThreadContext context) {
+        return __int__(context).asInteger(context);
     }
 
-    public double asFloat() {
-        return __float__().asFloat();
+    public double asFloat(ThreadContext context) {
+        return __float__(context).asFloat(context);
     }
 
-    public boolean asBoolean() {
-        return __bool__().asBoolean();
+    public boolean asBoolean(ThreadContext context) {
+        return __bool__(context).asBoolean(context);
     }
 
     public boolean isConstant() {
@@ -248,82 +251,92 @@ public class PythonObject implements ThreadContext.Executable {
         return TYPE;
     }
 
-    public PythonInteger __int__() {
-        throw new UnsupportedOperationException("__int__ on " + getClass().getName());
+    public PythonInteger __int__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__int__ on " + getClass().getName())));
+        return PythonInteger.ZERO;
     }
 
-    public PythonFloat __float__() {
-        throw new UnsupportedOperationException("__float__ on " + getClass().getName());
+    public PythonFloat __float__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__float__ on " + getClass().getName())));
+        return PythonFloat.valueOf(0.0);
     }
 
-    public PythonBoolean __bool__() {
-        throw new UnsupportedOperationException("__bool__ on " + getClass().getName());
+    public PythonBoolean __bool__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__bool__ on " + getClass().getName())));
+        return PythonBoolean.FALSE;
     }
 
-    public PythonString __str__() {
-        return __repr__();
+    public PythonString __str__(ThreadContext context) {
+        return __repr__(context);
     }
 
-    public PythonString __repr__() {
-        return PythonString.valueOf("<" + pythonClass.asString() + ">");
+    public PythonString __repr__(ThreadContext context) {
+        return PythonString.valueOf("<" + pythonClass.asString(context) + ">");
     }
 
-    public PythonObject __init__() {
-        throw new UnsupportedOperationException("__init__ on " + getClass().getName());
+    public PythonObject __init__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__init__ on " + getClass().getName())));
+        return NONE;
     }
 
-    public PythonObject __self__() {
+    public PythonObject __self__(ThreadContext context) {
         return this;
     }
 
-    public PythonObject __call__() {
-        throw new UnsupportedOperationException("__call__");
+    public PythonObject __call__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__call__")));
+        return NONE;
     }
 
-    public PythonObject __del__() {
-        throw new UnsupportedOperationException("__del__");
+    public PythonObject __del__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__del__")));
+        return NONE;
     }
 
-    public PythonObject __hash__() {
+    public PythonObject __hash__(ThreadContext context) {
         return PythonInteger.valueOf(hashCode());
     }
 
-    public PythonBoolean __nonzero__() {
+    public PythonBoolean __nonzero__(ThreadContext context) {
         return TRUE;
     }
 
-    public PythonBoolean __eq__(PythonObject other) {
+    public PythonBoolean __eq__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonInteger) {
-            other = PythonBoolean.valueOf(other.asInteger() != 0);
+            other = PythonBoolean.valueOf(other.asInteger(context) != 0);
         } else if (other instanceof PythonFloat) {
-            other = PythonBoolean.valueOf(other.asFloat() != 0f);
+            other = PythonBoolean.valueOf(other.asFloat(context) != 0f);
         }
         return PythonBoolean.valueOf(this == other);
     }
 
-    public PythonBoolean __ne__(PythonObject other) {
-        return PythonBoolean.valueOf(!__eq__(other).asBoolean());
+    public PythonBoolean __ne__(ThreadContext context, PythonObject other) {
+        return PythonBoolean.valueOf(!__eq__(context, other).asBoolean(context));
     }
 
-    public PythonBoolean __lt__(PythonObject other) {
-        throw new UnsupportedOperationException("__lt__");
+    public PythonBoolean __lt__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__lt__")));
+        return PythonBoolean.FALSE;
     }
 
-    public PythonBoolean __le__(PythonObject other) {
-        throw new UnsupportedOperationException("__le__");
+    public PythonBoolean __le__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__le__")));
+        return PythonBoolean.FALSE;
     }
 
-    public PythonBoolean __gt__(PythonObject other) {
-        throw new UnsupportedOperationException("__gt__");
+    public PythonBoolean __gt__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__gt__")));
+        return PythonBoolean.FALSE;
     }
 
-    public PythonBoolean __ge__(PythonObject other) {
-        throw new UnsupportedOperationException("__ge__");
+    public PythonBoolean __ge__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ge__")));
+        return PythonBoolean.FALSE;
     }
 
-    public PythonObject __getattr__(String name) {
+    public PythonObject __getattr__(ThreadContext context, String name) {
 
-        PythonObject res = pythonClass.__getattr__(name);
+        PythonObject res = pythonClass.__getattr__(context, name);
 
         if (res == null) {
             throw new NoSuchElementException(name);
@@ -332,299 +345,367 @@ public class PythonObject implements ThreadContext.Executable {
         return res;
     }
 
-    public PythonObject __setattr__(String name, PythonObject value) {
-        throw new UnsupportedOperationException("__setattr__");
+    public PythonObject __setattr__(ThreadContext context, String name, PythonObject value) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__setattr__")));
+        return NONE;
     }
 
-    public PythonObject __delattr__(String name) {
-        throw new UnsupportedOperationException("__delattr__");
+    public PythonObject __delattr__(ThreadContext context, String name) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__delattr__")));
+        return NONE;
     }
 
     // Access
 
-    public PythonObject __get__(PythonObject name, PythonObject type) {
-        throw new UnsupportedOperationException("__get__");
+    public PythonObject __get__(ThreadContext context, PythonObject name, PythonObject type) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__get__")));
+        return NONE;
     }
 
-    public PythonObject __set__(PythonObject name, PythonObject type) {
-        throw new UnsupportedOperationException("__set__");
+    public PythonObject __set__(ThreadContext context, PythonObject name, PythonObject type) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__set__")));
+        return NONE;
     }
 
-    public PythonObject __del__(PythonObject name, PythonObject type) {
-        throw new UnsupportedOperationException("__del__");
+    public PythonObject __del__(ThreadContext context, PythonObject name, PythonObject type) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__del__")));
+        return NONE;
     }
 
 
-    public PythonObject __slots__() {
-        throw new UnsupportedOperationException("__slots__");
+    public PythonObject __slots__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__slots__")));
+        return NONE;
     }
 
     // Container types
 
-    public PythonInteger __len__() {
-        throw new UnsupportedOperationException("__len__");
+    public PythonInteger __len__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__len__")));
+        return PythonInteger.ZERO;
     }
 
-    public PythonObject __getitem__(PythonObject key) {
-        throw new UnsupportedOperationException("__getitem__");
+    public PythonObject __getitem__(ThreadContext context, PythonObject key) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__getitem__")));
+        return NONE;
     }
 
-    public PythonObject __setitem__(PythonObject key, PythonObject value) {
-        throw new UnsupportedOperationException("__setitem__");
+    public PythonObject __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__setitem__")));
+        return NONE;
     }
 
-    public PythonObject __delitem__(PythonObject key) {
-        throw new UnsupportedOperationException("__delitem__");
+    public PythonObject __delitem__(ThreadContext context, PythonObject key) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__delitem__")));
+        return NONE;
     }
 
-    public PythonIterator __iter__() {
-        throw new UnsupportedOperationException("__iter__");
+    public PythonIterator __iter__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__iter__")));
+        return new PythonIterator(Arrays.<PythonObject>asList().iterator());
     }
 
-    public PythonObject __reversed__() {
-        throw new UnsupportedOperationException("__reversed__");
+    public PythonObject __reversed__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__reversed__")));
+        return NONE;
     }
 
-    public PythonObject __contains__(PythonObject value) {
+    public PythonObject __contains__(ThreadContext context, PythonObject value) {
         try {
-            __getitem__(value);
+            __getitem__(context, value);
             return TRUE;
         } catch (NoSuchElementException e) {
             return FALSE;
         }
     }
 
-    public PythonObject __getslice__(PythonObject i, PythonObject j) {
-        throw new UnsupportedOperationException("__getslice__");
+    public PythonObject __getslice__(ThreadContext context, PythonObject i, PythonObject j) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__getslice__")));
+        return NONE;
     }
 
-    public PythonObject __setslice__(PythonObject i, PythonObject j, PythonObject sequence) {
-        throw new UnsupportedOperationException("__setslice__");
+    public PythonObject __setslice__(ThreadContext context, PythonObject i, PythonObject j, PythonObject sequence) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__setslice__")));
+        return NONE;
     }
 
-    public PythonObject __delslice__(PythonObject i, PythonObject j) {
-        throw new UnsupportedOperationException("__detslice__");
+    public PythonObject __delslice__(ThreadContext context, PythonObject i, PythonObject j) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__detslice__")));
+        return NONE;
     }
 
 
     // Emulating numeric types
-    public PythonObject __neg__() {
-        throw new UnsupportedOperationException("__neg__");
+    public PythonObject __neg__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__neg__")));
+        return NONE;
     }
 
-    public PythonObject __add__(PythonObject other) {
-        throw new UnsupportedOperationException("__add__");
+    public PythonObject __add__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__add__")));
+        return NONE;
     }
 
-    public PythonObject __sub__(PythonObject other) {
-        throw new UnsupportedOperationException("__sub__");
+    public PythonObject __sub__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__sub__")));
+        return NONE;
     }
 
-    public PythonObject __mul__(PythonObject other) {
-        throw new UnsupportedOperationException("__mul__");
+    public PythonObject __mul__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__mul__")));
+        return NONE;
     }
 
-    public PythonObject __floordiv__(PythonObject other) {
-        throw new UnsupportedOperationException("__floordiv__");
+    public PythonObject __floordiv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__floordiv__")));
+        return NONE;
     }
 
-    public PythonObject __mod__(PythonObject other) {
-        throw new UnsupportedOperationException("__mod__");
+    public PythonObject __mod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__mod__")));
+        return NONE;
     }
 
-    public PythonObject __divmod__(PythonObject other) {
-        throw new UnsupportedOperationException("__divmod__");
+    public PythonObject __divmod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__divmod__")));
+        return NONE;
     }
 
-    public PythonObject __pow__(PythonObject other) {
-        throw new UnsupportedOperationException("__pow__");
+    public PythonObject __pow__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
+        return NONE;
     }
 
-    public PythonObject __pow__(PythonObject other, PythonObject moduo) {
-        throw new UnsupportedOperationException("__pow__");
+    public PythonObject __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
+        return NONE;
     }
 
-    public PythonObject __lshift__(PythonObject other) {
-        throw new UnsupportedOperationException("__lshift__");
+    public PythonObject __lshift__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__lshift__")));
+        return NONE;
     }
 
-    public PythonObject __rshift__(PythonObject other) {
-        throw new UnsupportedOperationException("__rshift__");
+    public PythonObject __rshift__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rshift__")));
+        return NONE;
     }
 
-    public PythonObject __and__(PythonObject other) {
-        throw new UnsupportedOperationException("__and__");
+    public PythonObject __and__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__and__")));
+        return NONE;
     }
 
-    public PythonObject __xor__(PythonObject other) {
-        throw new UnsupportedOperationException("__xor__");
+    public PythonObject __xor__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__xor__")));
+        return NONE;
     }
 
-    public PythonObject __or__(PythonObject other) {
-        throw new UnsupportedOperationException("__or__");
-    }
-
-
-    public PythonObject __div__(PythonObject other) {
-        throw new UnsupportedOperationException("__div__");
-    }
-
-    public PythonObject __truediv__(PythonObject other) {
-        throw new UnsupportedOperationException("__truediv__");
-    }
-
-
-    public PythonObject __radd__(PythonObject other) {
-        throw new UnsupportedOperationException("__radd__");
-    }
-
-    public PythonObject __rsub__(PythonObject other) {
-        throw new UnsupportedOperationException("__rsub__");
-    }
-
-    public PythonObject __rmul__(PythonObject other) {
-        throw new UnsupportedOperationException("__rmul__");
-    }
-
-    public PythonObject __rdiv__(PythonObject other) {
-        throw new UnsupportedOperationException("__rdiv__");
-    }
-
-    public PythonObject __rtruediv__(PythonObject other) {
-        throw new UnsupportedOperationException("__rtruediv__");
-    }
-
-    public PythonObject __rfloordiv__(PythonObject other) {
-        throw new UnsupportedOperationException("__rfloordiv__");
-    }
-
-    public PythonObject __rmod__(PythonObject other) {
-        throw new UnsupportedOperationException("__rmod__");
-    }
-
-    public PythonObject __rdivmod__(PythonObject other) {
-        throw new UnsupportedOperationException("__rdivmod__");
-    }
-
-    public PythonObject __rpow__(PythonObject other) {
-        throw new UnsupportedOperationException("__rpow__");
-    }
-
-    public PythonObject __rlshift__(PythonObject other) {
-        throw new UnsupportedOperationException("__rlshift__");
-    }
-
-    public PythonObject __rrshift__(PythonObject other) {
-        throw new UnsupportedOperationException("__rrshift__");
-    }
-
-    public PythonObject __rand__(PythonObject other) {
-        throw new UnsupportedOperationException("__rand__");
-    }
-
-    public PythonObject __rxor__(PythonObject other) {
-        throw new UnsupportedOperationException("__rxor__");
-    }
-
-    public PythonObject __ror__(PythonObject other) {
-        throw new UnsupportedOperationException("__ror__");
+    public PythonObject __or__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__or__")));
+        return NONE;
     }
 
 
-    public PythonObject __iadd__(PythonObject other) {
-        throw new UnsupportedOperationException("__iadd__");
+    public PythonObject __div__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__div__")));
+        return NONE;
     }
 
-    public PythonObject __isub__(PythonObject other) {
-        throw new UnsupportedOperationException("__isub__");
-    }
-
-    public PythonObject __imul__(PythonObject other) {
-        throw new UnsupportedOperationException("__imul__");
-    }
-
-    public PythonObject __idiv__(PythonObject other) {
-        throw new UnsupportedOperationException("__idiv__");
-    }
-
-    public PythonObject __itruediv__(PythonObject other) {
-        throw new UnsupportedOperationException("__itruediv__");
-    }
-
-    public PythonObject __ifloordiv__(PythonObject other) {
-        throw new UnsupportedOperationException("__ifloordiv__");
-    }
-
-    public PythonObject __imod__(PythonObject other) {
-        throw new UnsupportedOperationException("__imod__");
-    }
-
-    public PythonObject __ipow__(PythonObject other) {
-        throw new UnsupportedOperationException("__ipow__");
-    }
-
-    public PythonObject __ipow__(PythonObject other, PythonObject moduo) {
-        throw new UnsupportedOperationException("__ipow__");
-    }
-
-    public PythonObject __ilshift__(PythonObject other) {
-        throw new UnsupportedOperationException("__ilshift__");
-    }
-
-    public PythonObject __irshift__(PythonObject other) {
-        throw new UnsupportedOperationException("__irshift__");
-    }
-
-    public PythonObject __iand__(PythonObject other) {
-        throw new UnsupportedOperationException("__iand__");
-    }
-
-    public PythonObject __ixor__(PythonObject other) {
-        throw new UnsupportedOperationException("__ixor__");
-    }
-
-    public PythonObject __ior__(PythonObject other) {
-        throw new UnsupportedOperationException("__ior__");
-    }
-
-    public PythonObject __pos__() {
-        throw new UnsupportedOperationException("__pos__");
-    }
-
-    public PythonObject __abs__() {
-        throw new UnsupportedOperationException("__abs__");
-    }
-
-    public PythonObject __invert__() {
-        throw new UnsupportedOperationException("__invert__");
+    public PythonObject __truediv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__truediv__")));
+        return NONE;
     }
 
 
-    public PythonObject __complex__() {
-        throw new UnsupportedOperationException("__or__");
+    public PythonObject __radd__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__radd__")));
+        return NONE;
+    }
+
+    public PythonObject __rsub__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rsub__")));
+        return NONE;
+    }
+
+    public PythonObject __rmul__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rmul__")));
+        return NONE;
+    }
+
+    public PythonObject __rdiv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rdiv__")));
+        return NONE;
+    }
+
+    public PythonObject __rtruediv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rtruediv__")));
+        return NONE;
+    }
+
+    public PythonObject __rfloordiv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rfloordiv__")));
+        return NONE;
+    }
+
+    public PythonObject __rmod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rmod__")));
+        return NONE;
+    }
+
+    public PythonObject __rdivmod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rdivmod__")));
+        return NONE;
+    }
+
+    public PythonObject __rpow__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rpow__")));
+        return NONE;
+    }
+
+    public PythonObject __rlshift__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rlshift__")));
+        return NONE;
+    }
+
+    public PythonObject __rrshift__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rrshift__")));
+        return NONE;
+    }
+
+    public PythonObject __rand__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rand__")));
+        return NONE;
+    }
+
+    public PythonObject __rxor__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__rxor__")));
+        return NONE;
+    }
+
+    public PythonObject __ror__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ror__")));
+        return NONE;
     }
 
 
-    public PythonObject __oct__() {
-        throw new UnsupportedOperationException("__oct__");
+    public PythonObject __iadd__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__iadd__")));
+        return NONE;
     }
 
-    public PythonObject __hex__() {
-        throw new UnsupportedOperationException("__hex__");
+    public PythonObject __isub__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__isub__")));
+        return NONE;
+    }
+
+    public PythonObject __imul__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__imul__")));
+        return NONE;
+    }
+
+    public PythonObject __idiv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__idiv__")));
+        return NONE;
+    }
+
+    public PythonObject __itruediv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__itruediv__")));
+        return NONE;
+    }
+
+    public PythonObject __ifloordiv__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ifloordiv__")));
+        return NONE;
+    }
+
+    public PythonObject __imod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__imod__")));
+        return NONE;
+    }
+
+    public PythonObject __ipow__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ipow__")));
+        return NONE;
+    }
+
+    public PythonObject __ipow__(ThreadContext context, PythonObject other, PythonObject moduo) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ipow__")));
+        return NONE;
+    }
+
+    public PythonObject __ilshift__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ilshift__")));
+        return NONE;
+    }
+
+    public PythonObject __irshift__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__irshift__")));
+        return NONE;
+    }
+
+    public PythonObject __iand__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__iand__")));
+        return NONE;
+    }
+
+    public PythonObject __ixor__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ixor__")));
+        return NONE;
+    }
+
+    public PythonObject __ior__(ThreadContext context, PythonObject other) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__ior__")));
+        return NONE;
+    }
+
+    public PythonObject __pos__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__pos__")));
+        return NONE;
+    }
+
+    public PythonObject __abs__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__abs__")));
+        return NONE;
+    }
+
+    public PythonObject __invert__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__invert__")));
+        return NONE;
     }
 
 
-    public PythonObject __index__() {
-        throw new UnsupportedOperationException("__index__");
+    public PythonObject __complex__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__or__")));
+        return NONE;
     }
 
 
-    public PythonObject __enter__() {
-        throw new UnsupportedOperationException("__enter__");
+    public PythonObject __oct__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__oct__")));
+        return NONE;
     }
 
-    public PythonObject __exit__(PythonObject execType, PythonObject execValue, PythonObject trackBack) {
-        throw new UnsupportedOperationException("__exit__");
+    public PythonObject __hex__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__hex__")));
+        return NONE;
+    }
+
+
+    public PythonObject __index__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__index__")));
+        return NONE;
+    }
+
+
+    public PythonObject __enter__(ThreadContext context) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__enter__")));
+        return NONE;
+    }
+
+    public PythonObject __exit__(ThreadContext context, PythonObject execType, PythonObject execValue, PythonObject trackBack) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__exit__")));
+        return NONE;
     }
 
     protected static String collectionToString(Collection<?> col, String delimiter) {

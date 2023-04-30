@@ -32,10 +32,10 @@ public class While extends Suite {
         return body;
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
 
-        while (test.dereference().asBoolean() && !GlobalScope.BREAK) {
-            super.__call__();
+        while (test.dereference().asBoolean(context) && !GlobalScope.BREAK) {
+            super.__call__(context);
             if (GlobalScope.CONTINUE) {
                 GlobalScope.CONTINUE = false;
                 Suite.BREAKOUT = false;
@@ -43,7 +43,7 @@ public class While extends Suite {
         }
 
         if (els != null && !GlobalScope.BREAK) {
-            els.__call__();
+            els.__call__(context);
         }
 
         if (GlobalScope.BREAK) {

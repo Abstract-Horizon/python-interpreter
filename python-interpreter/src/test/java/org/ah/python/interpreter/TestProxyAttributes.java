@@ -13,7 +13,7 @@ import org.ah.python.modules.TimeModule;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestProxyAttributes {
+public class TestProxyAttributes extends BaseTestClass {
 
     private ByteArrayOutputStream res;
 
@@ -41,7 +41,7 @@ public class TestProxyAttributes {
         });
 
         proxyType.__setattr__("ExternalObject", new Function() {
-            @Override public PythonObject call0() {
+            @Override public PythonObject call0(ThreadContext context) {
                 return new ExternalObject();
             }
         });
@@ -55,7 +55,7 @@ public class TestProxyAttributes {
               + "print(x.value)\n"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("initialValue\n", result());
     }
@@ -69,7 +69,7 @@ public class TestProxyAttributes {
               + "print(x.value)\n"
               );
 
-        module.__call__();
+        module.__call__(context);
 
         assertEquals("newValue\n", result());
     }

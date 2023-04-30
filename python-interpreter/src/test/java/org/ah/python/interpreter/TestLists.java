@@ -13,9 +13,9 @@ public class TestLists extends BaseTestClass {
               + "print(str(x[0]))\n"
               + "print(str(x[1]))\n"
               );
-        
-        module.__call__();
-        
+
+        module.__call__(context);
+
         assertEquals("5\n6\n", result());
     }
 
@@ -27,9 +27,9 @@ public class TestLists extends BaseTestClass {
               + "print(str(x[0]))\n"
               + "print(str(x[1]))\n"
               );
-        
-        module.__call__();
-        
+
+        module.__call__(context);
+
         assertEquals("5\n7\n", result());
     }
 
@@ -41,9 +41,9 @@ public class TestLists extends BaseTestClass {
               + "print(str(x[0]))\n"
               + "print(str(x[1]))\n"
               );
-        
-        module.__call__();
-        
+
+        module.__call__(context);
+
         assertEquals("5\n9\n", result());
     }
 
@@ -60,10 +60,10 @@ public class TestLists extends BaseTestClass {
               + "  print(str(p['list'][1]))\n"
               + "x(p)\n"
               );
-        
-        module.__call__();
-        
+
+        module.__call__(context);
+
         assertEquals("0\n7.5\n", result());
     }
-    
+
 }

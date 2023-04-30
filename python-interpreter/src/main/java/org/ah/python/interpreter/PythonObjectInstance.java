@@ -31,21 +31,21 @@ public class PythonObjectInstance extends PythonObject {
         attributes.put(name, value);
     }
 
-    public PythonObject __getattr__(String name) {
+    public PythonObject __getattr__(ThreadContext context, String name) {
         if (attributes != null && attributes.containsKey(name)) {
             return attributes.get(name);
         }
-        return getType().__getattr__(name);
+        return getType().__getattr__(context, name);
     }
 
-    public PythonObject __setattr__(String name, PythonObject value) {
+    public PythonObject __setattr__(ThreadContext context, String name, PythonObject value) {
         setAttribute(name, value);
         return PythonNone.NONE;
     }
 
-    public PythonObject __delattr__(PythonObject key) {
+    public PythonObject __delattr__(ThreadContext context, PythonObject key) {
         if (attributes != null) {
-            attributes.remove(key.asString());
+            attributes.remove(key.asString(context));
         }
         return PythonNone.NONE;
     }

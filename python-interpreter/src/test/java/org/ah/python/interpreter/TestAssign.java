@@ -6,8 +6,7 @@ import org.junit.Test;
 
 public class TestAssign extends BaseTestClass {
 
-    @Test
-    public void testAssign() {
+    @Test public void testAssign() {
         Block block = new Block();
 
         Reference reference = new Reference(null, "a");
@@ -21,7 +20,7 @@ public class TestAssign extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) { }
 
-        assertEquals(context.currentScope.__getattr__("a").asString(), "value");
+        assertEquals(context.currentScope.__getattr__(context, "a").asString(context), "value");
 
         contextIsEmpty();
     }
@@ -37,13 +36,13 @@ public class TestAssign extends BaseTestClass {
             "g = e + 1"
         );
 
-        assertEquals(context.currentScope.__getattr__("a").asInteger(), 5);
-        assertEquals(context.currentScope.__getattr__("b").asString(), "value");
-        assertEquals(context.currentScope.__getattr__("c").asInteger(), 7);
-        assertEquals(context.currentScope.__getattr__("d").asInteger(), 7);
-        assertEquals(context.currentScope.__getattr__("e").asInteger(), 15);
-        assertEquals(context.currentScope.__getattr__("f").asInteger(), 15);
-        assertEquals(context.currentScope.__getattr__("g").asInteger(), 16);
+        assertEquals(context.currentScope.__getattr__(context, "a").asInteger(context), 5);
+        assertEquals(context.currentScope.__getattr__(context, "b").asString(context), "value");
+        assertEquals(context.currentScope.__getattr__(context, "c").asInteger(context), 7);
+        assertEquals(context.currentScope.__getattr__(context, "d").asInteger(context), 7);
+        assertEquals(context.currentScope.__getattr__(context, "e").asInteger(context), 15);
+        assertEquals(context.currentScope.__getattr__(context, "f").asInteger(context), 15);
+        assertEquals(context.currentScope.__getattr__(context, "g").asInteger(context), 16);
 
         assertEquals("7\n", result());
 
@@ -57,7 +56,7 @@ public class TestAssign extends BaseTestClass {
             "print(a)"
         );
 
-        assertEquals(context.currentScope.__getattr__("a").asInteger(), 6);
+        assertEquals(context.currentScope.__getattr__(context, "a").asInteger(context), 6);
         assertEquals("6\n", result());
         contextIsEmpty();
     }

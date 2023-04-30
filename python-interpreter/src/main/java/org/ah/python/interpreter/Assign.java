@@ -18,8 +18,8 @@ public class Assign extends PythonObject {
 
             PythonObject expression = context.popData();
 
-            // System.out.println("Assigning to " + ref + " with name " + reference.getName() + " value of " + expression);
-            ref.__setattr__(referenceObject.getName(), expression);
+            System.out.println("Assigning to " + ref + " with name " + referenceObject.getName() + " value of " + expression);
+            ref.__setattr__(context, referenceObject.getName(), expression);
             return expression;
         }
     };
@@ -50,10 +50,11 @@ public class Assign extends PythonObject {
     }
 
     public PythonObject dereference() {
-        return __call__();
+        // return __call__(context);
+        throw new UnsupportedOperationException("Assign.dereference");
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         PythonObject evaluatedExpression = expression.dereference();
 //        reference.assign(evaluatedExpression);
         return evaluatedExpression;

@@ -13,7 +13,7 @@ public class Global extends PythonObject {
         }
     }
 
-    public PythonObject __call__() {
+    public PythonObject __call__(ThreadContext context) {
         Scope currentScope = GlobalScope.currentScope();
         if (!(currentScope instanceof ExecutionScope)) {
             throw new IllegalStateException("Globals are only allowed in defs");

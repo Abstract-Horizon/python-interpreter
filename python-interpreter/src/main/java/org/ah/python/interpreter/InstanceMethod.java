@@ -4,7 +4,7 @@ import org.ah.python.interpreter.util.UnsupportedFunction;
 
 public class InstanceMethod<T extends PythonObject> extends PythonObject implements CallableType {
 
-    public PythonObject __call__(PythonObject[] args) {
+    public PythonObject __call__(ThreadContext context, PythonObject[] args) {
         if (args == null || args.length < 1) {
             throw new IllegalStateException("Instance method called with no arguments");
         }
@@ -13,11 +13,11 @@ public class InstanceMethod<T extends PythonObject> extends PythonObject impleme
         for (int i = 1; i < args.length; i++) {
             argsReduced[i - 1] = args[i];
         }
-        return __call__(self, argsReduced);
+        return __call__(context, self, argsReduced);
     }
 
     @SuppressWarnings("unchecked")
-    public PythonObject __call__(PythonObject self, PythonObject[] args) {
+    public PythonObject __call__(ThreadContext context, PythonObject self, PythonObject[] args) {
         if (args.length == 0) {
             return call0((T)self);
         } else if (args.length == 1) {
@@ -37,23 +37,23 @@ public class InstanceMethod<T extends PythonObject> extends PythonObject impleme
     protected PythonObject call0(T self) {
         throw new UnsupportedFunction(this, "__call__()");
     }
-    
+
     protected PythonObject call0(T self, PythonObject arg) {
         throw new UnsupportedFunction(this, "__call__(arg)");
     }
-    
+
     protected PythonObject call0(T self, PythonObject arg1, PythonObject arg2) {
         throw new UnsupportedFunction(this, "__call__(arg1, arg2)");
     }
-    
+
     protected PythonObject call0(T self, PythonObject arg1, PythonObject arg2, PythonObject arg3) {
         throw new UnsupportedFunction(this, "__call__(arg1, arg2, arg3)");
     }
-    
+
     protected PythonObject call0(T self, PythonObject arg1, PythonObject arg2, PythonObject arg3, PythonObject arg4) {
         throw new UnsupportedFunction(this, "__call__(arg1, arg2, arg3, arg4)");
     }
-    
+
     protected PythonObject call0(T self, PythonObject arg1, PythonObject arg2, PythonObject arg3, PythonObject arg4, PythonObject arg5) {
         throw new UnsupportedFunction(this, "__call__(arg1, arg2, arg3, arg4, arg5)");
     }
