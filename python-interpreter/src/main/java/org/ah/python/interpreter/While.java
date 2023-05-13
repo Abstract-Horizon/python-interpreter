@@ -1,20 +1,14 @@
 package org.ah.python.interpreter;
 
-public class While extends Suite {
+public class While extends PythonObject {
 
     private PythonObject test;
-    private Suite els = new Suite();
-    private Suite body = null;
 
     private Block block = new Block();
     private Block elseBlock = new Block();
 
     public While(PythonObject test) {
         this.test = test;
-    }
-
-    public Suite getElse() {
-        return els;
     }
 
     public Block getBlock() {
@@ -25,37 +19,29 @@ public class While extends Suite {
         return elseBlock;
     }
 
-    public Suite getBody() {
-        if (body == null) {
-            body = new Suite(asList());
-        }
-        return body;
-    }
-
-    public PythonObject __call__(ThreadContext context) {
-
-        while (test.dereference().asBoolean(context) && !GlobalScope.BREAK) {
-            super.__call__(context);
-            if (GlobalScope.CONTINUE) {
-                GlobalScope.CONTINUE = false;
-                Suite.BREAKOUT = false;
+    private ThreadContext.Executable whiteContinuation = new ThreadContext.Executable() {
+        @Override public PythonObject execute(ThreadContext context) {
+            if (context.a.asBoolean(context)) {
+                context.pushPC(whiteContinuation);
+                context.pushPC(test);
+                return block.execute(context);
             }
+            if (!elseBlock.getStatements().isEmpty()) {
+                return elseBlock.execute(context);
+            }
+            return null;
         }
+    };
 
-        if (els != null && !GlobalScope.BREAK) {
-            els.__call__(context);
-        }
+    public PythonObject execute(ThreadContext context) {
+        context.pushPC(whiteContinuation);
 
-        if (GlobalScope.BREAK) {
-            GlobalScope.BREAK = false;
-            Suite.BREAKOUT = false;
-        }
-        return PythonNone.NONE;
+        return test.execute(context);
     }
 
     public String toString() {
-        return "while " + test.toString() + ": " + super.toString() +
-                (els != null ? " else: " + els.toString() : "");
+        return "while " + test.toString() + ": " + block.toString() +
+                (elseBlock != null ? " else: " + elseBlock.toString() : "");
     }
 
 }

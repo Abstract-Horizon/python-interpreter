@@ -12,18 +12,18 @@ public abstract class PythonSequence extends PythonObject {
 
     public static void populateCommonSequenceObjects(PythonClass pythonClass) {
         pythonClass.__setattr__("__getitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__getitem__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__getitem__(context, args[1]);
             }
         });
         pythonClass.__setattr__("__setitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__setitem__(context, args.get(1), args.get(2));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__setitem__(context, args[1], args[2]);
             }
         });
         pythonClass.__setattr__("__delitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__delitem__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__delitem__(context, args[1]);
             }
         });
     }

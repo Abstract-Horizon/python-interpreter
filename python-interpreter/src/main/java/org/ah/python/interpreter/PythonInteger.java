@@ -3,10 +3,8 @@ package org.ah.python.interpreter;
 import static org.ah.python.interpreter.PythonBaseException.exception;
 import static org.ah.python.interpreter.PythonBoolean.FALSE;
 import static org.ah.python.interpreter.PythonBoolean.TRUE;
-import static org.ah.python.interpreter.PythonNone.NONE;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -43,28 +41,28 @@ public class PythonInteger extends PythonNumber {
         populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
 
         PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__and__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__and__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__or__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__or__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__xor__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__xor__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__lshift__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__lshift__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__rshift__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__rshift__(context, args[1]);
             }
         });
     }
@@ -232,18 +230,15 @@ public class PythonInteger extends PythonNumber {
     }
 
     public PythonObject __divmod__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__divmod__")));
-        return NONE;
+        return context.raise(exception("AttributeError", PythonString.valueOf("__divmod__")));
     }
 
     public PythonObject __pow__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
-        return NONE;
+        return context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
     }
 
     public PythonObject __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
-        return NONE;
+        return context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
     }
 
     public PythonObject __lshift__(ThreadContext context, PythonObject other) {

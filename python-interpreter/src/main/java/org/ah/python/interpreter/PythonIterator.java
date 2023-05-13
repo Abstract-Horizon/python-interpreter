@@ -27,13 +27,14 @@ public class PythonIterator extends PythonType {
         }
     }
 
-    public PythonObject __getattr__(final ThreadContext context, String name) {
-        if (!"__next__".equals(name)) {
-            return super.__getattr__(context, name);
-        }
-
-        PythonObject res = attributes.get(name);
-        if ("__int__".equals(name)) { res = new Function() { @Override public PythonObject call0(ThreadContext context) { return __int__(context); }}; attributes.put(name,  res); }
-        return res;
-    }
+// TODO
+//    public PythonObject __getattr__(final ThreadContext context, String name) {
+//        if (!"__next__".equals(name)) {
+//            return super.__getattr__(context, name);
+//        }
+//
+//        PythonObject res = attributes.get(name);
+//        if ("__int__".equals(name)) { res = new Function() { @Override public PythonObject call0(ThreadContext context) { return __int__(context); }}; attributes.put(name,  res); }
+//        return res;
+//    }
 }

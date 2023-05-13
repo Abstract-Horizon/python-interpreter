@@ -1267,7 +1267,6 @@ public class PythonParser {
         
                       If iff = new If(currentObject);
                       If originalIf = iff;
-                      Suite save = currentSuite; currentSuite = iff;
                       Block savedBlock = currentBlock; currentBlock = iff.getBlock();
                    
         suite();
@@ -1285,9 +1284,8 @@ public class PythonParser {
             }
              
                       If elif = new If(currentObject);
-                      iff.getElse().asList().add(elif);
+                      iff.getElseBlock().getStatements().add(elif);
                       iff = elif;
-                      currentSuite = elif;
                       currentBlock = elif.getBlock();
                    
             suite();
@@ -1303,14 +1301,12 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-             currentSuite = iff.getElse(); currentBlock = iff.getElseBlock(); 
+             currentBlock = iff.getElseBlock(); 
             suite();
         } 
         
-                       currentSuite = save;
-                       currentSuite.asList().add(originalIf);
                        currentBlock = savedBlock;
-                       currentBlock.getStatements().add(originalIf.getBlock());
+                       currentBlock.getStatements().add(originalIf);
                    
     } // if_stmt
 
@@ -1329,7 +1325,6 @@ public class PythonParser {
         }
         
                       While whle = new While(currentObject);
-                      Suite save = currentSuite; currentSuite = whle;
                       Block savedBlock = currentBlock; currentBlock = whle.getBlock();
                    
         suite();
@@ -1344,10 +1339,10 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-             currentSuite = whle.getElse(); currentBlock = whle.getElseBlock(); 
+             currentBlock = whle.getElseBlock(); 
             suite();
         } 
-         currentSuite = save; currentSuite.asList().add(whle); currentBlock = savedBlock; currentBlock.getStatements().add(whle); 
+         currentBlock = savedBlock; currentBlock.getStatements().add(whle); 
     } // while_stmt
 
     // public for_stmt<null> = "for" exprlist CODE "in" testlist COLON CODE suite ["else" COLON CODE suite] CODE;

@@ -9,86 +9,74 @@ public class TestIf extends BaseTestClass {
 
     @Test
     public void canInterpretIfPositive() {
-        PythonObject module = Interpreter.convertLines(
-                "if (5 == 5):",
-                "    print(\"TRUE\")"
-              );
-
-        module.__call__(context);
+        executeLines(
+            "if (5 == 5):",
+            "    print(\"TRUE\")"
+          );
 
         assertEquals("TRUE\n", result());
     }
 
     @Test
     public void canInterpretIfNegative() {
-        PythonObject module = Interpreter.convertLines(
-                "if (5 == 6):",
-                "    print(\"FALSE\")"
-              );
-
-        module.__call__(context);
+        executeLines(
+            "if (5 == 6):",
+            "    print(\"FALSE\")"
+        );
 
         assertEquals("", result());
     }
 
     @Test
     public void canInterpretElsePositive() {
-        PythonObject module = Interpreter.convertLines(
-                "if (5 == 6):",
-                "    print(\"FALSE\")",
-                "else:",
-                "    print(\"TRUE\")"
-              );
-
-        module.__call__(context);
+        executeLines(
+            "if (5 == 6):",
+            "    print(\"FALSE\")",
+            "else:",
+            "    print(\"TRUE\")"
+        );
 
         assertEquals("TRUE\n", result());
     }
 
     @Test
     public void canInterpretElseNegative() {
-        PythonObject module = Interpreter.convertLines(
-                "if (5 == 5):",
-                "    print(\"TRUE\")",
-                "else:",
-                "    print(\"FALSE\")"
-              );
-
-        module.__call__(context);
+        executeLines(
+            "if (5 == 5):",
+            "    print(\"TRUE\")",
+            "else:",
+            "    print(\"FALSE\")"
+        );
 
         assertEquals("TRUE\n", result());
     }
 
     @Test
     public void canInterpretElseIfPositive() {
-        PythonObject module = Interpreter.convertLines(
-                "if (5 == 6):",
-                "    print(\"FALSE\")",
-                "elif (5 == 5):",
-                "    print(\"TRUE\")",
-                "else:",
-                "    print(\"FALSE\")"
-              );
+        executeLines(
+            "if (5 == 6):",
+            "    print(\"1\")",
+            "elif (5 == 5):",
+            "    print(\"2\")",
+            "else:",
+            "    print(\"3\")"
+        );
 
-        module.__call__(context);
-
-        assertEquals("TRUE\n", result());
+        assertEquals("2\n", result());
     }
 
     @Test
     public void canInterpretElseIfNegative() {
-        PythonObject module = Interpreter.convertLines(
-                "if (5 == 6):",
-                "    print(\"FALSE\")",
-                "elif (5 == 7):",
-                "    print(\"FALSE\")",
-                "else:",
-                "    print(\"TRUE\")"
-              );
+        executeLines(
+            "if (5 == 6):",
+            "    print(\"1\")",
+            "elif (5 == 7):",
+            "    print(\"2\")",
+            "else:",
+            "    print(\"3\")"
+        );
 
-        module.__call__(context);
-
-        assertEquals("TRUE\n", result());
+        assertEquals("3\n", result());
     }
 
 }

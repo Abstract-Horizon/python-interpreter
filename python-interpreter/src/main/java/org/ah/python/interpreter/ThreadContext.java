@@ -88,7 +88,7 @@ public class ThreadContext {
         this.currentScope = scope;
     }
 
-    public void raise(PythonBaseException exception) {
+    public PythonObject raise(PythonBaseException exception) {
         throw new RuntimeException(exception.__str__(this).asString());
     }
 }

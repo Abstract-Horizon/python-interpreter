@@ -1,6 +1,5 @@
 package org.ah.python.interpreter;
 
-import java.util.List;
 import java.util.Map;
 
 public class PythonBoolean extends PythonNumber {
@@ -10,28 +9,28 @@ public class PythonBoolean extends PythonNumber {
     static {
         populateCommonNumberClassMethods(PYTHON_BOOL_CLASS);
         PYTHON_BOOL_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__and__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__and__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__or__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__or__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__xor__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__xor__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__lshift__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__lshift__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__rshift__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__rshift__(context, args[1]);
             }
         });
     }

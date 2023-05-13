@@ -1,6 +1,5 @@
 package org.ah.python.interpreter;
 
-import java.util.List;
 import java.util.Map;
 
 import org.ah.python.interpreter.util.StringIterator;
@@ -11,28 +10,28 @@ public class PythonString extends PythonObject {
 
     static {
         PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__add__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__add__(context, args[1]);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__len__(context);
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__len__(context);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__int__(context);
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__int__(context);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__float__(context);
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__float__(context);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__bool__(context);
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__bool__(context);
             }
         });
     }

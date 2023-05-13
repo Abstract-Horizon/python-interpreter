@@ -400,44 +400,39 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    <%
                       If iff = new If(currentObject);
                       If originalIf = iff;
-                      Suite save = currentSuite; currentSuite = iff;
                       Block savedBlock = currentBlock; currentBlock = iff.getBlock();
                    %>
                suite 
              { "elif" test COLON
                    <% 
                       If elif = new If(currentObject);
-                      iff.getElse().asList().add(elif);
+                      iff.getElseBlock().getStatements().add(elif);
                       iff = elif;
-                      currentSuite = elif;
                       currentBlock = elif.getBlock();
                    %>
                suite 
              } 
              [ "else" COLON 
-                   <% currentSuite = iff.getElse(); currentBlock = iff.getElseBlock(); %>
+                   <% currentBlock = iff.getElseBlock(); %>
                suite 
              ]
                    <%
-                       currentSuite = save;
-                       currentSuite.asList().add(originalIf);
                        currentBlock = savedBlock;
-                       currentBlock.getStatements().add(originalIf.getBlock());
+                       currentBlock.getStatements().add(originalIf);
                    %>
              ;
 
     while_stmt = "while" test COLON 
                    <%
                       While whle = new While(currentObject);
-                      Suite save = currentSuite; currentSuite = whle;
                       Block savedBlock = currentBlock; currentBlock = whle.getBlock();
                    %>
                   suite 
                [ "else" COLON 
-                   <% currentSuite = whle.getElse(); currentBlock = whle.getElseBlock(); %>
+                   <% currentBlock = whle.getElseBlock(); %>
                  suite 
                ]
-                   <% currentSuite = save; currentSuite.asList().add(whle); currentBlock = savedBlock; currentBlock.getStatements().add(whle); %>
+                   <% currentBlock = savedBlock; currentBlock.getStatements().add(whle); %>
                ;
 
     for_stmt = "for" exprlist <% PythonObject target = currentObject; %>

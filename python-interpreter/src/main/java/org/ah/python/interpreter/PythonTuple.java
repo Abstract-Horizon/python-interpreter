@@ -1,7 +1,6 @@
 package org.ah.python.interpreter;
 
 import static org.ah.python.interpreter.PythonBaseException.exception;
-import static org.ah.python.interpreter.PythonNone.NONE;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,13 +13,13 @@ public class PythonTuple extends PythonSequence {
 
     static {
         PYTHON_TUPLE_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__add__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__add__(context, args[1]);
             }
         });
         PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, List<PythonObject> args, Map<String, PythonObject> kwargs) {
-                return args.get(0).__getitem__(context, args.get(1));
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                return args[0].__getitem__(context, args[1]);
             }
         });
     }
@@ -94,14 +93,12 @@ public class PythonTuple extends PythonSequence {
 
     @Override
     public PythonObject __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__setitem__")));
-        return NONE;
+        return context.raise(exception("AttributeError", PythonString.valueOf("__setitem__)")));
     }
 
     @Override
     public PythonObject __delitem__(ThreadContext context, PythonObject key) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__delitem__")));
-        return NONE;
+        return context.raise(exception("AttributeError", PythonString.valueOf("__delitem__)")));
     }
 
     public String toString() {

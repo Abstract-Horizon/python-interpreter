@@ -4,6 +4,7 @@ import static org.ah.python.interpreter.util.MapBuilder.newmap;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Map;
 
 import org.ah.python.modules.BuiltInFunctions;
 import org.ah.python.modules.MathModule;
@@ -41,7 +42,7 @@ public class TestProxyAttributes extends BaseTestClass {
         });
 
         proxyType.__setattr__("ExternalObject", new Function() {
-            @Override public PythonObject call0(ThreadContext context) {
+            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 return new ExternalObject();
             }
         });

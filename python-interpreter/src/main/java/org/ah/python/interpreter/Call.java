@@ -24,18 +24,18 @@ public class Call extends PythonObject {
             if (function instanceof BuiltInMethod) {
                 int argNo = args.length;
 
-                List<PythonObject> args = new ArrayList<PythonObject>();
+                PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {
-                    args.add(context.popData());
+                    args[i] = context.popData();
                 }
 
                 return ((Function)function).execute(context, args, null);
             } else if (function instanceof BuiltInBoundMethod) {
                 int argNo = args.length + 1;
 
-                List<PythonObject> args = new ArrayList<PythonObject>();
+                PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {
-                    args.add(context.popData());
+                    args[i] = context.popData();
                 }
 
                 return ((Function)function).execute(context, args, null);
@@ -44,9 +44,9 @@ public class Call extends PythonObject {
             } else {
                 int argNo = args.length;
 
-                List<PythonObject> args = new ArrayList<PythonObject>();
+                PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {
-                    args.add(context.popData());
+                    args[i] = context.popData();
                 }
 
                 return ((Function)function).execute(context, args, null);
