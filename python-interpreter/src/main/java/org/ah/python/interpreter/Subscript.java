@@ -45,6 +45,19 @@ public class Subscript extends PythonObject implements Assignable {
         throw new UnsupportedOperationException("Superscript.dereference");
     }
 
+    public PythonObject execute(ThreadContext context) {
+        if (from == null && to == null) {
+            return scope;
+        } else if (from == null) {
+
+        } else if (to == null) {
+
+        } else if (from == to) {
+
+        }
+        return null;
+    }
+
     public void assign(ThreadContext context, PythonObject expr) {
         PythonSlice slice;
         if (from == null && to == null) {

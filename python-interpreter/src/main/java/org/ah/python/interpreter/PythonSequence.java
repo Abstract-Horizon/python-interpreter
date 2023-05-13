@@ -6,7 +6,7 @@ import static org.ah.python.interpreter.PythonBoolean.TRUE;
 import java.util.List;
 import java.util.Map;
 
-public class PythonSequence extends PythonObject {
+public abstract class PythonSequence extends PythonObject {
 
     public static PythonClass PYTHON_SEQUENCE_CLASS = new PythonClass("Sequence");
 
@@ -40,5 +40,6 @@ public class PythonSequence extends PythonObject {
         return __len__(context).asInteger(context) != 0;
     }
 
+    public abstract List<PythonObject> asList();
 
 }

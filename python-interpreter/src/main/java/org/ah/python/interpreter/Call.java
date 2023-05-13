@@ -40,7 +40,7 @@ public class Call extends PythonObject {
 
                 return ((Function)function).execute(context, args, null);
             } else if (function instanceof BoundMethod) {
-
+                throw new UnsupportedOperationException("Not implemented for BoundMethod");
             } else {
                 int argNo = args.length;
 
@@ -51,8 +51,6 @@ public class Call extends PythonObject {
 
                 return ((Function)function).execute(context, args, null);
             }
-
-            throw new RuntimeException("TypeError: object '" + function.pythonClass + "' is not callable");
         }
     };
 
@@ -151,86 +149,6 @@ public class Call extends PythonObject {
         }
     }
 
-
-//    @Override
-//    public PythonObject __call__(PythonObject[] args) {
-//        PythonObject[] finalArgs;
-//        if (args.length > 0) {
-//            if (this.args.length == 0) {
-//                int l = args.length;
-//                if (l == 0) {
-//                    finalArgs = EMPTY_ARRAY;
-//                } else if (l == 1) {
-//                    if (args1 == null) { args1 = new PythonObject[1]; /* System.out.println("*");*/ }
-//                    finalArgs = args1;
-//                    finalArgs[0] = args[0].dereference();
-//                } else if (l == 2) {
-//                    if (args2 == null) { args2 = new PythonObject[2]; /* System.out.println("*");*/ }
-//                    finalArgs = args2;
-//                    finalArgs[0] = args[0].dereference();
-//                    finalArgs[1] = args[1].dereference();
-//                } else if (l == 3) {
-//                    if (args3 == null) { args3 = new PythonObject[3]; /* System.out.println("*");*/ }
-//                    finalArgs = args3;
-//                    finalArgs[0] = args[0].dereference();
-//                    finalArgs[1] = args[1].dereference();
-//                    finalArgs[2] = args[2].dereference();
-//                } else if (l == 4) {
-//                    if (args4 == null) { args4 = new PythonObject[4]; /* System.out.println("*");*/ }
-//                    finalArgs = args4;
-//                    finalArgs[0] = args[0].dereference();
-//                    finalArgs[1] = args[1].dereference();
-//                    finalArgs[2] = args[2].dereference();
-//                    finalArgs[3] = args[3].dereference();
-//                } else if (l == 5) {
-//                    if (args5 == null) { args5 = new PythonObject[5]; /* System.out.println("*");*/ }
-//                    finalArgs = args5;
-//                    finalArgs[0] = args[0].dereference();
-//                    finalArgs[1] = args[1].dereference();
-//                    finalArgs[2] = args[2].dereference();
-//                    finalArgs[3] = args[3].dereference();
-//                    finalArgs[4] = args[4].dereference();
-//                } else {
-//                    finalArgs = new PythonObject[this.args.length];/* System.out.println("*");*/
-//                    int i = 0;
-//                    for (PythonObject a : this.args) {
-//                        PythonObject d = a.dereference();
-//                        finalArgs[i] = d;
-//                        i++;
-//                    }
-//                }
-//            } else {
-//                finalArgs = new PythonObject[this.args.length + args.length];/* System.out.println("*");*/
-//                int i = 0;
-//                for (PythonObject a : this.args) {
-//                    PythonObject d = a.dereference();
-//                    finalArgs[i] = d;
-//                    i++;
-//                }
-//                for (PythonObject a : args) {
-//                    PythonObject d = a.dereference();
-//                    finalArgs[i] = d;
-//                    i++;
-//                }
-//            }
-//            PythonObject derefFunct = function.dereference();
-//            if (derefFunct instanceof InstanceMethod) {
-//                if (function instanceof Reference) {
-//                    Reference reference = (Reference)function;
-//                    @SuppressWarnings("unchecked")
-//                    InstanceMethod<PythonObject> instanceMethod = (InstanceMethod<PythonObject>)derefFunct;
-//                    return instanceMethod.__call__(reference.getDereferencedScope(), finalArgs);
-//                } else {
-//                    throw new UnsupportedOperationException("__call__ on instance method and not on a referenced object. Obj: " +  function);
-//                }
-//            } else {
-//                return derefFunct.__call__(finalArgs);
-//            }
-//        } else {
-//            return __call__();
-//        }
-//
-//    }
 
     public String toString() {
         return "Call[" + function + "](" + collectionToString(Arrays.asList(args), ", ") + ")";

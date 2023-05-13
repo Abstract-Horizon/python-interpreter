@@ -67,6 +67,7 @@ public class Scope extends PythonObject {
         if (parentScope != null) {
             return parentScope.__getattr__(context, attr);
         }
+        context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + pythonClass.toString() + "' object has no attribute '" + attr + "'")));
         return PythonNone.NONE;
     }
 

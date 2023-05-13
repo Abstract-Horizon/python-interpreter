@@ -51,32 +51,14 @@ public class PythonList extends PythonSequence {
     }
 
     public PythonList(List<PythonObject> list) {
-        this.list = list;
         this.pythonClass = PYTHON_LIST_CLASS;
+        this.list = list;
     }
 
 
     public PythonType getType() {
         return TYPE;
     }
-
-
-    public static PythonObject constructor(final List<PythonObject> elements) {
-        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
-            return new Constructor() {
-                @Override public PythonObject __call__(ThreadContext context) {
-                    PythonList list = new PythonList();
-                    for (PythonObject o : storedElements) {
-                        PythonObject r = o.dereference();
-                        list.asList().add(r);
-                    }
-                    return list;
-                }
-                @Override public String toString() {
-                    return "CreateList" + storedElements;
-                }
-        };
-    };
 
     public boolean isConstant() {
         for (PythonObject v : asList()) {
@@ -293,4 +275,24 @@ public class PythonList extends PythonSequence {
             context.raise(exception("AttributeError", PythonString.valueOf("Remove on List Iterator")));
         }
     }
+
+
+
+    public static PythonObject constructor(final List<PythonObject> elements, PythonClass pythonClass) {
+        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
+            return new Constructor() {
+                @Override public PythonObject __call__(ThreadContext context) {
+                    PythonList list = new PythonList();
+                    for (PythonObject o : storedElements) {
+                        PythonObject r = o.dereference();
+                        list.asList().add(r);
+                    }
+                    return list;
+                }
+                @Override public String toString() {
+                    return "CreateList" + storedElements;
+                }
+        };
+    };
+
 }

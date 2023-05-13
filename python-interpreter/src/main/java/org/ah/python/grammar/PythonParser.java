@@ -679,7 +679,7 @@ public class PythonParser {
         } else if ((id == PythonScanner.TOKEN_EQ) || (id == PythonScanner.TOKEN_SEMICOLON) || (id == PythonScanner.TOKEN_NEWLINE)) {
             
                          if (targets.size() > 1) {
-                             PythonObject tuple = PythonTuple.constructor(targets);
+                             PythonObject tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
                              targets.clear();
                              targets.add(tuple);
                          }
@@ -699,7 +699,7 @@ public class PythonParser {
                             if (currentList.size() == 1) {
                                 targets.add(currentList.get(0));
                             } else {
-                                PythonObject tuple = PythonTuple.constructor(currentList);
+                                PythonObject tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
                                 targets.add(tuple);
                             }
                             currentList.clear();
@@ -2132,7 +2132,7 @@ public class PythonParser {
                     testlist_comp();
                      
                       if (trailingComma || currentList.size() > 1) {
-                          currentObject = PythonTuple.constructor(currentList);
+                          currentObject = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
                       } else {
                           currentObject = currentList.get(0);
                       }
@@ -2159,7 +2159,7 @@ public class PythonParser {
                 testlist_comp();
             } 
              
-                currentObject = PythonList.constructor(currentList);
+                currentObject = new PythonListGenerator(currentList,  PythonList.PYTHON_LIST_CLASS);
                 scanner.popNotInStatement(); 
              
             if (id == PythonScanner.TOKEN_RBRACK) {
@@ -2365,7 +2365,9 @@ public class PythonParser {
  PythonObject target = currentObject; 
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             test();
-             currentObject = new Subscript(target, currentObject); 
+             
+                      currentObject = new Call(new Reference(target, "__getitem__"), asList(currentObject));
+                  
         } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_COLON) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
              
                    PythonObject from = null;
@@ -2387,7 +2389,19 @@ public class PythonParser {
             if ((id == PythonScanner.TOKEN_COLON)) {
                 sliceop();
             } 
-             currentObject = new Subscript(target, from, to); 
+            
+                      // currentObject = new Subscript(target, from, to);
+                      if (from == null && to == null) {
+                          // return target;
+                          throw new UnsupportedOperationException("Subscript/Slice without parameters. How could this happen?");
+                      } else if (from == null) {
+                          throw new UnsupportedOperationException("Slice");
+                      } else if (to == null) {
+                          throw new UnsupportedOperationException("Slice");
+                      } else {
+                          currentObject = new Call(new Reference(target, "__getitem__"), asList(from));
+                      }
+                  
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,COLON,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }

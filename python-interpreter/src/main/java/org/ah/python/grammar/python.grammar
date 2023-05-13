@@ -265,7 +265,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                     )
                 |   <%
                          if (targets.size() > 1) {
-                             PythonObject tuple = PythonTuple.constructor(targets);
+                             PythonObject tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
                              targets.clear();
                              targets.add(tuple);
                          }
@@ -277,7 +277,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             if (currentList.size() == 1) {
                                 targets.add(currentList.get(0));
                             } else {
-                                PythonObject tuple = PythonTuple.constructor(currentList);
+                                PythonObject tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
                                 targets.add(tuple);
                             }
                             currentList.clear();
@@ -668,7 +668,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                  | <% trailingComma = false; %> testlist_comp 
                    <% 
                       if (trailingComma || currentList.size() > 1) {
-                          currentObject = PythonTuple.constructor(currentList);
+                          currentObject = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
                       } else {
                           currentObject = currentList.get(0);
                       }
@@ -680,7 +680,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
              <% currentList = new ArrayList<PythonObject>(); // just in case we don't get to testlist_comp %>
                  [ testlist_comp ] 
              <% 
-                currentObject = PythonList.constructor(currentList);
+                currentObject = new PythonListGenerator(currentList,  PythonList.PYTHON_LIST_CLASS);
                 scanner.popNotInStatement(); 
              %>
              RBRACK
@@ -768,7 +768,10 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                   ;
 
     subscript = <% PythonObject target = currentObject; %> 
-              ( test <% currentObject = new Subscript(target, currentObject); %>
+              ( test 
+                  <% 
+                      currentObject = new Call(new Reference(target, "__getitem__"), asList(currentObject));
+                  %>
               | <% 
                    PythonObject from = null;
                    PythonObject to = null;
@@ -777,7 +780,19 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                   COLON 
                   [ test <% to = currentObject; %> ] 
                   [ sliceop ] 
-                  <% currentObject = new Subscript(target, from, to); %>
+                  <%
+                      // currentObject = new Subscript(target, from, to);
+                      if (from == null && to == null) {
+                          // return target;
+                          throw new UnsupportedOperationException("Subscript/Slice without parameters. How could this happen?");
+                      } else if (from == null) {
+                          throw new UnsupportedOperationException("Slice");
+                      } else if (to == null) {
+                          throw new UnsupportedOperationException("Slice");
+                      } else {
+                          currentObject = new Call(new Reference(target, "__getitem__"), asList(from));
+                      }
+                  %>
               )
               ;
 
