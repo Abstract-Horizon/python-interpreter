@@ -258,7 +258,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                                 }
                                 
                                 // TODO Add this!!!
-                                Assign assign = new Assign(target, binaryOp);
+                                PythonObject assign = Assign.createAssignment(target, binaryOp);
                                 currentSuite.asList().add(assign);
                             }
                          %>
@@ -286,7 +286,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                     }
                     <%
                         while (targets.size() > 1) {
-                            Assign assign = new Assign(targets.get(targets.size() - 2), targets.get(targets.size() - 1));
+                            PythonObject assign = Assign.createAssignment(targets.get(targets.size() - 2), targets.get(targets.size() - 1));
                             targets.remove(targets.size() - 1);
                             targets.remove(targets.size() - 1);
                             targets.add(assign);

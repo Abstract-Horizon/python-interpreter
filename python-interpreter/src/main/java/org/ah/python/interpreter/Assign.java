@@ -63,4 +63,29 @@ public class Assign extends PythonObject {
     public String toString() {
         return reference.toString() + " = " + expression.toString();
     }
+
+    public static PythonObject createAssignment(PythonObject reference, PythonObject expression) {
+        if (reference instanceof Call) {
+            Call call = (Call)reference;
+            if (call.function instanceof Reference) {
+                Reference callReference = (Reference)call.function;
+                if (callReference.name == "__getitem__") {
+                    callReference.name = "__setitem__";
+                    PythonObject[] newArgs = new PythonObject[call.args.length + 1];
+                    System.arraycopy(call.args, 0, newArgs, 0, call.args.length);
+                    newArgs[call.args.length] = expression;
+                    call.args = newArgs;
+                    return call;
+                } else if (callReference.name == "__getattr__") {
+                    callReference.name = "__setattr__";
+                    PythonObject[] newArgs = new PythonObject[call.args.length + 1];
+                    System.arraycopy(call.args, 0, newArgs, 0, call.args.length);
+                    newArgs[call.args.length] = expression;
+                    call.args = newArgs;
+                    return call;
+                }
+            }
+        }
+        return new Assign(reference, expression);
+    }
 }

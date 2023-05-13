@@ -2,8 +2,8 @@ package org.ah.python.interpreter;
 
 public class Reference extends PythonObject implements Assignable {
 
-    private PythonObject scope;
-    private String name;
+    protected PythonObject scope;
+    protected String name;
 
     private PythonObject dereferencedScope;
 

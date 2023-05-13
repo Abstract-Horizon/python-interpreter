@@ -8,8 +8,8 @@ public class Call extends PythonObject {
 
     public static final PythonObject[] EMPTY_ARRAY = new PythonObject[0];
 
-    private PythonObject function;
-    private PythonObject[] args;
+    protected PythonObject function;
+    protected PythonObject[] args;
     private PythonObject[] args1;
     private PythonObject[] args2;
     private PythonObject[] args3;

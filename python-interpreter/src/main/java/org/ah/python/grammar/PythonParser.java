@@ -669,7 +669,7 @@ public class PythonParser {
                                 }
                                 
                                 // TODO Add this!!!
-                                Assign assign = new Assign(target, binaryOp);
+                                PythonObject assign = Assign.createAssignment(target, binaryOp);
                                 currentSuite.asList().add(assign);
                             }
                          
@@ -710,7 +710,7 @@ public class PythonParser {
             } // while 
             
                         while (targets.size() > 1) {
-                            Assign assign = new Assign(targets.get(targets.size() - 2), targets.get(targets.size() - 1));
+                            PythonObject assign = Assign.createAssignment(targets.get(targets.size() - 2), targets.get(targets.size() - 1));
                             targets.remove(targets.size() - 1);
                             targets.remove(targets.size() - 1);
                             targets.add(assign);
