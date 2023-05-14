@@ -48,29 +48,23 @@ public class TestProxyAttributes extends BaseTestClass {
         });
     }
 
-    @Test
-    public void canReferenceProxyAttribute() {
-        PythonObject module = Interpreter.convert(
-                "import test\n"
-              + "x = test.ExternalObject()\n"
-              + "print(x.value)\n"
-              );
-
-        module.__call__(context);
+    @Test public void canReferenceProxyAttribute() {
+        executeLines(
+            "import test",
+            "x = test.ExternalObject()",
+            "print(x.value)"
+        );
 
         assertEquals("initialValue\n", result());
     }
 
-    @Test
-    public void canAssignToProxyAttribute() {
-        PythonObject module = Interpreter.convert(
-                "import test\n"
-              + "x = test.ExternalObject()\n"
-              + "x.value = 'newValue'\n"
-              + "print(x.value)\n"
-              );
-
-        module.__call__(context);
+    @Test public void canAssignToProxyAttribute() {
+        executeLines(
+            "import test",
+            "x = test.ExternalObject()",
+            "x.value = 'newValue'",
+            "print(x.value)"
+        );
 
         assertEquals("newValue\n", result());
     }
