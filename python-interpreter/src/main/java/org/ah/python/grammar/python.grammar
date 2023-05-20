@@ -291,8 +291,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             targets.remove(targets.size() - 1);
                             targets.add(assign);
                         }
-                        currentSuite.asList().add(targets.get(0));
-                        currentBlock.getStatements().add(targets.get(0));
+                        PythonObject lastTarget = targets.get(0);
+                        if (lastTarget instanceof Assign) {
+	                        ((Assign)lastTarget).setLastInstruction(true);
+	                    }
+                        currentBlock.getStatements().add(lastTarget);
                     %>
                 )
                 ;
@@ -442,15 +445,14 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                           throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
                       }
                       For fr = new For((Reference)target, currentObject);
-                      Suite save = currentSuite; currentSuite = fr;
                       Block savedBlock = currentBlock; currentBlock = fr.getBlock();
                    %>
                   suite 
                 [ "else" COLON 
-                   <% currentSuite = fr.getElse(); currentBlock = fr.getElseBlock(); %>
+                   <% currentBlock = fr.getElseBlock(); %>
                   suite 
                 ]
-                   <% currentSuite = save;  currentSuite.asList().add(fr); currentBlock = savedBlock; currentBlock.getStatements().add(fr); %>
+                   <% currentBlock = savedBlock; currentBlock.getStatements().add(fr); %>
                 ;
 
     try_stmt = ("try" COLON suite

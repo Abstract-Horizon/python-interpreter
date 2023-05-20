@@ -205,6 +205,11 @@ public class Def extends PythonObject {
             }
 
             context.pushPC(closeScopeContinuation);
+
+            List<ThreadContext.Executable> statements = block.getStatements();
+            if (!(statements.get(statements.size() - 1) instanceof Return)) {
+                statements.add(new Return(PythonNone.NONE));
+            }
             return block.execute(context);
         }
     };

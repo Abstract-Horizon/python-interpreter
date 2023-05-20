@@ -26,6 +26,7 @@ public class TestArrays extends BaseTestClass {
         Reference bReference = new Reference(null, "b");
 
         Assign bAssignment = new Assign(bReference, callAccess);
+        bAssignment.setLastInstruction(true);
 
         block.getStatements().add(bAssignment);
 

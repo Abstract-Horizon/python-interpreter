@@ -715,8 +715,11 @@ public class PythonParser {
                             targets.remove(targets.size() - 1);
                             targets.add(assign);
                         }
-                        currentSuite.asList().add(targets.get(0));
-                        currentBlock.getStatements().add(targets.get(0));
+                        PythonObject lastTarget = targets.get(0);
+                        if (lastTarget instanceof Assign) {
+	                        ((Assign)lastTarget).setLastInstruction(true);
+	                    }
+                        currentBlock.getStatements().add(lastTarget);
                     
         }
     } // expr_stmt
@@ -1370,7 +1373,6 @@ public class PythonParser {
                           throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
                       }
                       For fr = new For((Reference)target, currentObject);
-                      Suite save = currentSuite; currentSuite = fr;
                       Block savedBlock = currentBlock; currentBlock = fr.getBlock();
                    
         suite();
@@ -1385,10 +1387,10 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
-             currentSuite = fr.getElse(); currentBlock = fr.getElseBlock(); 
+             currentBlock = fr.getElseBlock(); 
             suite();
         } 
-         currentSuite = save;  currentSuite.asList().add(fr); currentBlock = savedBlock; currentBlock.getStatements().add(fr); 
+         currentBlock = savedBlock; currentBlock.getStatements().add(fr); 
     } // for_stmt
 
     // public try_stmt<null> = "try" COLON suite (.k=1.) except_clause COLON suite {except_clause COLON suite} ["else" COLON suite] ["finally" COLON suite]|"finally" COLON suite;

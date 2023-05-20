@@ -640,6 +640,10 @@ public class PythonObject implements ThreadContext.Executable {
         return context.raise(exception("AttributeError", PythonString.valueOf("__exit__)")));
     }
 
+    public PythonObject __next__(ThreadContext context) {
+        return context.raise(exception("AttributeError", PythonString.valueOf("__next__)")));
+    }
+
     protected static String collectionToString(Collection<?> col, String delimiter) {
         StringBuilder res = new StringBuilder();
         boolean first = true;

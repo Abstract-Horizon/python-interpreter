@@ -4,6 +4,8 @@ public class Assign extends PythonObject {
 
     private PythonObject reference;
     private PythonObject expression;
+    private boolean lastInstruction = false;
+
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
         @Override public PythonObject execute(ThreadContext context) {
             PythonObject ref;
@@ -20,7 +22,12 @@ public class Assign extends PythonObject {
 
             System.out.println("Assigning to " + ref + " with name " + referenceObject.getName() + " value of " + expression);
             ref.__setattr__(context, referenceObject.getName(), expression);
-            return expression;
+
+            if (!lastInstruction) {
+                return expression;
+            } else {
+                return null;
+            }
         }
     };
 
@@ -28,6 +35,9 @@ public class Assign extends PythonObject {
         this.reference = reference;
         this.expression = expression;
     }
+
+    public boolean isLastInstruction() { return this.lastInstruction; }
+    public void setLastInstruction(boolean lastInstruction) { this.lastInstruction = lastInstruction; }
 
     @Override public PythonObject execute(ThreadContext context) {
         context.pushPC(continuation);

@@ -333,7 +333,7 @@ public class BuiltInFunctions extends Scope {
         attributes.put("print", new BuiltInMethod() {
             @Override public PythonObject __call__(ThreadContext context) {
                 printInterface.print("\n");
-                return PythonNone.NONE;
+                return null;
             }
             @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 if (args.length > 0) {
@@ -343,7 +343,7 @@ public class BuiltInFunctions extends Scope {
                 } else {
                     printInterface.print("");
                 }
-                return PythonNone.NONE;
+                return null;
             }
         });
         attributes.put("property", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
