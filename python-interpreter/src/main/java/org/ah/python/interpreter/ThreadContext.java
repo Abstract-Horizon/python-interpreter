@@ -5,7 +5,7 @@ import java.util.Stack;
 public class ThreadContext {
 
     public static interface Executable {
-        public PythonObject execute(ThreadContext context);
+        public void evaluate(ThreadContext context);
     }
 
     public Stack<Executable> pcStack = new Stack<Executable>();
@@ -29,13 +29,7 @@ public class ThreadContext {
         }
 
         Executable pc = pcStack.pop();
-        PythonObject result = pc.execute(this);
-        if (result != null) {
-            if (a != null) {
-                dataStack.push(a);
-            }
-            a = result;
-        }
+        pc.evaluate(this);
 
         return true;
     }
@@ -89,6 +83,11 @@ public class ThreadContext {
     }
 
     public PythonObject raise(PythonBaseException exception) {
-        throw new RuntimeException(exception.__str__(this).asString());
+        throw new RuntimeException(exception.asString());
+    }
+
+    public void continuation(Executable continuation) {
+        popped = false;
+        pcStack.push(continuation);
     }
 }

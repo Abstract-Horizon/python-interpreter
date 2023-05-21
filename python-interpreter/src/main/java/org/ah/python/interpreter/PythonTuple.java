@@ -13,13 +13,13 @@ public class PythonTuple extends PythonSequence {
 
     static {
         PYTHON_TUPLE_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__add__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__add__(context, args[1]);
             }
         });
         PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__getitem__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__getitem__(context, args[1]);
             }
         });
     }
@@ -46,19 +46,20 @@ public class PythonTuple extends PythonSequence {
             }
             return tuple;
         } else {
-            return new Constructor() {
-                @Override public PythonObject __call__(ThreadContext context) {
-                    PythonTuple tuple = new PythonTuple();
-                    for (PythonObject o : storedElements) {
-                        PythonObject r = o.dereference();
-                        tuple.asList().add(r);
-                    }
-                    return tuple;
-                }
-                @Override public String toString() {
-                    return "CreateTuple" + storedElements;
-                }
-            };
+            throw new UnsupportedOperationException("Tuple.constructor");
+//            return new Constructor() {
+//                @Override public PythonObject __call__(ThreadContext context) {
+//                    PythonTuple tuple = new PythonTuple();
+//                    for (PythonObject o : storedElements) {
+//                        PythonObject r = o.dereference();
+//                        tuple.asList().add(r);
+//                    }
+//                    return tuple;
+//                }
+//                @Override public String toString() {
+//                    return "CreateTuple" + storedElements;
+//                }
+//            };
         }
     };
 
@@ -70,35 +71,37 @@ public class PythonTuple extends PythonSequence {
         return list;
     }
 
-    public PythonObject __getitem__(ThreadContext context, PythonObject key) {
+    public void __getitem__(ThreadContext context, PythonObject key) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
             int to = slice.getTo();
             if (from == 0 && to == -1) {
-                return this;
+                context.pushData(this);
             } else {
                 if (to == -1) { to = list.size() - 1; }
-                return new PythonList(list.subList(from, to));
+                context.pushData(new PythonList(list.subList(from, to)));
+            }
+        } else if (key instanceof PythonNumber) {
+            int i = ((PythonNumber)key).asInteger();
+            if (i < list.size()) {
+                context.pushData(list.get(i));
+            } else {
+                context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
             }
         } else {
-            int i = key.asInteger(context);
-            if (i < list.size()) {
-                return list.get(i);
-            } else {
-                throw new RuntimeException("IndexError: list index out of range");
-            }
+            context.raise(exception("TypeError", PythonString.valueOf("list indices must be integers or slices, not " + key.pythonClass.name)));
         }
     }
 
     @Override
-    public PythonObject __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("__setitem__)")));
+    public void __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__setitem__)")));
     }
 
     @Override
-    public PythonObject __delitem__(ThreadContext context, PythonObject key) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("__delitem__)")));
+    public void __delitem__(ThreadContext context, PythonObject key) {
+        context.raise(exception("AttributeError", PythonString.valueOf("__delitem__)")));
     }
 
     public String toString() {

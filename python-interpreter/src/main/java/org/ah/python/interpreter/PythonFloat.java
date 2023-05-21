@@ -1,5 +1,9 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonBaseException.exception;
+
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class PythonFloat extends PythonNumber {
 
     public static PythonClass PYTHON_FLOAT_CLASS = new PythonClass("float");
@@ -16,22 +20,26 @@ public class PythonFloat extends PythonNumber {
         return new PythonFloat(d);
     }
 
-    private double value;
+    protected double value;
 
     protected PythonFloat(double value) {
         this.value = value;
         this.pythonClass = PYTHON_FLOAT_CLASS;
     }
 
-    public double asFloat(ThreadContext context) {
+    public String asString() {
+        return Double.toString(value);
+    }
+
+    public double asFloat() {
         return value;
     }
 
-    public int asInteger(ThreadContext context) {
+    public int asInteger() {
         return (int)value;
     }
 
-    public boolean asBoolean(ThreadContext context) {
+    public boolean asBoolean() {
         return value != 0.0;
     }
 
@@ -39,66 +47,256 @@ public class PythonFloat extends PythonNumber {
         return true;
     }
 
-    public PythonBoolean __eq__(ThreadContext context, PythonObject other) {
-        PythonObject r = other.dereference();
+    private Executable eq_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(PythonBoolean.valueOf(self == other));
+        }
+    };
 
-        return PythonBoolean.valueOf(value == r.asFloat(context));
+    public void __eq__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(PythonBoolean.valueOf(value == ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(eq_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonString __repr__(ThreadContext context) {
-        return PythonString.valueOf(Double.toString(value));
+    private Executable ne_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(PythonBoolean.valueOf(self != other));
+        }
+    };
+
+    public void __ne__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(PythonBoolean.valueOf(value != ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(ne_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonInteger __int__(ThreadContext context) {
-        return PythonInteger.valueOf((int)value);
+    private Executable lt_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(PythonBoolean.valueOf(self.asFloat() < other.asFloat()));
+        }
+    };
+
+    public void __lt__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(PythonBoolean.valueOf(value < ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(lt_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonFloat __float__(ThreadContext context) {
-        return this;
+    private Executable le_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(PythonBoolean.valueOf(self.asFloat() <= other.asFloat()));
+        }
+    };
+
+    public void __le__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(PythonBoolean.valueOf(value <= ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(le_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonBoolean __bool__(ThreadContext context) {
-        return PythonBoolean.valueOf(value != 0.0d);
+    private Executable gt_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(PythonBoolean.valueOf(self.asFloat() > other.asFloat()));
+        }
+    };
+
+    public void __gt__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(PythonBoolean.valueOf(value > ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(gt_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonNumber __neg__(ThreadContext context) {
-        return PythonFloat.valueOf(-value);
+    private Executable ge_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(PythonBoolean.valueOf(self.asFloat() >= other.asFloat()));
+        }
+    };
+
+    public void __ge__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(PythonBoolean.valueOf(value >= ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(ge_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonObject __add__(ThreadContext context, PythonObject other) {
-        return PythonFloat.valueOf(value + other.asFloat(context));
+
+    public void __repr__(ThreadContext context) {
+        context.pushData(PythonString.valueOf(Double.toString(value)));
     }
 
-    public PythonObject __sub__(ThreadContext context, PythonObject other) {
-        return PythonFloat.valueOf(value - other.asFloat(context));
+    public void __int__(ThreadContext context) {
+        context.pushData(PythonInteger.valueOf((int)value));
     }
 
-    public PythonObject __mul__(ThreadContext context, PythonObject other) {
-        return PythonFloat.valueOf(value * other.asFloat(context));
+    public void __float__(ThreadContext context) {
+        context.pushData(this);
     }
 
-    public PythonObject __div__(ThreadContext context, PythonObject other) {
-        return PythonFloat.valueOf(value / other.asFloat(context));
+    public void __bool__(ThreadContext context) {
+        context.pushData(PythonBoolean.valueOf(value != 0.0d));
     }
 
-    public PythonObject __floordiv__(ThreadContext context, PythonObject other) {
-        return PythonFloat.valueOf(value / other.asFloat(context));
+    public void __neg__(ThreadContext context) {
+        context.pushData(PythonFloat.valueOf(-value));
     }
 
-    public PythonObject __mod__(ThreadContext context, PythonObject other) {
-        return PythonFloat.valueOf(value % other.asFloat(context));
+
+    private Executable add_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(valueOf(self.asFloat() + other.asFloat()));
+        }
+    };
+
+    public void __add__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(valueOf(value + ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(add_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonObject __divmod__(ThreadContext context, PythonObject other) {
-        throw new UnsupportedOperationException("__divmod__");
+    private Executable sub_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(valueOf(self.asFloat() - other.asFloat()));
+        }
+    };
+
+    public void __sub__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(valueOf(value - ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(sub_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonObject __pow__(ThreadContext context, PythonObject other) {
-        throw new UnsupportedOperationException("__pow__");
+    private Executable mul_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(valueOf(self.asFloat() * other.asFloat()));
+        }
+    };
+
+    public void __mul__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(valueOf(value * ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(mul_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
     }
 
-    public PythonObject __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
-        throw new UnsupportedOperationException("__pow__");
+
+    private Executable div_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(valueOf(self.asFloat() / other.asFloat()));
+        }
+    };
+
+    public void __div__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(valueOf(value / ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(div_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
+    }
+
+    private Executable floordiv_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(valueOf(self.asFloat() / other.asFloat()));
+        }
+    };
+
+    public void __floordiv__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(valueOf(value / ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(floordiv_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
+    }
+
+    private Executable mod_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonFloat other = (PythonFloat)context.popData();
+            PythonFloat self = (PythonFloat)context.popData();
+            context.pushData(valueOf(self.asFloat() - other.asFloat()));
+        }
+    };
+
+    public void __mod__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonNumber) {
+            context.pushData(valueOf(value % ((PythonNumber)other).asFloat()));
+        } else {
+            context.continuation(mod_continuation);
+            context.pushData(this);
+            other.__float__(context);
+        }
+    }
+
+
+    public void __divmod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("NotImplementedError", PythonString.valueOf("__divmod__")));
+    }
+
+    public void __pow__(ThreadContext context, PythonObject other) {
+        context.raise(exception("NotImplementedError", PythonString.valueOf("__pow__")));
+    }
+
+    public void __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
+        context.raise(exception("NotImplementedError", PythonString.valueOf("__pow__")));
     }
 
     @Override
@@ -108,9 +306,13 @@ public class PythonFloat extends PythonNumber {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof PythonObject) {
-            return __eq__(null, (PythonObject)o).asBoolean(null);
+        if (o instanceof PythonFloat) {
+            return ((PythonFloat) o).value == value;
         }
+        // TODO this needs to be sorted in one go!!!
+//        if (o instanceof PythonObject) {
+//            return __eq__(null, (PythonObject)o).asBoolean(null);
+//        }
         return false;
     }
 

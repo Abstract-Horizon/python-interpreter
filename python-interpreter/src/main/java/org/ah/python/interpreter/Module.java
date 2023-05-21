@@ -4,7 +4,6 @@ import org.ah.python.modules.BuiltInFunctions;
 
 public class Module extends Scope {
 
-    private Suite suite = new Suite();
     private Block block = new Block();
 
     public Module() {
@@ -19,25 +18,12 @@ public class Module extends Scope {
         return block;
     }
 
-    public Suite getSuite() {
-        return suite;
-    }
-
     @Override
-    public PythonObject execute(ThreadContext context) {
-        return block.execute(context);
-    }
-
-    public PythonObject __call__(ThreadContext context) {
-        GlobalScope.pushScope(this);
-        try {
-            return suite.__call__(context);
-        } finally {
-            GlobalScope.popScope();
-        }
+    public void evaluate(ThreadContext context) {
+        block.evaluate(context);
     }
 
     public String toString() {
-        return "Module " + suite;
+        return "Module " + block;
     }
 }

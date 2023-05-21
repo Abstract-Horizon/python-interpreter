@@ -48,7 +48,7 @@ public class GlobalScope extends PythonType {
             .name("time").val(new TimeModule());
 
         scopeStack.clear();
-        Suite.BREAKOUT = false;
+//        Suite.BREAKOUT = false;
         CONTINUE = false;
         BREAK = false;
     }

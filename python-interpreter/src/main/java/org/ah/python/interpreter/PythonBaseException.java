@@ -26,18 +26,23 @@ public class PythonBaseException extends PythonObject {
         this.exceptionName = exceptionName;
     }
 
-    public PythonString __repr__(ThreadContext context) {
+    public void __repr__(ThreadContext context) {
+        context.pushData(PythonString.valueOf(asString()));
+    }
+
+    public String asString() {
         StringBuilder b = new StringBuilder();
         b.append(exceptionName);
         b.append("[");
         boolean first = true;
         for (PythonObject o : args) {
             if (first) { first = false; } else { b.append(", "); }
-            b.append(o.asString(context));
+            b.append(o.asString());
         }
         b.append("]");
-        return PythonString.valueOf(b.toString());
+        return b.toString();
     }
+
 
     public static PythonBaseException exception(String exceptionName, PythonObject... args) {
         return new PythonBaseException(exceptionName, args);

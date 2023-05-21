@@ -24,11 +24,6 @@ public class Scope extends PythonObject {
         pythonClass = CLASS_DICT;
     }
 
-//    public Scope(Map<String, PythonObject> attributes) {
-//        this.attributes = attributes;
-//        pythonClass = CLASS_DICT;
-//    }
-
     public void close() {
     }
 
@@ -38,6 +33,10 @@ public class Scope extends PythonObject {
 
     public void setParentScope(Scope scope) {
         this.parentScope = scope;
+    }
+
+    public PythonObject getAttribute(String name) {
+        return attributes.get(name);
     }
 
     public PythonObject __getitem__(String attr) {
@@ -59,44 +58,56 @@ public class Scope extends PythonObject {
         attributes.remove(attr);
     }
 
-    public PythonObject __getattr__(ThreadContext context, String attr) {
-        if (attributes.containsKey(attr)) {
-            return attributes.get(attr);
+    public void __getattr__(ThreadContext context, String name) {
+        if (attributes.containsKey(name)) {
+            context.pushData(attributes.get(name));
+        } else if (parentScope != null) {
+            parentScope.__getattr__(context, name);
+        } else {
+            if (this instanceof PythonClass) {
+                context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + ((PythonClass)this).getName() + "' object has no attribute '" + name + "'")));
+            } else if (pythonClass != null) {
+                context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + pythonClass.getName() + "' object has no attribute '" + name + "'")));
+            } else {
+                context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + toString() + "' object has no attribute '" + name + "'")));
+            }
         }
-        if (parentScope != null) {
-            return parentScope.__getattr__(context, attr);
-        }
-        return context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + pythonClass.toString() + "' object has no attribute '" + attr + "'")));
     }
 
-    public PythonObject __setattr__(String attr, PythonObject o) {
-        return attributes.put(attr, o);
+    public PythonObject getattr(ThreadContext context, String name) {
+        __getattr__(context, name);
+        PythonObject data = context.popData();
+        return data;
     }
 
-    public PythonObject __setattr__(ThreadContext context, String attr, PythonObject o) {
-        return attributes.put(attr, o);
+    public void __setattr__(String attr, PythonObject o) {
+        attributes.put(attr, o);
     }
 
-    public PythonObject __delattr__(ThreadContext context, String attr) {
-        return attributes.remove(attr);
+    public void __setattr__(ThreadContext context, String attr, PythonObject o) {
+        attributes.put(attr, o);
+    }
+
+    public void __delattr__(ThreadContext context, String attr) {
+        attributes.remove(attr);
     }
 
     public static void populateCommonContainerClassMethods(PythonClass pythonClass) {
         pythonClass.__setattr__(null, "__getitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__getitem__(context, args[0]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__getitem__(context, args[0]);
             }
         });
         pythonClass.__setattr__(null, "__setitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 args[0].__setitem__(context, args[0], args[1]);
-                return PythonNone.NONE;
+                context.pushData(PythonNone.NONE);
             }
         });
         pythonClass.__setattr__(null, "__delitem__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 args[0].__delitem__(context, args[0]);
-                return PythonNone.NONE;
+                context.pushData(PythonNone.NONE);
             }
         });
     }

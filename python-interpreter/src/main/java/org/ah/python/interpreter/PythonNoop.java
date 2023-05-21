@@ -7,7 +7,4 @@ public class PythonNoop extends PythonObject {
     private PythonNoop() {
     }
 
-    public PythonObject __call__(ThreadContext context) {
-        return PythonNone.NONE;
-    }
 }

@@ -14,66 +14,15 @@ public class BinaryOp extends PythonObject {
         this.op = op;
     }
 
-    public PythonObject execute(ThreadContext context) {
-        if (context.popped) {
-        } else {
+    public void evaluate(ThreadContext context) {
+        if (!context.popped) {
             context.pushPC(this);
             context.pushPC(left);
         }
-        return null;
-    }
-
-    public PythonObject dereference() {
-        // return __call__(null);
-        throw new UnsupportedOperationException("BinaryOp.dereference");
     }
 
     public boolean isConstant() {
         return left.isConstant() && right.isConstant();
-    }
-
-    public PythonObject dereferenceConstant() {
-        throw new UnsupportedOperationException("BinaryOp.dereference");
-    }
-
-    public PythonObject __call__(ThreadContext context) {
-        if (op == OperatorType.Add) {
-            return left.dereference().__add__(context, right.dereference());
-        }
-        if (op == OperatorType.Sub) {
-            return left.dereference().__sub__(context, right.dereference());
-        }
-        if (op == OperatorType.Mult) {
-            return left.dereference().__mul__(context, right.dereference());
-        }
-        if (op == OperatorType.Div) {
-            return left.dereference().__div__(context, right.dereference());
-        }
-        if (op == OperatorType.Mod) {
-            return left.dereference().__mod__(context, right.dereference());
-        }
-        if (op == OperatorType.BitAnd) {
-            return left.dereference().__and__(context, right.dereference());
-        }
-        if (op == OperatorType.BitOr) {
-            return left.dereference().__or__(context, right.dereference());
-        }
-        if (op == OperatorType.BitXor) {
-            return left.dereference().__xor__(context, right.dereference());
-        }
-        if (op == OperatorType.FloorDiv) {
-            return left.dereference().__floordiv__(context, right.dereference());
-        }
-        if (op == OperatorType.Pow) {
-            return left.dereference().__pow__(context, right.dereference());
-        }
-        if (op == OperatorType.RShift) {
-            return left.dereference().__rshift__(context, right.dereference());
-        }
-        if (op == OperatorType.LShift) {
-            return left.dereference().__lshift__(context, right.dereference());
-        }
-        throw new UnsupportedOperationException("BinOp[" + op + "]");
     }
 
     public String toString() {

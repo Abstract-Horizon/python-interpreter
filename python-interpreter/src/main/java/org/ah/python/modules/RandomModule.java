@@ -30,7 +30,7 @@ public class RandomModule extends Proxy {
                 throw new UnsupportedOperationException("Function seed not supported yet");
             }
             @Override public PythonObject call0(ThreadContext context, PythonObject a) {
-                random.setSeed(a.asInteger(context));
+                random.setSeed(a.asInteger());
                 return NONE;
             }
             @Override public PythonObject call0(ThreadContext context, PythonObject a, PythonObject version) {
@@ -94,19 +94,19 @@ public class RandomModule extends Proxy {
             return PythonFloat.valueOf(random.nextDouble());
         }});
         TYPE.__setattr__("randint", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject from, PythonObject to) {
-            int f = from.asInteger(context);
-            int t = to.asInteger(context);
+            int f = from.asInteger();
+            int t = to.asInteger();
             int r = random.nextInt(t - f + 1) + f;
             return PythonInteger.valueOf(r);
         }});
         TYPE.__setattr__("uniform", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject from, PythonObject to) {
-            double f = from.asFloat(context);
-            double t = to.asFloat(context);
+            double f = from.asFloat();
+            double t = to.asFloat();
             double r = random.nextDouble() * (t - f + 1) + f;
             return PythonFloat.valueOf(r);
         }});
         TYPE.__setattr__("choice", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject choices) {
-            int len = choices.__len__(context).asInteger(context);
+            int len = choices.__len__(context).asInteger();
             int i = random.nextInt(len);
 
             return choices.__getitem__(context, PythonInteger.valueOf(i));

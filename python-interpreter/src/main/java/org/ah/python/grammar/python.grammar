@@ -111,7 +111,6 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     
 
 <%
-    private Suite currentSuite;
     private Block currentBlock;
     private OperatorType operatorType;
     private CmpopType cmpopType;
@@ -133,11 +132,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     single_input = (NEWLINE | simple_stmt | compound_stmt NEWLINE { NEWLINE } );
 
     file_input = 
-        <% module = new Module(); currentSuite = module.getSuite(); currentBlock = module.getBlock(); %> 
+        <% module = new Module(); currentBlock = module.getBlock(); %> 
                  { NEWLINE | stmt };
 
     existing_module_file_input = 
-        <% currentSuite = module.getSuite(); currentBlock = module.getBlock(); %> 
+        <% currentBlock = module.getBlock(); %> 
                  { NEWLINE | stmt };
 
     eval_input = testlist { NEWLINE };
@@ -167,12 +166,10 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               %>
               [ DASH_GT test <% throw new UnsupportedOperationException("->"); %> ] COLON 
               <% 
-                  Suite save = currentSuite; currentSuite = def.getSuite();
                   Block savedBlock = currentBlock; currentBlock = def.getBlock();
               %>
               suite
               <% 
-                  currentSuite = save; currentSuite.asList().add(def); 
                   currentBlock = savedBlock; currentBlock.getStatements().add(def);
               %>
             ;
@@ -258,8 +255,8 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                                 }
                                 
                                 // TODO Add this!!!
-                                PythonObject assign = Assign.createAssignment(target, binaryOp);
-                                currentSuite.asList().add(assign);
+                                // PythonObject assign = Assign.createAssignment(target, binaryOp, true);
+                                // currentSuite.asList().add(assign);
                             }
                          %>
                     )
@@ -286,7 +283,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                     }
                     <%
                         while (targets.size() > 1) {
-                            PythonObject assign = Assign.createAssignment(targets.get(targets.size() - 2), targets.get(targets.size() - 1));
+                            PythonObject assign = Assign.createAssignment(targets.get(targets.size() - 2), targets.get(targets.size() - 1), false);
                             targets.remove(targets.size() - 1);
                             targets.remove(targets.size() - 1);
                             targets.add(assign);
@@ -331,7 +328,6 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     del_stmt = "del" exprlist 
                 <%
                     currentObject = new Del(currentList);
-                    currentSuite.asList().add(currentObject);
                     currentBlock.getStatements().add(currentObject);
                 %>  
              ;
@@ -344,11 +340,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               | raise_stmt 
               | yield_stmt;
 
-    break_stmt = "break" <% currentSuite.asList().add(new Break()); currentBlock.getStatements().add(new Break()); %>;
+    break_stmt = "break" <% currentBlock.getStatements().add(new Break()); %>;
 
-    continue_stmt = "continue" <% currentSuite.asList().add(new Continue()); currentBlock.getStatements().add(new Continue()); %>;
+    continue_stmt = "continue" <% currentBlock.getStatements().add(new Continue()); %>;
 
-    return_stmt = "return" <% currentObject = PythonNone.NONE; %> [ testlist ] <% currentSuite.asList().add(new Return(currentObject)); currentBlock.getStatements().add(new Return(currentObject)); %>;
+    return_stmt = "return" <% currentObject = PythonNone.NONE; %> [ testlist ] <% currentBlock.getStatements().add(new Return(currentObject)); %>;
 
     yield_stmt = yield_expr <% throw new UnsupportedOperationException("yield_stmt"); %>;
 
@@ -359,7 +355,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                 ( import_name 
                 | import_from <% throw new UnsupportedOperationException("import_from"); %>
                 )
-                <% currentSuite.asList().add(currentImport); currentBlock.getStatements().add(currentImport); %>
+                <% currentBlock.getStatements().add(currentImport); %>
                 ;
 
     import_name = "import" dotted_as_names;
@@ -382,7 +378,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     dotted_name = NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); %>  { DOT NAME <% stringList.add(t.toString()); %> };
 
     global_stmt = "global" NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); %> { COMMA NAME <% stringList.add(t.toString()); %> }
-                <% currentSuite.asList().add(new Global(stringList)); currentBlock.getStatements().add(new Global(stringList)); %>
+                <% currentBlock.getStatements().add(new Global(stringList)); %>
                 ;
 
     nonlocal_stmt = "nonlocal" NAME { COMMA NAME };
@@ -822,11 +818,10 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               COLON 
               
               <% 
-                 Suite save = currentSuite; currentSuite = cls.getSuite();
                  Block savedBlock = currentBlock; currentBlock = cls.getBlock();
               %>
               suite
-              <% currentSuite = save; currentSuite.asList().add(cls); currentBlock = savedBlock; currentBlock.getStatements().add(cls); %>
+              <% currentBlock = savedBlock; currentBlock.getStatements().add(cls); %>
               ;
 
     arglist = 

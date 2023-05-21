@@ -2,7 +2,6 @@ package org.ah.python.modules;
 
 import static org.ah.python.interpreter.PythonBaseException.exception;
 import static org.ah.python.interpreter.PythonBoolean.FALSE;
-import static org.ah.python.interpreter.PythonBoolean.TRUE;
 import static org.ah.python.interpreter.PythonInteger.ONE;
 import static org.ah.python.interpreter.PythonInteger.ZERO;
 import static org.ah.python.interpreter.PythonNone.NONE;
@@ -20,7 +19,7 @@ import org.ah.python.interpreter.PythonFloat;
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonIterator;
 import org.ah.python.interpreter.PythonList;
-import org.ah.python.interpreter.PythonNone;
+import org.ah.python.interpreter.PythonNumber;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.PythonSlice;
 import org.ah.python.interpreter.PythonString;
@@ -75,137 +74,167 @@ public class BuiltInFunctions extends Scope {
 
         Map<String, PythonObject> attributes = BUILT_IN_FUNCTIONS_SCOPE.attributes;
 
-        attributes.put("abs", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+        attributes.put("abs", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             PythonObject a = args[0];
             if (a instanceof PythonInteger) {
-                if (a.asInteger(context) < 0) {
-                    return PythonInteger.valueOf(-a.asInteger(context));
+                int i = ((PythonInteger)a).asInteger();
+                if (i < 0) {
+                    context.pushData(PythonInteger.valueOf(-i));
+                } else {
+                    context.pushData(a);
                 }
-                return a;
             } else if (a instanceof PythonFloat) {
-                if (a.asFloat(context) < 0) {
-                    return PythonFloat.valueOf(-a.asFloat(context));
+                double d = ((PythonFloat)a).asFloat();
+                if (d < 0) {
+                    context.pushData(PythonFloat.valueOf(-d));
+                } else {
+                    context.pushData(a);
                 }
-                return a;
+            } else {
+                context.raise(exception("TypeError", PythonString.valueOf("bad operand type for abs(): '" + a.getPythonClass().getName() + "'")));
             }
-            // TODO add invocation of dunder method __abs__
-            throw new UnsupportedOperationException("Function abs not supported on " + a.toString());
         }});
-        attributes.put("all", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            PythonIterator iter = args[0].__iter__(context);
-            PythonObject o = iter.next(context);
-            while (o != null) {
-                if (!o.asBoolean(context)) {
-                    return FALSE;
-                }
-                o = iter.next(context);
-            }
-            return TRUE;
+        attributes.put("all", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            throw new UnsupportedOperationException("Bulitin.all");
+//            PythonIterator iter = args[0].__iter__(context);
+//            PythonObject o = iter.next(context);
+//            while (o != null) {
+//                if (!o.asBoolean(context)) {
+//                    context.pushData(FALSE);
+//                    return;
+//                }
+//                o = iter.next(context);
+//            }
+//            context.pushData(TRUE);
         }});
-        attributes.put("any", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            PythonIterator iter = args[0].__iter__(context);
-            PythonObject o = iter.next(context);
-            while (o != null) {
-                if (o.asBoolean(context)) {
-                    return TRUE;
-                }
-                o = iter.next(context);
-            }
-            return FALSE;
+        attributes.put("any", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            throw new UnsupportedOperationException("Bulitin.any");
+//            PythonIterator iter = args[0].__iter__(context);
+//            PythonObject o = iter.next(context);
+//            while (o != null) {
+//                if (o.asBoolean(context)) {
+//                    context.pushData(TRUE);
+//                    return;
+//                }
+//                o = iter.next(context);
+//            }
+//            context.pushData(FALSE);
         }});
-        attributes.put("ascii", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("ascii", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs)  {
             throw new UnsupportedOperationException("Function ascii not supported yet");
         }});
-        attributes.put("bin", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+
+        final ThreadContext.Executable bin_continuation = new ThreadContext.Executable() { @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonString.valueOf(Integer.toBinaryString(((PythonInteger)context.popData()).asInteger())));
+        }};
+
+        attributes.put("bin", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             if (args[0] instanceof PythonInteger) {
-                return PythonString.valueOf(Integer.toBinaryString(args[0].asInteger(context)));
+                context.pushData(PythonString.valueOf(Integer.toBinaryString(((PythonInteger)args[0]).asInteger())));
+            } else {
+                context.continuation(bin_continuation);
+
+                args[0].__int__(context);
             }
-            return PythonString.valueOf(Integer.toBinaryString(args[0].__index__(context).asInteger(context)));
         }});
         attributes.put("bool", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) { return PythonBoolean.valueOf(args[0].asBoolean(context)); }
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__bool__(context);
+            }
         });
-        attributes.put("bytearray", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("bytearray", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function bytearray not supported yet");
         }});
-        attributes.put("callable", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return PythonBoolean.valueOf(args[0] instanceof Function);
+        attributes.put("callable", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            context.pushData(PythonBoolean.valueOf(args[0] instanceof Function));
         }});
-        attributes.put("chr", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return PythonString.valueOf(Character.toString((char)args[0].asInteger(context)));
+        attributes.put("chr", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            if (args[0] instanceof PythonInteger) {
+                context.pushData(PythonString.valueOf(Character.toString((char)((PythonInteger)args[0]).asInteger())));
+            } else {
+                context.raise(exception("TypeError", PythonString.valueOf("an integer is required (got type '" + args[0].getPythonClass().getName() + ")")));
+            }
         }});
-        attributes.put("classmethod", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("classmethod", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function classmethod not supported yet");
         }});
-        attributes.put("compile", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("compile", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             // TODO really nice thing to do!
             throw new UnsupportedOperationException("Function compile not supported yet");
         }});
-        attributes.put("complex", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("complex", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function complex not supported yet");
         }});
-        attributes.put("delattr", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            args[0].__delattr__(context, args[1].asString(context));
-            return NONE;
+        attributes.put("delattr", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__delattr__(context, args[1].asString());
+            context.pushData(NONE);
         }});
-        attributes.put("dict", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("dict", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function dict not supported yet");
         }});
-        attributes.put("dir", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("dir", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             // Nice thing to do
             throw new UnsupportedOperationException("Function dir not supported yet");
         }});
-        attributes.put("divmod", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("divmod", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function divmod not supported yet");
         }});
-        attributes.put("enumerate", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("enumerate", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function enumerate not supported yet");
         }});
-        attributes.put("eval", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("eval", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function eval not supported yet");
         }});
-        attributes.put("exec", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("exec", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function exec not supported yet");
         }});
-        attributes.put("filter", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("filter", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function filter not supported yet");
         }});
-        attributes.put("float", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return PythonFloat.valueOf(Double.parseDouble(args[0].asString(context)));
+        attributes.put("float", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__float__(context);
         }});
-        attributes.put("format", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("format", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function format not supported yet");
         }});
-        attributes.put("frozenset", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("frozenset", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function frozenset not supported yet");
         }});
-        attributes.put("getattr", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return args[0].__getattr__(context, args[1].asString(context));
+        attributes.put("getattr", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__getattr__(context, args[1].asString());
         }});
-        attributes.put("globals", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("globals", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function globals not supported yet");
         }});
-        attributes.put("hasattr", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+        attributes.put("hasattr", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             try {
-                return PythonBoolean.valueOf(args[0].__getattr__(context, args[1].asString(context)) != null);
+                // TODO - try to find a way to add try/catch around this!
+                args[0].__getattr__(context, args[1].asString());
             } catch (Exception e) {
-                return FALSE;
+                context.pushData(FALSE);
             }
         }});
-        attributes.put("hash", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return args[0].__hash__(context);
+        attributes.put("hash", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__hash__(context);
         }});
-        attributes.put("help", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("help", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function help not supported yet");
         }});
-        attributes.put("hex", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            if (args[0] instanceof PythonInteger) {
-                return PythonString.valueOf(Integer.toHexString(args[0].asInteger(context)));
+        final ThreadContext.Executable hex_continuation = new ThreadContext.Executable() {
+            @Override public void evaluate(ThreadContext context) {
+                context.pushData(PythonString.valueOf(Integer.toHexString(((PythonInteger)context.popData()).asInteger())));
             }
-            return PythonString.valueOf(Integer.toHexString(args[0].__index__(context).asInteger(context)));
+        };
+        attributes.put("hex", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            if (args[0] instanceof PythonInteger) {
+                context.pushData(PythonString.valueOf(Integer.toHexString(((PythonInteger)args[0]).asInteger())));
+            } else {
+                context.continuation(hex_continuation);
+                args[0].__int__(context);
+            }
         }});
-        attributes.put("id", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return PythonInteger.valueOf(System.identityHashCode(args[0]));
+        attributes.put("id", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            context.pushData(PythonInteger.valueOf(System.identityHashCode(args[0])));
         }});
 //        attributes.put("input", new BuiltInMethod() {
 //            @Override public PythonObject call0(ThreadContext context, ) {
@@ -216,31 +245,32 @@ public class BuiltInFunctions extends Scope {
 //                return call0();
 //            }
 //        });
-        attributes.put("int", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+        attributes.put("int", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             if (args[0] instanceof PythonInteger) {
-                return args[0];
+                context.pushData(args[0]);
             } else if (args[0] instanceof PythonFloat) {
-                return PythonInteger.valueOf(args[0].asInteger(context));
+                context.pushData(PythonInteger.valueOf(((PythonFloat)args[0]).asInteger()));
+            } else {
+                args[0].__int__(context);
             }
-            return PythonInteger.valueOf(Integer.parseInt(args[0].asString(context)));
         }});
-        attributes.put("isinstance", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("isinstance", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function isinstance not supported yet");
         }});
-        attributes.put("issubclass", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("issubclass", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function issubclass not supported yet");
         }});
         attributes.put("iter", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__iter__(context);
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__iter__(context);
             }
         });
-        attributes.put("len", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return args[0].dereference().__len__(context);
+        attributes.put("len", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__len__(context);
         }});
-        attributes.put("list", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                PythonIterator iter = args[0].__iter__(context);
+        final ThreadContext.Executable list_continuation = new ThreadContext.Executable() {
+            @Override public void evaluate(ThreadContext context) {
+                PythonIterator iter = (PythonIterator)context.popData();
                 PythonList list = new PythonList();
                 PythonObject o = iter.next(context);
                 while (o != null) {
@@ -248,169 +278,200 @@ public class BuiltInFunctions extends Scope {
                     o = iter.next(context);
                 }
 
-                return list;
+                context.pushData(list);
+            }
+        };
+        attributes.put("list", new BuiltInMethod() {
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                context.continuation(list_continuation);
+                args[0].__iter__(context);
             }
         });
-        attributes.put("locals", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("locals", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function locals not supported yet");
         }});
-        attributes.put("map", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("map", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function map not supported yet");
         }});
-        attributes.put("max", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            if (args.length > 0) {
-                if (args.length == 1 && args[0] instanceof PythonIterator) {
-                    PythonIterator iter = args[0].__iter__(context);
-                    PythonObject max = iter.next(context);
-                    PythonObject o = max;
-                    while (o != null) {
-                        o = iter.next(context);
-                        if (o.__gt__(context, max).asBoolean(context)) {
-                            max = o;
-                        }
-                    }
-                    return max;
-                }
-                PythonObject max = args[0];
-                for (int i = 1; i < args.length; i++) {
-                    if (args[i].__gt__(context, max).asBoolean(context)) {
-                        max = args[i];
-                    }
-                }
-            }
+        attributes.put("max", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+//            if (args.length > 0) {
+//                if (args.length == 1 && args[0] instanceof PythonIterator) {
+//                    PythonIterator iter = args[0].__iter__(context);
+//                    PythonObject max = iter.next(context);
+//                    PythonObject o = max;
+//                    while (o != null) {
+//                        o = iter.next(context);
+//                        if (o.__gt__(context, max).asBoolean(context)) {
+//                            max = o;
+//                        }
+//                    }
+//                    context.pushData(max);
+//                    return;
+//                }
+//                PythonObject max = args[0];
+//                for (int i = 1; i < args.length; i++) {
+//                    if (args[i].__gt__(context, max).asBoolean(context)) {
+//                        max = args[i];
+//                    }
+//                }
+//            }
             throw new UnsupportedOperationException("Function max not supported yet");
         }});
-        attributes.put("memoryview", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("memoryview", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function memoryview not supported yet");
         }});
-        attributes.put("min", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            if (args.length > 0) {
-                if (args.length == 1 && args[0] instanceof PythonIterator) {
-                    PythonIterator iter = args[0].__iter__(context);
-                    PythonObject min = iter.next(context);
-                    PythonObject o = min;
-                    while (o != null) {
-                        o = iter.next(context);
-                        if (o.__lt__(context, min).asBoolean(context)) {
-                            min = o;
-                        }
-                    }
-                    return min;
-                }
-                PythonObject min = args[0];
-                for (int i = 1; i < args.length; i++) {
-                    if (args[i].__lt__(context, min).asBoolean(context)) {
-                        min = args[i];
-                    }
-                }
-            }
+        attributes.put("min", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+//            if (args.length > 0) {
+//                if (args.length == 1 && args[0] instanceof PythonIterator) {
+//                    PythonIterator iter = args[0].__iter__(context);
+//                    PythonObject min = iter.next(context);
+//                    PythonObject o = min;
+//                    while (o != null) {
+//                        o = iter.next(context);
+//                        if (o.__lt__(context, min).asBoolean(context)) {
+//                            min = o;
+//                        }
+//                    }
+//                    context.pushData(min);
+//                    return;
+//                }
+//                PythonObject min = args[0];
+//                for (int i = 1; i < args.length; i++) {
+//                    if (args[i].__lt__(context, min).asBoolean(context)) {
+//                        min = args[i];
+//                    }
+//                }
+//            }
             throw new UnsupportedOperationException("Function max not supported yet");
         }});
+
         attributes.put("next", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 if (args[0] instanceof PythonIterator) {
                     PythonIterator iter = (PythonIterator)args[0];
-                    return iter.__next__(context);
+                    iter.__next__(context);
                 }
                 throw new UnsupportedOperationException("Function next not supported for non iterators; " + args[0]);
             }
         });
-        attributes.put("object", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("object", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function object not supported yet");
         }});
-        attributes.put("oct", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("oct", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function oct not supported yet");
         }});
-        attributes.put("open", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+        attributes.put("open", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function open not supported yet");
         }});
-        attributes.put("ord", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("ord", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function ord not supported yet");
         }});
-        attributes.put("pow", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("pow", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function pow not supported yet");
         }});
         attributes.put("print", new BuiltInMethod() {
-            @Override public PythonObject __call__(ThreadContext context) {
-                printInterface.print("\n");
-                return null;
-            }
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 if (args.length > 0) {
                     for (PythonObject a : args) {
-                        printInterface.print(a.asString(context));
+                        printInterface.print(a.asString());
                     }
                 } else {
                     printInterface.print("");
                 }
-                return null;
             }
         });
-        attributes.put("property", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("property", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function property not supported yet");
         }});
         attributes.put("range", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 if (args.length == 1) {
-                    return range(context, ZERO, args[0], ONE);
+                    if (args[0] instanceof PythonNumber) {
+                        context.pushData(range(context, ZERO, (PythonNumber)args[0], ONE));
+                    } else {
+                        context.raise(exception("TypeError", PythonString.valueOf("range still does not support index of type " + args[0].getPythonClass().getName())));
+                    }
                 } else if (args.length == 2) {
-                    return range(context, args[0], args[1], ONE);
+                    if (args[0] instanceof PythonNumber && args[1] instanceof PythonNumber) {
+                        context.pushData(range(context, (PythonNumber)args[0], (PythonNumber)args[1], ONE));
+                    } else {
+                        context.raise(exception("TypeError", PythonString.valueOf("range still does not support index of type " + args[0].getPythonClass().getName() + "," + args[1].getPythonClass().getName())));
+                    }
                 } else if (args.length == 3) {
-                    return range(context, args[0], args[1], args[2]);
+                    if (args[0] instanceof PythonNumber && args[1] instanceof PythonNumber && args[2] instanceof PythonNumber) {
+                        context.pushData(range(context, (PythonNumber)args[0], (PythonNumber)args[1], (PythonNumber)args[2]));
+                    } else {
+                        context.raise(exception("TypeError", PythonString.valueOf("range still does not support index of type " + args[0].getPythonClass().getName() + "," + args[1].getPythonClass().getName() + "," + args[2].getPythonClass().getName())));
+                    }
                 } else if (args.length == 0) {
-                    return context.raise(exception("TypeError", PythonString.valueOf("range expected at least 1 argument, got " + args.length)));
+                    context.pushData(context.raise(exception("TypeError", PythonString.valueOf("range expected at least 1 argument, got " + args.length))));
+                } else {
+                    context.pushData(context.raise(exception("TypeError", PythonString.valueOf("range expected at most 3 arguments, got " + args.length))));
                 }
-                return context.raise(exception("TypeError", PythonString.valueOf("range expected at most 3 arguments, got " + args.length)));
             }
         });
-        attributes.put("repr", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("repr", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function repr not supported yet");
         }});
-        attributes.put("reversed", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return args[0].__reversed__(context);
+        attributes.put("reversed", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__reversed__(context);
         }});
-        attributes.put("round",  new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return PythonFloat.valueOf(Math.round(args[0].asFloat(context)));
+        attributes.put("round",  new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            if (args[0] instanceof PythonNumber) {
+                context.pushData(PythonFloat.valueOf(Math.round(((PythonNumber)args[0]).asFloat())));
+            } else {
+                args[0].__round__(context);
+            }
         }});
-        attributes.put("set", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("set", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function set not supported yet");
         }});
-        attributes.put("setattr", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            args[0].__setattr__(context, args[1].asString(context), args[2]);
-            return NONE;
+        attributes.put("setattr", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__setattr__(context, args[1].asString(), args[2]);
+            context.pushData(NONE);
         }});
         attributes.put("slice", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
                 if (args.length == 1) {
-                    return PythonSlice.index(args[0].asInteger(context));
+                    if (args[0] instanceof PythonNumber) {
+                        context.pushData(PythonSlice.index(((PythonNumber)args[0]).asInteger()));
+                    } else {
+                        context.raise(exception("TypeError", PythonString.valueOf("slice still does not support index of type " + args[0].getPythonClass().getName())));
+                    }
                 } else if (args.length == 2) {
-                    return PythonSlice.range(context, args[0], args[1]);
+                    if (args[0] instanceof PythonNumber && args[1] instanceof PythonNumber) {
+                        context.pushData(PythonSlice.range(context, ((PythonNumber)args[0]), ((PythonNumber)args[1])));
+                    } else {
+                        context.raise(exception("TypeError", PythonString.valueOf("slice still does not support index of type " + args[0].getPythonClass().getName() + "," + args[1].getPythonClass().getName())));
+                    }
                 } else if (args.length == 3) {
                     throw new UnsupportedOperationException("Function slice not supported yet");
                 } else if (args.length == 0) {
-                    return context.raise(exception("TypeError", PythonString.valueOf("slice expected at least 1 arguments, got 0")));
+                    context.raise(exception("TypeError", PythonString.valueOf("slice expected at least 1 arguments, got 0")));
+                } else {
+                    context.raise(exception("TypeError", PythonString.valueOf("slice expected at most 3 arguments, got " + args.length)));
                 }
-                return context.raise(exception("TypeError", PythonString.valueOf("slice expected at most 3 arguments, got " + args.length)));
             }
         });
-        attributes.put("sorted", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("sorted", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function sorted not supported yet");
         }});
-        attributes.put("staticmethod", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("staticmethod", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function staticmethod not supported yet");
         }});
-        attributes.put("str", new BuiltInMethod() { @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-            return args[0].__str__(context);
+        attributes.put("str", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            args[0].__str__(context);
         }});
-        attributes.put("sum", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("sum", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function sum not supported yet");
         }});
-        attributes.put("super", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("super", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function super not supported yet");
         }});
-        attributes.put("tuple", new BuiltInMethod() {
-            @Override public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                PythonIterator iter = args[0].__iter__(context);
+
+        final ThreadContext.Executable tuple_continuation = new ThreadContext.Executable() {
+            @Override public void evaluate(ThreadContext context) {
+                PythonIterator iter = (PythonIterator)context.popData();
                 PythonTuple list = new PythonTuple();
                 PythonObject o = iter.next(context);
                 while (o != null) {
@@ -418,25 +479,31 @@ public class BuiltInFunctions extends Scope {
                     o = iter.next(context);
                 }
 
-                return list;
+                context.pushData(list);
+            }
+        };
+        attributes.put("tuple", new BuiltInMethod() {
+            @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                context.continuation(tuple_continuation);
+                args[0].__iter__(context);
             }
         });
-        attributes.put("type", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("type", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function type not supported yet");
         }});
-        attributes.put("vars", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("vars", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function vars not supported yet");
         }});
-        attributes.put("zip", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("zip", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function zip not supported yet");
         }});
-        attributes.put("__import__", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
+        attributes.put("__import__", new BuiltInMethod() { @Override public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             throw new UnsupportedOperationException("Function __import__ not supported yet");
         }});
     }
 
-    public static PythonIterator range(ThreadContext context, PythonObject from, PythonObject to, PythonObject step) {
-        return new PythonIterator(new RangeIterator(from.asInteger(context), to.asInteger(context), step.asInteger(context)));
+    public static PythonIterator range(ThreadContext context, PythonNumber from, PythonNumber to, PythonNumber step) {
+        return new PythonIterator(new RangeIterator(from.asInteger(), to.asInteger(), step.asInteger()));
     }
 
     public static interface PrintInterface {

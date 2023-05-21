@@ -11,12 +11,12 @@ public class PythonIterator extends PythonType {
         this.it = it;
     }
 
-    public PythonIterator __iter__(ThreadContext context) {
-        return this;
+    public void __iter__(ThreadContext context) {
+        context.pushData(this);
     }
 
-    public PythonObject __next__(ThreadContext context) {
-        return next(context);
+    public void __next__(ThreadContext context) {
+        context.pushData(next(context));
     }
 
     public PythonObject next(ThreadContext context) {

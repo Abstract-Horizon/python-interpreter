@@ -7,7 +7,7 @@ public class Assign extends PythonObject {
     private boolean lastInstruction = false;
 
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
+        @Override public void evaluate(ThreadContext context) {
             PythonObject ref;
 
             Reference referenceObject = (Reference)reference;
@@ -24,22 +24,21 @@ public class Assign extends PythonObject {
             ref.__setattr__(context, referenceObject.getName(), expression);
 
             if (!lastInstruction) {
-                return expression;
-            } else {
-                return null;
+                context.pushData(expression);
             }
         }
     };
 
-    public Assign(PythonObject reference, PythonObject expression) {
+    public Assign(PythonObject reference, PythonObject expression, boolean lastInstruction) {
         this.reference = reference;
         this.expression = expression;
+        this.lastInstruction = lastInstruction;
     }
 
     public boolean isLastInstruction() { return this.lastInstruction; }
     public void setLastInstruction(boolean lastInstruction) { this.lastInstruction = lastInstruction; }
 
-    @Override public PythonObject execute(ThreadContext context) {
+    @Override public void evaluate(ThreadContext context) {
         context.pushPC(continuation);
         if (reference instanceof Reference) {
             if (((Reference)reference).getScope() != null) {
@@ -48,26 +47,11 @@ public class Assign extends PythonObject {
         } else {
             throw new RuntimeException("Expected reference");
         }
-        return expression.execute(context);
+        expression.evaluate(context);
     }
-
-//    public Reference getReference() {
-//        return reference;
-//    }
 
     public PythonObject getExpression() {
         return expression;
-    }
-
-    public PythonObject dereference() {
-        // return __call__(context);
-        throw new UnsupportedOperationException("Assign.dereference");
-    }
-
-    public PythonObject __call__(ThreadContext context) {
-        PythonObject evaluatedExpression = expression.dereference();
-//        reference.assign(evaluatedExpression);
-        return evaluatedExpression;
     }
 
     public String toString() {
@@ -75,6 +59,10 @@ public class Assign extends PythonObject {
     }
 
     public static PythonObject createAssignment(PythonObject reference, PythonObject expression) {
+        return createAssignment(reference, expression, false);
+    }
+
+    public static PythonObject createAssignment(PythonObject reference, PythonObject expression, boolean lastInstruction) {
         if (reference instanceof Call) {
             Call call = (Call)reference;
             if (call.function instanceof Reference) {
@@ -96,6 +84,6 @@ public class Assign extends PythonObject {
                 }
             }
         }
-        return new Assign(reference, expression);
+        return new Assign(reference, expression, lastInstruction);
     }
 }

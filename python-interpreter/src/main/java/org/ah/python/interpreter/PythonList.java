@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class PythonList extends PythonSequence {
 
     public static PythonClass PYTHON_LIST_CLASS = new PythonClass("list");
@@ -15,28 +17,28 @@ public class PythonList extends PythonSequence {
         populateCommonSequenceObjects(PYTHON_LIST_CLASS);
 
         PYTHON_LIST_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__add__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__add__(context, args[1]);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__len__(context);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__len__(context);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("append", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return ((PythonList)args[0]).append(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                ((PythonList)args[0]).append(context, args[1]);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("clear", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return ((PythonList)args[0]).clear(context);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                ((PythonList)args[0]).clear(context);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("remove", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return ((PythonList)args[0]).remove(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                ((PythonList)args[0]).remove(context, args[1]);
             }
         });
     }
@@ -71,19 +73,24 @@ public class PythonList extends PythonSequence {
     public PythonObject dereferenceConstant() {
         return this;
     }
+//
+//    @Override
+//    public boolean asBoolean(ThreadContext context) {
+//        return list.size() != 0;
+//    }
 
-    @Override
-    public boolean asBoolean(ThreadContext context) {
-        return list.size() != 0;
+    public void __bool__(ThreadContext context) {
+        context.pushData(PythonBoolean.valueOf(list.size() != 0));
     }
+
 
     public List<PythonObject> asList() {
         return list;
     }
 
     @Override
-    public PythonInteger __len__(ThreadContext context) {
-        return PythonInteger.valueOf(list.size());
+    public void __len__(ThreadContext context) {
+        context.pushData(PythonInteger.valueOf(list.size()));
     }
 
     public PythonObject append(ThreadContext context, PythonObject value) {
@@ -98,42 +105,58 @@ public class PythonList extends PythonSequence {
         return context.raise(exception("AttributeError", PythonString.valueOf("list.remove")));
     }
 
-    private ThreadContext.Executable setItemContinuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-            return null;
-        }
-    };
+//    private ThreadContext.Executable setItemContinuation = new ThreadContext.Executable() {
+//        @Override public void evaluate(ThreadContext context) {
+//        }
+//    };
 
     @Override
-    public PythonObject __getitem__(ThreadContext context, PythonObject key) {
+    public void __getitem__(ThreadContext context, PythonObject key) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
             int to = slice.getTo();
             if (from == 0 && to == -1) {
-                return this;
+                context.pushData(this);
             } else {
                 if (to == -1) { to = list.size() - 1; }
-                return new PythonList(list.subList(from, to));
+                context.pushData(new PythonList(list.subList(from, to)));
             }
-        } else {
-            int i = key.asInteger(context);  // TODO check if it is number (integer)
+        } else if (key instanceof PythonNumber) {
+            int i = ((PythonNumber)key).asInteger();  // TODO check if it is number (integer)
             if (i < 0) {
                 if (-i >= list.size()) {
-                    // RAISE IndexError: list index out of range
-                    throw new IllegalArgumentException("IndexError: list index out of range");
+                    context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
+                } else {
+                    context.pushData(list.get(list.size() + i));
                 }
-                return list.get(list.size() + i);
             } else if (i >= list.size()) {
-                // RAISE IndexError: list index out of range
-                throw new IllegalArgumentException("IndexError: list index out of range");
+                context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
+            } else {
+                context.pushData(list.get(i));
             }
-            return list.get(i);
+        } else {
+            context.continuation(new Executable() {
+                @Override public void evaluate(ThreadContext context) {
+                    int i = ((PythonNumber)context.popData()).asInteger();
+                    if (i < 0) {
+                        if (-i >= list.size()) {
+                            context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
+                        } else {
+                            context.pushData(list.get(list.size() + i));
+                        }
+                    } else if (i >= list.size()) {
+                        context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
+                    } else {
+                        context.pushData(list.get(i));
+                    }
+                }
+            });
         }
     }
 
     @Override
-    public PythonObject __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
+    public void __setitem__(ThreadContext context, PythonObject key, final PythonObject value) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
@@ -144,7 +167,8 @@ public class PythonList extends PythonSequence {
                 if (value instanceof PythonList) {
                     list.addAll(((PythonList)value).asList());
                 } else if (value instanceof PythonSequence) {
-                    return context.raise(exception("IndexError", PythonString.valueOf("__getitem__, slice key and sequence value")));
+                    context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
+                    // return context.raise(exception("IndexError", PythonString.valueOf("__getitem__, slice key and sequence value")));
                 } else {
                     list.add(value);
                 }
@@ -158,24 +182,35 @@ public class PythonList extends PythonSequence {
                         list.add(from, o);
                     }
                 } else if (value instanceof PythonSequence) {
-                    return context.raise(exception("AttributeError", PythonString.valueOf("__setitem__, slice key and sequence value")));
+                    context.raise(exception("IndexError", PythonString.valueOf("list index out of range")));
+                    // return context.raise(exception("AttributeError", PythonString.valueOf("__setitem__, slice key and sequence value")));
                 } else {
                     list.add(from, value);
                 }
 
             }
-        } else {
-            int i = key.dereference().asInteger(context);
+        } else if (key instanceof PythonNumber) {
+            int i = ((PythonNumber)key).asInteger();
             while (i >= list.size()) {
                 list.add(PythonNone.NONE);
             }
             list.set(i, value);
+        } else {
+            context.continuation(new Executable() {
+                @Override public void evaluate(ThreadContext context) {
+                    int i = ((PythonNumber)context.popData()).asInteger();
+                    while (i >= list.size()) {
+                        list.add(PythonNone.NONE);
+                    }
+                    list.set(i, value);
+                }
+            });
+            key.__int__(context);
         }
-        return PythonNone.NONE;
     }
 
     @Override
-    public PythonObject __delitem__(ThreadContext context, PythonObject key) {
+    public void __delitem__(ThreadContext context, PythonObject key) {
         if (key instanceof PythonSlice) {
             PythonSlice slice = (PythonSlice)key;
             int from = slice.getFrom();
@@ -189,28 +224,34 @@ public class PythonList extends PythonSequence {
                     list.remove(i);
                 }
             }
+        } else if (key instanceof PythonNumber) {
+            list.remove(((PythonNumber)key).asInteger());
         } else {
-            list.remove(key.asInteger(context));
+            context.continuation(new Executable() {
+                @Override public void evaluate(ThreadContext context) {
+                    list.remove(((PythonInteger)context.popData()).value);
+                }
+            });
+            key.__int__(context);
         }
-        return PythonNone.NONE;
     }
 
     @Override
-    public PythonIterator __iter__(ThreadContext context) {
-        return new PythonIterator(new ListIterator<PythonObject>(context, list));
+    public void __iter__(ThreadContext context) {
+        context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
     }
 
 
-    @Override
-    public PythonObject __getattr__(ThreadContext context, String name) {
-//        PythonObject o = TYPE.getAttribute(name);
-//
-//        if (o == null) {
-//            throw new NoSuchElementException(name);
-//        }
-//        return o;
-        return PythonNone.NONE;
-    }
+//    @Override
+//    public void __getattr__(ThreadContext context, String name) {
+////        PythonObject o = TYPE.getAttribute(name);
+////
+////        if (o == null) {
+////            throw new NoSuchElementException(name);
+////        }
+////        return o;
+//        return PythonNone.NONE;
+//    }
 
 //    public PythonObject __getattr__(PythonObject name) {
 //        if ("append".equals(name.asString())) {
@@ -269,21 +310,21 @@ public class PythonList extends PythonSequence {
 
 
 
-    public static PythonObject constructor(final List<PythonObject> elements, PythonClass pythonClass) {
-        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
-            return new Constructor() {
-                @Override public PythonObject __call__(ThreadContext context) {
-                    PythonList list = new PythonList();
-                    for (PythonObject o : storedElements) {
-                        PythonObject r = o.dereference();
-                        list.asList().add(r);
-                    }
-                    return list;
-                }
-                @Override public String toString() {
-                    return "CreateList" + storedElements;
-                }
-        };
-    };
+//    public static PythonObject constructor(final List<PythonObject> elements, PythonClass pythonClass) {
+//        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
+//            return new Constructor() {
+//                @Override public PythonObject __call__(ThreadContext context) {
+//                    PythonList list = new PythonList();
+//                    for (PythonObject o : storedElements) {
+//                        PythonObject r = o.dereference();
+//                        list.asList().add(r);
+//                    }
+//                    return list;
+//                }
+//                @Override public String toString() {
+//                    return "CreateList" + storedElements;
+//                }
+//        };
+//    };
 
 }

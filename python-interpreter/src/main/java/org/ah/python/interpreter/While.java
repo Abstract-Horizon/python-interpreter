@@ -20,23 +20,38 @@ public class While extends PythonObject {
     }
 
     private ThreadContext.Executable whiteContinuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-            if (context.a.asBoolean(context)) {
-                context.pushPC(whiteContinuation);
-                context.pushPC(test);
-                return block.execute(context);
+        @Override public void evaluate(ThreadContext context) {
+            if (context.a instanceof PythonBoolean) {
+                if (((PythonBoolean)context.a).asBoolean()) {
+                    context.pushPC(whiteContinuation);
+                    context.pushPC(test);
+                    block.evaluate(context);
+                } else if (!elseBlock.getStatements().isEmpty()) {
+                    elseBlock.evaluate(context);
+                }
+            } else {
+                context.continuation(whiteBoolContinuation);
+                context.a.__bool__(context);
             }
-            if (!elseBlock.getStatements().isEmpty()) {
-                return elseBlock.execute(context);
-            }
-            return null;
         }
     };
 
-    public PythonObject execute(ThreadContext context) {
+    private ThreadContext.Executable whiteBoolContinuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            if (((PythonBoolean)context.a).asBoolean()) {
+                context.pushPC(whiteContinuation);
+                context.pushPC(test);
+                block.evaluate(context);
+            } else if (!elseBlock.getStatements().isEmpty()) {
+                elseBlock.evaluate(context);
+            }
+        }
+    };
+
+    public void evaluate(ThreadContext context) {
         context.pushPC(whiteContinuation);
 
-        return test.execute(context);
+        test.evaluate(context);
     }
 
     public String toString() {

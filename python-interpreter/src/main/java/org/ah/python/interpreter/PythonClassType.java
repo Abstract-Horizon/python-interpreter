@@ -23,36 +23,37 @@ public class PythonClassType extends PythonType implements CallableType {
     public PythonObject __call__(ThreadContext context, PythonObject[] args) {
         PythonObjectInstance self = new PythonObjectInstance(this);
 
-        PythonObject initMethod = getAttribute(context, "__init__");
-        if (initMethod != null) {
-            if (initMethod instanceof InstanceMethod) {
-                @SuppressWarnings("unchecked")
-                InstanceMethod<PythonObjectInstance> initInstanceMethod = (InstanceMethod<PythonObjectInstance>)initMethod;
-
-                initInstanceMethod.__call__(context, self, EMPTY_ARGS);
-            } else {
-                throw new IllegalStateException("__init__ method is not instance method!");
-            }
-        }
+// TODO!!!
+//        PythonObject initMethod = getAttribute(context, "__init__");
+//        if (initMethod != null) {
+//            if (initMethod instanceof InstanceMethod) {
+//                @SuppressWarnings("unchecked")
+//                InstanceMethod<PythonObjectInstance> initInstanceMethod = (InstanceMethod<PythonObjectInstance>)initMethod;
+//
+//                initInstanceMethod.__call__(context, self, EMPTY_ARGS);
+//            } else {
+//                throw new IllegalStateException("__init__ method is not instance method!");
+//            }
+//        }
         return self;
     }
 
-    public PythonObject getAttribute(ThreadContext context, String name) {
-        if (attributes != null && attributes.containsKey(name)) {
-            return attributes.get(name);
-        }
-        PythonObject res = null;
-        if (getParent() != null) {
-            res = getParent().__getattr__(context, name);
-        }
-        if (res == null && parentScope != null) {
-            res = parentScope.__getattr__(context, name);
-        }
-//        if (res == null) {
-//            throw new NoSuchElementException(name + " in " + this);
+//    public PythonObject getAttribute(ThreadContext context, String name) {
+//        if (attributes != null && attributes.containsKey(name)) {
+//            return attributes.get(name);
 //        }
-        return res;
-    }
+//        PythonObject res = null;
+//        if (getParent() != null) {
+//            res = getParent().__getattr__(context, name);
+//        }
+//        if (res == null && parentScope != null) {
+//            res = parentScope.__getattr__(context, name);
+//        }
+////        if (res == null) {
+////            throw new NoSuchElementException(name + " in " + this);
+////        }
+//        return res;
+//    }
 
     public void setParentType(PythonType parentType) {
         super.setParent(parentType);

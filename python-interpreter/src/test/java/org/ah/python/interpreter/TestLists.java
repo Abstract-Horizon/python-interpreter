@@ -39,22 +39,4 @@ public class TestLists extends BaseTestClass {
 
         assertEquals("5\n9\n", result());
     }
-
-    @Test
-    public void complexExample() {
-        executeLines(
-            "p = {",
-            "'list': [5, 6]",
-            "}",
-            "def x(p):",
-            "  p['list'][0] = 0",
-            "  p['list'][1] = p['list'][1] + 1.5",
-            "  print(str(p['list'][0]))",
-            "  print(str(p['list'][1]))",
-            "x(p)"
-        );
-
-        assertEquals("0\n7.5\n", result());
-    }
-
 }

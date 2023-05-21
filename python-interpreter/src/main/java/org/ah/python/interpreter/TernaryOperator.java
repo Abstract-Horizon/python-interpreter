@@ -1,5 +1,7 @@
 package org.ah.python.interpreter;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class TernaryOperator extends PythonObject {
 
     private PythonObject condition;
@@ -12,20 +14,36 @@ public class TernaryOperator extends PythonObject {
         this.elseExpression = elseExpression;
     }
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
+    private Executable continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
             PythonObject cond = context.popData();
-            if (cond.asBoolean(context)) {
-                return ifExpression.execute(context);
+            if (cond instanceof PythonBoolean) {
+                if (((PythonBoolean)cond).asBoolean()) {
+                    ifExpression.evaluate(context);
+                } else {
+                    elseExpression.evaluate(context);
+                }
             } else {
-                return elseExpression.execute(context);
+                context.continuation(boolContinuation);
+                cond.__bool__(context);
             }
         }
     };
 
-    public PythonObject execute(ThreadContext context) {
+    private Executable boolContinuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonObject cond = context.popData();
+            if (((PythonBoolean)cond).asBoolean()) {
+                ifExpression.evaluate(context);
+            } else {
+                elseExpression.evaluate(context);
+            }
+        }
+    };
+
+    public void evaluate(ThreadContext context) {
         context.pushPC(continuation);
-        return condition.execute(context);
+        condition.evaluate(context);
     }
 
 }

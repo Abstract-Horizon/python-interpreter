@@ -10,13 +10,12 @@ public class Def extends PythonObject {
     private List<Reference> args = new ArrayList<Reference>();
     private boolean instanceMethod = false;
 
-    private Suite method = new Suite();
     private Block block = new Block();
 
     public static PythonObject RETURN = null;
 
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
+        @Override public void evaluate(ThreadContext context) {
             final List<Reference> functionArgs = new ArrayList<Reference>();
             for (int i = 0; i < args.size(); i++) {
                 Reference r = args.get(i);
@@ -34,7 +33,6 @@ public class Def extends PythonObject {
             Function function = new DefFunction(name, functionArgs, context.currentScope, block);
 
             context.currentScope.__setattr__(context, name, function);
-            return null;
         }
     };
 
@@ -50,15 +48,11 @@ public class Def extends PythonObject {
         return block;
     }
 
-    public Suite getSuite() {
-        return method;
-    }
-
     public List<Reference> getArguments() {
         return args;
     }
 
-    @Override public PythonObject execute(ThreadContext context) {
+    @Override public void evaluate(ThreadContext context) {
         PythonObject last = null;
         for (int i = args.size() - 1; i >= 0; i--) {
             Reference o = args.get(i);
@@ -73,10 +67,11 @@ public class Def extends PythonObject {
 
         if (last != null) {
             context.pushPC(continuation);
-            return last.execute(context);
+            last.evaluate(context);
+            return;
         }
 
-        return continuation.execute(context);
+        continuation.evaluate(context);
     }
 //
 //    public PythonObject __call__(ThreadContext context) {
@@ -156,7 +151,7 @@ public class Def extends PythonObject {
 //    }
 
     public String toString() {
-        return "def " + name + "(" + collectionToString(args, ", ") + "): " + method;
+        return "def " + name + "(" + collectionToString(args, ", ") + "): "; //  + method;
     }
 
     public static class DefFunction extends Function {
@@ -174,14 +169,14 @@ public class Def extends PythonObject {
         }
 
         private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
-            @Override public PythonObject execute(ThreadContext context) {
+            @Override public void evaluate(ThreadContext context) {
                 context.popData();
                 context.currentScope.close();
-                return PythonNone.NONE;
+                context.pushData(PythonNone.NONE);
             }
         };
 
-        public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+        public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
             System.out.println("Executing function " + name + " with args " + functionArgs);
 
             // Bind arguments
@@ -210,7 +205,7 @@ public class Def extends PythonObject {
             if (!(statements.get(statements.size() - 1) instanceof Return)) {
                 statements.add(new Return(PythonNone.NONE));
             }
-            return block.execute(context);
+            block.evaluate(context);
         }
     };
 

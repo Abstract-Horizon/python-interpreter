@@ -24,21 +24,21 @@ public class UnaryOp extends PythonObject {
         throw new UnsupportedOperationException("UnaryOp.dereferenceConstant");
     }
 
-    public PythonObject __call__(ThreadContext context) {
-        if (op == UnaryopType.USub) {
-            PythonObject value = operand.dereference();
-            return value.__neg__(context);
-        }
-        if (op == UnaryopType.UAdd) {
-            PythonObject value = operand.dereference();
-            return value;
-        }
-        if (op == UnaryopType.Not) {
-            PythonObject value = operand.dereference();
-            return value.__neg__(context);
-        }
-        throw new UnsupportedOperationException("UnaryOp[" + op + "]");
-    }
+//    public PythonObject __call__(ThreadContext context) {
+//        if (op == UnaryopType.USub) {
+//            PythonObject value = operand.dereference();
+//            return value.__neg__(context);
+//        }
+//        if (op == UnaryopType.UAdd) {
+//            PythonObject value = operand.dereference();
+//            return value;
+//        }
+//        if (op == UnaryopType.Not) {
+//            PythonObject value = operand.dereference();
+//            return value.__neg__(context);
+//        }
+//        throw new UnsupportedOperationException("UnaryOp[" + op + "]");
+//    }
 
     public String toString() {
         if (op == UnaryopType.USub) {

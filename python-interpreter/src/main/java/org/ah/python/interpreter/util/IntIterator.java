@@ -19,7 +19,7 @@ public class IntIterator implements Iterator<PythonObject> {
 
     @Override
     public boolean hasNext() {
-        return pos < object.__len__(context).asInteger(context);
+        return pos < object.__len__(context).asInteger();
     }
 
     @Override

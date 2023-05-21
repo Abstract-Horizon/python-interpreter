@@ -8,25 +8,18 @@ public class Return extends PythonObject {
         this.ret = ret;
     }
 
-    public PythonObject __call__(ThreadContext context) {
-        Suite.BREAKOUT = true;
-        Def.RETURN = ret.dereference();
-        return PythonNone.NONE;
-    }
-
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
+        @Override public void evaluate(ThreadContext context) {
             PythonObject returnValue = context.popData();
             context.currentScope.close();
-            // context.pushData(returnValue);
 
-            return returnValue;
+            context.pushData(returnValue);
         }
     };
 
-    public PythonObject execute(ThreadContext context) {
+    public void evaluate(ThreadContext context) {
         context.pushPC(continuation);
-        return ret.execute(context);
+        ret.evaluate(context);
     }
 
     public String toString() {

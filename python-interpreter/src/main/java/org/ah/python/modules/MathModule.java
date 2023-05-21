@@ -88,28 +88,28 @@ public class MathModule extends Proxy {
 
 
         TYPE.__setattr__("acos", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-            return PythonFloat.valueOf(Math.acos(arg.asFloat(context)));
+            return PythonFloat.valueOf(Math.acos(arg.asFloat()));
         }});
         TYPE.__setattr__("asin", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-            return PythonFloat.valueOf(Math.asin(arg.asFloat(context)));
+            return PythonFloat.valueOf(Math.asin(arg.asFloat()));
         }});
         TYPE.__setattr__("atan", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-            return PythonFloat.valueOf(Math.atan(arg.asFloat(context)));
+            return PythonFloat.valueOf(Math.atan(arg.asFloat()));
         }});
         TYPE.__setattr__("atan2", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
             throw new UnsupportedOperationException("Function atan2 not supported yet");
         }});
         TYPE.__setattr__("cos", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-            return PythonFloat.valueOf(Math.cos(arg.asFloat(context)));
+            return PythonFloat.valueOf(Math.cos(arg.asFloat()));
         }});
         TYPE.__setattr__("factorial", new BuiltInMethod() { @Override public PythonObject __call__(ThreadContext context) {
             throw new UnsupportedOperationException("Function factorial not supported yet");
         }});
         TYPE.__setattr__("sin", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-            return PythonFloat.valueOf(Math.sin(arg.asFloat(context)));
+            return PythonFloat.valueOf(Math.sin(arg.asFloat()));
         }});
         TYPE.__setattr__("tan", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-            return PythonFloat.valueOf(Math.tan(arg.asFloat(context)));
+            return PythonFloat.valueOf(Math.tan(arg.asFloat()));
         }});
 
 

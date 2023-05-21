@@ -20,21 +20,34 @@ public class If extends PythonObject {
     }
 
     private ThreadContext.Executable ifContinuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-            if (context.a.asBoolean(context)) {
-                return block.execute(context);
+        @Override public void evaluate(ThreadContext context) {
+            if (context.a instanceof PythonBoolean) {
+                if (((PythonBoolean)context.a).asBoolean()) {
+                    block.evaluate(context);
+                } else if (!elseBlock.getStatements().isEmpty()) {
+                    elseBlock.evaluate(context);
+                }
+            } else {
+                context.continuation(ifBoolContinuation);
+                context.a.__bool__(context);
             }
-            if (!elseBlock.getStatements().isEmpty()) {
-                return elseBlock.execute(context);
-            }
-            return null;
         }
     };
 
-    public PythonObject execute(ThreadContext context) {
+    private ThreadContext.Executable ifBoolContinuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            if (((PythonBoolean)context.a).asBoolean()) {
+                block.evaluate(context);
+            } else if (!elseBlock.getStatements().isEmpty()) {
+                elseBlock.evaluate(context);
+            }
+        }
+    };
+
+    public void evaluate(ThreadContext context) {
         context.pushPC(ifContinuation);
 
-        return test.execute(context);
+        test.evaluate(context);
     }
 
     public String toString() {

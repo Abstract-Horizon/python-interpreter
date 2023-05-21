@@ -41,28 +41,28 @@ public class PythonInteger extends PythonNumber {
         populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
 
         PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__and__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__and__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__or__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__or__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__xor__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__xor__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__lshift__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__lshift__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__rshift__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__rshift__(context, args[1]);
             }
         });
     }
@@ -88,22 +88,26 @@ public class PythonInteger extends PythonNumber {
         return res;
     }
 
-    private int value;
+    protected int value;
 
     protected PythonInteger(int value) {
         this.value = value;
         this.pythonClass = PYTHON_INTEGER_CLASS;
     }
 
-    public int asInteger(ThreadContext context) {
+    public String asString() {
+        return Integer.toString(value);
+    }
+
+    public int asInteger() {
         return value;
     }
 
-    public double asFloat(ThreadContext context) {
+    public double asFloat() {
         return value;
     }
 
-    public boolean asBoolean(ThreadContext context) {
+    public boolean asBoolean() {
         return value != 0;
     }
 
@@ -111,154 +115,370 @@ public class PythonInteger extends PythonNumber {
         return true;
     }
 
-    public PythonString __repr__(ThreadContext context) {
-        return PythonString.valueOf(Integer.toString(value));
+    public void __repr__(ThreadContext context) {
+        context.pushData(PythonString.valueOf(Integer.toString(value)));
     }
 
-    public PythonInteger __int__(ThreadContext context) {
-        return this;
+    public void __int__(ThreadContext context) {
+        context.pushData(this);
     }
 
-    public PythonFloat __float__(ThreadContext context) {
-        return PythonFloat.valueOf(value);
+    public void __float__(ThreadContext context) {
+        context.pushData(PythonFloat.valueOf(value));
     }
 
-    public PythonBoolean __bool__(ThreadContext context) {
-        return PythonBoolean.valueOf(value != 0);
+    public void __bool__(ThreadContext context) {
+        context.pushData(PythonBoolean.valueOf(value != 0));
     }
 
-    public PythonBoolean __nonzero__(ThreadContext context) {
+    public void __nonzero__(ThreadContext context) {
         if (value != 0) {
-            return TRUE;
+            context.pushData(TRUE);
         } else {
-            return FALSE;
+            context.pushData(FALSE);
         }
     }
 
-    public PythonBoolean __lt__(ThreadContext context, PythonObject other) {
-        PythonObject d = other.dereference();
-        if (d instanceof PythonFloat) {
-            return d.__lt__(context, this);
-        } else {
-            if (value < d.asInteger(context)) { return TRUE; }
+    private static ThreadContext.Executable lt_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value > ((PythonInteger)context.popData()).value));
         }
-        return FALSE;
-    }
+    };
 
-    public PythonBoolean __le__(ThreadContext context, PythonObject other) {
-        PythonObject d = other.dereference();
-        if (d instanceof PythonFloat) {
-            return d.__lt__(context, this);
-        } else {
-            if (value <= d.asInteger(context)) { return TRUE; }
-        }
-        return FALSE;
-    }
-
-    public PythonBoolean __gt__(ThreadContext context, PythonObject other) {
-        PythonObject d = other.dereference();
-        if (d instanceof PythonFloat) {
-            return d.__gt__(context, this);
-        } else {
-            if (value > d.asInteger(context)) { return TRUE; }
-        }
-        return FALSE;
-    }
-
-    public PythonBoolean __ge__(ThreadContext context, PythonObject other) {
-        PythonObject d = other.dereference();
-        if (d instanceof PythonFloat) {
-            return d.__lt__(context, this);
-        } else {
-            if (value >= d.asInteger(context)) { return TRUE; }
-        }
-        return FALSE;
-    }
-
-    public PythonBoolean __eq__(ThreadContext context, PythonObject other) {
-        PythonObject r = other.dereference();
-
-        if (other instanceof PythonBoolean) {
-            return other.__eq__(context, this);
-        }
-
-        return PythonBoolean.valueOf(value == r.asInteger(context));
-    }
-
-    public PythonNumber __neg__(ThreadContext context) {
-        return PythonInteger.valueOf(-value);
-    }
-
-    public PythonObject __add__(ThreadContext context, PythonObject other) {
+    public void __lt__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value + other.asFloat(context));
+            other.__lt__(context, this);
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonBoolean.valueOf(value < ((PythonInteger)other).value));
         } else {
-            return PythonInteger.valueOf(value + other.asInteger(context));
+            context.continuation(lt_continuation);
+            context.pushData(this);
+            other.__int__(context);
         }
     }
 
-    public PythonObject __sub__(ThreadContext context, PythonObject other) {
+    private static ThreadContext.Executable le_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value >= ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __le__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value - other.asFloat(context));
+            other.__le__(context, this);
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonBoolean.valueOf(value <= ((PythonInteger)other).value));
         } else {
-            return PythonInteger.valueOf(value - other.asInteger(context));
+            context.continuation(le_continuation);
+            context.pushData(this);
+            other.__int__(context);
         }
     }
 
-    public PythonObject __mul__(ThreadContext context, PythonObject other) {
+    private static ThreadContext.Executable gt_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value < ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __gt__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value * other.asFloat(context));
+            other.__gt__(context, this);
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonBoolean.valueOf(value > ((PythonInteger)other).value));
         } else {
-            return PythonInteger.valueOf(value * other.asInteger(context));
+            context.continuation(gt_continuation);
+            context.pushData(this);
+            other.__int__(context);
         }
     }
 
-    public PythonObject __div__(ThreadContext context, PythonObject other) {
+    private static ThreadContext.Executable ge_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value <= ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __ge__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonFloat) {
-            return PythonFloat.valueOf(value / other.asFloat(context));
+            other.__ge__(context, this);
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonBoolean.valueOf(value >= ((PythonInteger)other).value));
         } else {
-            return PythonInteger.valueOf(value / other.asInteger(context));
+            context.continuation(ge_continuation);
+            context.pushData(this);
+            other.__int__(context);
         }
     }
 
-    public PythonObject __floordiv__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value / other.asInteger(context));
+    private static ThreadContext.Executable eq_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value == ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __eq__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            other.__eq__(context, this);
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonBoolean.valueOf(value == ((PythonInteger)other).value));
+        } else {
+            context.continuation(eq_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __mod__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value % other.asInteger(context));
+    private static ThreadContext.Executable ne_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value != ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __ne__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            other.__ne__(context, this);
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonBoolean.valueOf(value != ((PythonInteger)other).value));
+        } else {
+            context.continuation(ne_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __divmod__(ThreadContext context, PythonObject other) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("__divmod__")));
+    public void __neg__(ThreadContext context) {
+        context.pushData(PythonInteger.valueOf(-value));
     }
 
-    public PythonObject __pow__(ThreadContext context, PythonObject other) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
+    private static ThreadContext.Executable add_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonInteger.valueOf(((PythonInteger)context.popData()).value + ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __add__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value + ((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value + ((PythonInteger)other).value));
+        } else {
+            context.continuation(add_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("__pow__")));
+    private static ThreadContext.Executable sub_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value - other.value));
+        }
+    };
+
+    public void __sub__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value - ((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value - ((PythonInteger)other).value));
+        } else {
+            context.continuation(sub_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __lshift__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value << other.asInteger(context));
+    private static ThreadContext.Executable mul_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonInteger.valueOf(((PythonInteger)context.popData()).value * ((PythonInteger)context.popData()).value));
+        }
+    };
+
+    public void __mul__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value * ((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value * ((PythonInteger)other).value));
+        } else {
+            context.continuation(mul_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __rshift__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value >> other.asInteger(context));
+    private static ThreadContext.Executable div_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value / other.value));
+        }
+    };
+
+    public void __div__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value / ((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value / ((PythonInteger)other).value));
+        } else {
+            context.continuation(div_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __and__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value & other.asInteger(context));
+
+    private static ThreadContext.Executable floordiv_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value / other.value));
+        }
+    };
+
+    public void __floordiv__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value / (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value / ((PythonInteger)other).value));
+        } else {
+            context.continuation(floordiv_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __xor__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value ^ other.asInteger(context));
+    private static ThreadContext.Executable mod_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value % other.value));
+        }
+    };
+
+    public void __mod__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value % (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value % ((PythonInteger)other).value));
+        } else {
+            context.continuation(mod_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
-    public PythonObject __or__(ThreadContext context, PythonObject other) {
-        return PythonInteger.valueOf(value | other.asInteger(context));
+
+    public void __divmod__(ThreadContext context, PythonObject other) {
+        context.raise(exception("NotImplementedError", PythonString.valueOf("__divmod__")));
+    }
+
+    public void __pow__(ThreadContext context, PythonObject other) {
+        context.raise(exception("NotImplementedError", PythonString.valueOf("__pow__")));
+    }
+
+    public void __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
+        context.raise(exception("NotImplementedError", PythonString.valueOf("__pow__")));
+    }
+
+    private static ThreadContext.Executable lshift_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value << other.value));
+        }
+    };
+
+    public void __lshift__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value << (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value << ((PythonInteger)other).value));
+        } else {
+            context.continuation(lshift_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
+    }
+
+    private static ThreadContext.Executable rshift_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value >> other.value));
+        }
+    };
+
+    public void __rshift__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value >> (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value >> ((PythonInteger)other).value));
+        } else {
+            context.continuation(rshift_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
+    }
+
+    private static ThreadContext.Executable and_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value & other.value));
+        }
+    };
+
+    public void __and__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value & (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value & ((PythonInteger)other).value));
+        } else {
+            context.continuation(and_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
+    }
+
+    private static ThreadContext.Executable or_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value | other.value));
+        }
+    };
+
+    public void __or__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value | (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value | ((PythonInteger)other).value));
+        } else {
+            context.continuation(or_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
+    }
+
+    private static ThreadContext.Executable xor_continuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonInteger other = (PythonInteger)context.popData();
+            PythonInteger self = (PythonInteger)context.popData();
+            context.pushData(PythonInteger.valueOf(self.value ^ other.value));
+        }
+    };
+
+    public void __xor__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonFloat) {
+            context.pushData(PythonFloat.valueOf(value ^ (int)((PythonFloat)other).value));
+        } else if (other instanceof PythonInteger) {
+            context.pushData(PythonInteger.valueOf(value ^ ((PythonInteger)other).value));
+        } else {
+            context.continuation(xor_continuation);
+            context.pushData(this);
+            other.__int__(context);
+        }
     }
 
     public String toString() {
@@ -272,9 +492,12 @@ public class PythonInteger extends PythonNumber {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof PythonObject) {
-            return __eq__(null, (PythonObject)o).asBoolean(null);
+        if (o instanceof PythonInteger) {
+            return ((PythonInteger) o).value == value;
         }
+//        if (o instanceof PythonObject) {
+//            return __eq__(null, (PythonObject)o).asBoolean(null);
+//        }
         return false;
     }
 }

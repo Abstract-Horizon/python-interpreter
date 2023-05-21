@@ -63,7 +63,7 @@ public class TimeModule extends Proxy {
 
         TYPE.__setattr__("sleep", new BuiltInMethod() { @Override public PythonObject call0(ThreadContext context, PythonObject from) {
             try {
-                Thread.sleep(from.asInteger(context) * 1000);
+                Thread.sleep(from.asInteger() * 1000);
             } catch (InterruptedException ignore) {
             }
             return PythonNone.NONE;

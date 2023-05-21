@@ -14,7 +14,7 @@ public class TestArrays extends BaseTestClass {
         Reference aReference = new Reference(null, "a");
         PythonObject expression = new PythonListGenerator(Arrays.<PythonObject>asList(PythonString.valueOf("value")), PythonList.PYTHON_LIST_CLASS);
 
-        Assign aAssignment = new Assign(aReference, expression);
+        Assign aAssignment = new Assign(aReference, expression, true);
 
         block.getStatements().add(aAssignment);
 
@@ -25,7 +25,7 @@ public class TestArrays extends BaseTestClass {
 
         Reference bReference = new Reference(null, "b");
 
-        Assign bAssignment = new Assign(bReference, callAccess);
+        Assign bAssignment = new Assign(bReference, callAccess, true);
         bAssignment.setLastInstruction(true);
 
         block.getStatements().add(bAssignment);
@@ -34,7 +34,7 @@ public class TestArrays extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) { }
 
-        assertEquals(context.currentScope.__getattr__(context, "b").asString(context), "value");
+        assertEquals(context.currentScope.getAttribute("b").asString(), "value");
 
         contextIsEmpty();
     }
@@ -47,14 +47,14 @@ public class TestArrays extends BaseTestClass {
             "c = a[1]"
         );
 
-        PythonObject b = context.currentScope.__getattr__(context, "b");
-        PythonObject c = context.currentScope.__getattr__(context, "c");
+        PythonObject b = context.currentScope.getAttribute("b");
+        PythonObject c = context.currentScope.getAttribute("c");
 
         System.out.println("Got b=" + b);
         System.out.println("Got c=" + c);
 
-        assertEquals(b.asInteger(context), 3);
-        assertEquals(c.asInteger(context), 5);
+        assertEquals(b.asInteger(), 3);
+        assertEquals(c.asInteger(), 5);
 
         contextIsEmpty();
     }

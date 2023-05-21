@@ -22,13 +22,13 @@ public class PythonSlice extends PythonObject {
         return slice;
     }
 
-    public static PythonSlice range(ThreadContext context, PythonObject from, PythonObject to) {
+    public static PythonSlice range(ThreadContext context, PythonNumber from, PythonNumber to) {
         PythonSlice slice = new PythonSlice();
         if (from != null) {
-            slice.from = from.asInteger(context);
+            slice.from = from.asInteger();
         }
         if (to != null) {
-            slice.to = to.asInteger(context);
+            slice.to = to.asInteger();
         }
         slice.step = 1;
         return slice;

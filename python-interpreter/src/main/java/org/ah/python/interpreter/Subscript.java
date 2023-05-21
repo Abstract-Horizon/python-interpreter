@@ -45,9 +45,9 @@ public class Subscript extends PythonObject implements Assignable {
         throw new UnsupportedOperationException("Superscript.dereference");
     }
 
-    public PythonObject execute(ThreadContext context) {
+    public void evaluate(ThreadContext context) {
         if (from == null && to == null) {
-            return scope;
+            context.pushData(scope);
         } else if (from == null) {
 
         } else if (to == null) {
@@ -55,25 +55,24 @@ public class Subscript extends PythonObject implements Assignable {
         } else if (from == to) {
 
         }
-        return null;
     }
 
-    public void assign(ThreadContext context, PythonObject expr) {
-        PythonSlice slice;
-        if (from == null && to == null) {
-            slice = PythonSlice.range(0, -1);
-        } else if (from == null) {
-            slice = PythonSlice.range(0, to.dereference().asInteger(context));
-        } else if (to == null) {
-            slice = PythonSlice.range(from.dereference().asInteger(context), -1);
-        } else if (from == to) {
-            scope.dereference().__setitem__(context, from, expr.dereference());
-            return;
-        } else {
-            slice = PythonSlice.range(context, from.dereference(), to.dereference());
-        }
-        scope.dereference().__setitem__(context, slice, expr.dereference());
-    }
+//    public void assign(ThreadContext context, PythonObject expr) {
+//        PythonSlice slice;
+//        if (from == null && to == null) {
+//            slice = PythonSlice.range(0, -1);
+//        } else if (from == null) {
+//            slice = PythonSlice.range(0, to.dereference().asInteger(context));
+//        } else if (to == null) {
+//            slice = PythonSlice.range(from.dereference().asInteger(context), -1);
+//        } else if (from == to) {
+//            scope.dereference().__setitem__(context, from, expr.dereference());
+//            return;
+//        } else {
+//            slice = PythonSlice.range(context, from.dereference(), to.dereference());
+//        }
+//        scope.dereference().__setitem__(context, slice, expr.dereference());
+//    }
 
     public String toString() {
         if (from == null && to == null) {

@@ -5,11 +5,10 @@ public class Reference extends PythonObject implements Assignable {
     protected PythonObject scope;
     protected String name;
 
-    private PythonObject dereferencedScope;
-
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-            return context.a.pythonClass.__getattr__(context, name.toString());
+        @Override public void evaluate(ThreadContext context) {
+            // TODO - this directly going to pythonClass is wrong! This needs to be moved to PythonObject.__getattr__
+            context.a.pythonClass.__getattr__(context, name.toString());
         }
     };
 
@@ -31,27 +30,16 @@ public class Reference extends PythonObject implements Assignable {
         return name;
     }
 
-    public PythonObject execute(ThreadContext context) {
+    public void evaluate(ThreadContext context) {
         if (scope != null) {
             context.pushPC(continuation);
-            return scope.execute(context);
+            scope.evaluate(context);
         } else {
             PythonObject scope = context.getCurrentScope();
-            return scope.__getattr__(context, name);
+            scope.__getattr__(context, name);
         }
     }
 
-    protected PythonObject getDereferencedScope() {
-        return dereferencedScope;
-    }
-
-    public void assign(ThreadContext context, PythonObject expr) {
-        if (scope == null) {
-            GlobalScope.currentScope().__setattr__(name, expr);
-        } else {
-            scope.dereference().__setattr__(context, name, expr);
-        }
-    }
 
     public String toString() {
         if (scope == null) {

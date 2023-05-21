@@ -8,25 +8,25 @@ public class Block implements ThreadContext.Executable {
     private List<ThreadContext.Executable> statements = new ArrayList<ThreadContext.Executable>();
 
     private ThreadContext.Executable twoStatementsContinuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-//            context.popData();
+        @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 2) {
                 context.pushPC(threeStatementsContinuation);
-                return statements.get(1).execute(context);
+                statements.get(1).evaluate(context);
+                return;
             }
-            return statements.get(1).execute(context);
+            statements.get(1).evaluate(context);
         }
 
     };
 
     private ThreadContext.Executable threeStatementsContinuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-//            context.popData();
+        @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 3) {
                 context.pushPC(new MoreStatementsContinuation());
-                return statements.get(2).execute(context);
+                statements.get(2).evaluate(context);
+                return;
             }
-            return statements.get(2).execute(context);
+            statements.get(2).evaluate(context);
         }
 
     };
@@ -34,22 +34,18 @@ public class Block implements ThreadContext.Executable {
     private class MoreStatementsContinuation implements ThreadContext.Executable {
         private int ptr = 2;
 
-        @Override public PythonObject execute(ThreadContext context) {
-//            context.popData();
+        @Override public void evaluate(ThreadContext context) {
             ptr += 1;
             if (ptr < statements.size() - 1) {
                 context.pushPC(this);
             }
-            return statements.get(ptr).execute(context);
+            statements.get(ptr).evaluate(context);
         }
     };
 
     private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
-        @Override public PythonObject execute(ThreadContext context) {
-//            context.popData();
+        @Override public void evaluate(ThreadContext context) {
             context.currentScope.close();
-//            return PythonNone.NONE;
-            return null;
         }
     };
 
@@ -67,19 +63,20 @@ public class Block implements ThreadContext.Executable {
         return statements;
     }
 
-    @Override public PythonObject execute(ThreadContext context) {
+    @Override public void evaluate(ThreadContext context) {
         int size = statements.size();
         if (size == 0) {
-            return null;
+            return;
         }
         if (closeScope) {
             context.pushPC(closeScopeContinuation);
         }
         if (size == 1) {
-            return statements.get(0).execute(context);
+            statements.get(0).evaluate(context);
+            return;
         }
 
         context.pushPC(twoStatementsContinuation);
-        return statements.get(0).execute(context);
+        statements.get(0).evaluate(context);
     }
 }

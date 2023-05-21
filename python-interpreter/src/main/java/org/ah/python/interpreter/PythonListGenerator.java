@@ -14,7 +14,7 @@ public class PythonListGenerator extends PythonObject {
 
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
 
-        @Override public PythonObject execute(ThreadContext context) {
+        @Override public void evaluate(ThreadContext context) {
             PythonSequence returnValue;
             if (targetPythonClass == PythonTuple.PYTHON_TUPLE_CLASS) {
                 returnValue = new PythonTuple();
@@ -28,13 +28,14 @@ public class PythonListGenerator extends PythonObject {
                 returnValue.asList().add(context.popData());
             }
 
-            return returnValue;
+            context.pushData(returnValue);
         }
     };
 
-    public PythonObject execute(ThreadContext context) {
+    public void evaluate(ThreadContext context) {
         if (elements.length == 0) {
-            return continuation.execute(context);
+            continuation.evaluate(context);
+            return;
         }
         context.pushPC(continuation);
 
@@ -42,7 +43,7 @@ public class PythonListGenerator extends PythonObject {
             context.pushPC(elements[i]);
         }
 
-        return elements[elements.length - 1].execute(context);
+        elements[elements.length - 1].evaluate(context);
     }
 
 //        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);

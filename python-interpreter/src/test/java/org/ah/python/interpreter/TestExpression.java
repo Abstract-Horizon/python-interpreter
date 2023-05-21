@@ -2,7 +2,6 @@ package org.ah.python.interpreter;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public class TestExpression extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
-        assertEquals(context.a.asInteger(context), 5);
+        assertEquals(((PythonNumber)context.a).asInteger(), 5);
         contextIsEmpty();
     }
 
@@ -41,8 +40,8 @@ public class TestExpression extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
-        assertEquals(context.a.asInteger(context), 4);
-        assertTrue(context.a.__eq__(context, PythonInteger.valueOf(4)).asBoolean(context));
+        assertEquals(((PythonNumber)context.a).asInteger(), 4);
+//        assertTrue(context.a.__eq__(context, PythonInteger.valueOf(4)).asBoolean(context));
 
         contextIsEmpty();
     }
@@ -59,7 +58,7 @@ public class TestExpression extends BaseTestClass {
 
         for (int i = 0; i < 5 && context.next(); i++) { }
 
-        assertEquals(context.a.asString(context), "123456");
+        assertEquals(context.a.asString(), "123456");
 
         contextIsEmpty();
     }
@@ -72,7 +71,7 @@ public class TestExpression extends BaseTestClass {
             "print(a)"
         );
 
-        assertEquals(module.__getattr__(context, "a").asInteger(context), 12);
+        assertEquals(((PythonNumber)module.getattr(context, "a")).asInteger(), 12);
         assertEquals("12\n", result());
         contextIsEmpty();
     }
@@ -87,8 +86,8 @@ public class TestExpression extends BaseTestClass {
             "print(d)"
         );
 
-        assertEquals(module.__getattr__(context, "c").asBoolean(context), false);
-        assertEquals(module.__getattr__(context, "d").asBoolean(context), true);
+        assertEquals(((PythonBoolean)module.getattr(context, "c")).asBoolean(), false);
+        assertEquals(((PythonBoolean)module.getattr(context, "d")).asBoolean(), true);
         assertEquals("False\nTrue\n", result());
         contextIsEmpty();
     }

@@ -17,24 +17,6 @@ public class Del extends PythonObject {
         }
     }
 
-    @Override
-    public PythonObject __call__(ThreadContext context) {
-        for (Subscript subscipt : targets) {
-            PythonObject scope = subscipt.getScope().dereference();
-            PythonObject from = subscipt.getFrom();
-            PythonObject to = subscipt.getTo();
-            if (from != null) { from = from.dereference(); }
-            if (to != null) { to = to.dereference(); }
-            if (from != null && from.equals(to)) {
-                scope.__delitem__(context, from);
-            } else {
-                PythonSlice slice = PythonSlice.range(context, from, to);
-                scope.__delitem__(context, slice);
-            }
-        }
-        return PythonNone.NONE;
-    }
-
     public String toString() {
         return "del " + collectionToString(targets, ",");
     }

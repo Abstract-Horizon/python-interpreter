@@ -7,7 +7,6 @@ public class PythonClassDef extends PythonObject {
 
     private String name;
 
-    private Suite methods = new Suite();
     private Block block = new Block();
 
     private PythonObject parent;
@@ -30,54 +29,8 @@ public class PythonClassDef extends PythonObject {
         }
     }
 
-    public Suite getSuite() {
-        return methods;
-    }
-
-    public PythonObject __call__(ThreadContext context) {
-        Scope parentScope = GlobalScope.currentScope();
-
-        PythonClassType classType = new PythonClassType(name, parentScope) {
-            final PythonClassType self = this;
-
-            @Override public PythonObject __call__(ThreadContext context) {
-                // TODO Constructor!!!
-                // return PythonNone.NONE;
-                // throw new UnsupportedOperationException("Constructor not yet implemented");
-
-                Proxy obj = new Proxy() {
-                    @Override public PythonType getType() {
-                        return self;
-                    }
-                };
-
-                return obj;
-            }
-        };
-
-        if (parent != null) {
-            PythonObject dereferencedParent = parent.dereference();
-
-            if (!(dereferencedParent instanceof PythonType)) {
-                throw new IllegalArgumentException("Parent argument of a class must be another class.");
-            }
-
-            classType.setParentType((PythonType)dereferencedParent);
-        }
-        parentScope.__setattr__(context, name, classType);
-
-        GlobalScope.pushScope(classType);
-
-        try {
-            getSuite().__call__(context);
-            return PythonNone.NONE;
-        } finally {
-            GlobalScope.popScope();
-        }
-    }
-
     public String toString() {
         //return "def " + name + "(" + collectionToString(args, ", ") + "): " + method;
-        return "class " + name + "(" + "): " + methods;
+        return "class " + name + "(" + "): "; // + methods;
     }
 }

@@ -33,7 +33,7 @@ public class SysModule extends Proxy {
                 return null;
             }
             @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-                systemBridge.exit(arg.asInteger(context));
+                systemBridge.exit(arg.asInteger());
                 return null;
             }
         });

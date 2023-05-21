@@ -13,17 +13,17 @@ public class Global extends PythonObject {
         }
     }
 
-    public PythonObject __call__(ThreadContext context) {
-        Scope currentScope = GlobalScope.currentScope();
-        if (!(currentScope instanceof ExecutionScope)) {
-            throw new IllegalStateException("Globals are only allowed in defs");
-        }
-        ExecutionScope scope = (ExecutionScope)currentScope;
-        for (PythonString name : vars) {
-            scope.getGlobals().add(name.asString());
-        }
-        return PythonNone.NONE;
-    }
+//    public PythonObject __call__(ThreadContext context) {
+//        Scope currentScope = GlobalScope.currentScope();
+//        if (!(currentScope instanceof ExecutionScope)) {
+//            throw new IllegalStateException("Globals are only allowed in defs");
+//        }
+//        ExecutionScope scope = (ExecutionScope)currentScope;
+//        for (PythonString name : vars) {
+//            scope.getGlobals().add(name.asString());
+//        }
+//        return PythonNone.NONE;
+//    }
 
     public String toString() {
         return "global " + collectionToString(vars, ", ");

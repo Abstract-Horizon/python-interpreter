@@ -2,6 +2,8 @@ package org.ah.python.interpreter;
 
 import java.util.Map;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class PythonBoolean extends PythonNumber {
 
     public static PythonClass PYTHON_BOOL_CLASS = new PythonClass("bool");
@@ -9,34 +11,37 @@ public class PythonBoolean extends PythonNumber {
     static {
         populateCommonNumberClassMethods(PYTHON_BOOL_CLASS);
         PYTHON_BOOL_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__and__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__and__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__or__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__or__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__xor__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__xor__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__lshift__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__lshift__(context, args[1]);
             }
         });
         PYTHON_BOOL_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
-            public PythonObject execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
-                return args[0].__rshift__(context, args[1]);
+            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+                args[0].__rshift__(context, args[1]);
             }
         });
     }
 
     public static final PythonBoolean TRUE = new PythonBoolean(true);
     public static final PythonBoolean FALSE = new PythonBoolean(false);
+
+    public static final PythonString TRUE_REPR = PythonString.valueOf("True");
+    public static final PythonString FALSE_REPR = PythonString.valueOf("False");
 
     private boolean value;
 
@@ -53,23 +58,35 @@ public class PythonBoolean extends PythonNumber {
         }
     }
 
-    public int asInteger(ThreadContext context) {
+    public PythonBoolean not() {
+        if (this == TRUE) {
+            return FALSE;
+        } else {
+            return TRUE;
+        }
+    }
+
+    public String asString() {
+        return value ? "True" : "False";
+    }
+
+    public int asInteger() {
         return value ? 1 : 0;
     }
 
-    public double asFloat(ThreadContext context) {
+    public double asFloat() {
         return value ? 1.0 : 0.0;
     }
 
-    public boolean asBoolean(ThreadContext context) {
+    public boolean asBoolean() {
         return value;
     }
 
-    public PythonBoolean __bool__() {
+    public void __bool__(ThreadContext context) {
         if (value) {
-            return TRUE;
+            context.pushData(TRUE);
         } else {
-            return FALSE;
+            context.pushData(FALSE);
         }
     }
 
@@ -77,122 +94,186 @@ public class PythonBoolean extends PythonNumber {
         return true;
     }
 
-    public PythonBoolean __eq__(ThreadContext context, PythonObject other) {
-        return PythonBoolean.valueOf(value == other.asBoolean(context));
-    }
+    private static Executable eq_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonBoolean)context.popData()).value == ((PythonBoolean)context.popData()).value));
+        }
+    };
 
-    public PythonBoolean __lt__(ThreadContext context, PythonObject other) {
-        return PythonBoolean.valueOf(asInteger(context) < other.__int__(context).asInteger(context));
-    }
-
-    public PythonBoolean __le__(ThreadContext context, PythonObject other) {
-        return PythonBoolean.valueOf(asInteger(context) <= other.__int__(context).asInteger(context));
-    }
-
-    public PythonBoolean __gt__(ThreadContext context, PythonObject other) {
-        return PythonBoolean.valueOf(asInteger(context) > other.__int__(context).asInteger(context));
-    }
-
-    public PythonBoolean __ge__(ThreadContext context, PythonObject other) {
-        return PythonBoolean.valueOf(asInteger(context) >= other.__int__(context).asInteger(context));
-    }
-
-    public PythonObject __neg__(ThreadContext context) {
-        return PythonBoolean.valueOf(!value);
-    }
-
-    public PythonString __repr__(ThreadContext context) {
-        if (value) {
-            return PythonString.valueOf("True");
+    public void __eq__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonBoolean) {
+            context.pushData(PythonBoolean.valueOf(value == ((PythonBoolean)other).value));
         } else {
-            return PythonString.valueOf("False");
+            context.continuation(eq_continuation);
+            other.__bool__(context);
         }
     }
 
-    public PythonObject __and__(ThreadContext context, PythonObject other) {
+    private static Executable ne_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.pushData(PythonBoolean.valueOf(((PythonBoolean)context.popData()).value != ((PythonBoolean)context.popData()).value));
+        }
+    };
+
+    public void __ne__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonBoolean) {
+            context.pushData(PythonBoolean.valueOf(value != ((PythonBoolean)other).value));
+        } else {
+            context.continuation(ne_continuation);
+            other.__bool__(context);
+        }
+    }
+
+//    public void __lt__(ThreadContext context, PythonObject other) {
+//        context.pushData(PythonBoolean.valueOf(asInteger(context) < other.__int__(context).asInteger(context)));
+//    }
+//
+//    public void __le__(ThreadContext context, PythonObject other) {
+//        context.pushData(PythonBoolean.valueOf(asInteger(context) <= other.__int__(context).asInteger(context)));
+//    }
+//
+//    public void __gt__(ThreadContext context, PythonObject other) {
+//        context.pushData(PythonBoolean.valueOf(asInteger(context) > other.__int__(context).asInteger(context)));
+//    }
+//
+//    public void __ge__(ThreadContext context, PythonObject other) {
+//        context.pushData(PythonBoolean.valueOf(asInteger(context) >= other.__int__(context).asInteger(context)));
+//    }
+
+    public void __neg__(ThreadContext context) {
+        context.pushData(PythonBoolean.valueOf(!value));
+    }
+
+    public void __repr__(ThreadContext context) {
         if (value) {
-            return PythonBoolean.valueOf(other.asBoolean(context));
+            context.pushData(TRUE_REPR);
+        } else {
+            context.pushData(FALSE_REPR);
         }
-        return FALSE;
     }
 
-    public PythonObject __xor__(ThreadContext context, PythonObject other) {
-        return PythonBoolean.valueOf(__eq__(context, other).asBoolean(context));
+    private static Executable and_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonBoolean other = (PythonBoolean)context.popData();
+            context.pushData(other);
+        }
+    };
+
+    public void __and__(ThreadContext context, PythonObject other) {
+        if (!value) {
+            context.pushData(FALSE);
+        } else if (other instanceof PythonBoolean) {
+            context.pushData(other);
+        } else {
+            context.continuation(and_continuation);
+            other.__bool__(context);
+        }
     }
 
-    public PythonObject __or__(ThreadContext context, PythonObject other) {
+    private static Executable or_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonBoolean other = (PythonBoolean)context.popData();
+            context.pushData(other);
+        }
+    };
+
+    public void __or__(ThreadContext context, PythonObject other) {
         if (value) {
-            return TRUE;
+            context.pushData(TRUE);
+        } else if (other instanceof PythonBoolean) {
+            context.pushData(other);
+        } else {
+            context.continuation(or_continuation);
+            other.__bool__(context);
         }
-        return PythonBoolean.valueOf(other.asBoolean(context));
     }
 
-    public PythonObject __add__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__add__(context, other);
+    private static Executable xor_continuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            PythonBoolean other = (PythonBoolean)context.popData();
+            PythonBoolean self = (PythonBoolean)context.popData();
+            context.pushData(PythonBoolean.valueOf(self != other));
         }
+    };
 
-        return __int__(context).__add__(context, other);
+    public void __xor__(ThreadContext context, PythonObject other) {
+        if (other instanceof PythonBoolean) {
+            context.pushData(PythonBoolean.valueOf(value != ((PythonBoolean)other).value));
+        } else {
+            context.continuation(xor_continuation);
+            context.pushData(this);
+            other.__bool__(context);
+        }
     }
 
-    public PythonObject __sub__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__sub__(context, other);
-        }
 
-        return __int__(context).__sub__(context, other);
-    }
-
-    public PythonObject __mul__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__mul__(context, other);
-        }
-
-        return __int__(context).__mul__(context, other);
-    }
-
-    public PythonObject __div__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__div__(context, other);
-        }
-
-        return __int__(context).__div__(context, other);
-    }
-
-    public PythonObject __floordiv__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__floordiv__(context, other);
-        }
-
-        return __int__(context).__floordiv__(context, other);
-    }
-
-    public PythonObject __mod__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__mod__(context, other);
-        }
-
-        return __int__(context).__mod__(context, other);
-    }
-
-    public PythonObject __divmod__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__divmod__(context, other);
-        }
-
-        return __int__(context).__divmod__(context, other);
-    }
-
-    public PythonObject __pow__(ThreadContext context, PythonObject other) {
-        if (other instanceof PythonFloat) {
-            return __float__(context).__pow__(context, other);
-        }
-
-        return __int__(context).__pow__(context, other);
-    }
+//    public void __add__(ThreadContext context, PythonObject other) {
+//// TODO
+////        if (other instanceof PythonFloat) {
+////            return __float__(context).__add__(context, other);
+////        }
+////
+////        return __int__(context).__add__(context, other);
+//    }
+//
+//    public void __sub__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__sub__(context, other);
+//        }
+//
+//        return __int__(context).__sub__(context, other);
+//    }
+//
+//    public void __mul__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__mul__(context, other);
+//        }
+//
+//        return __int__(context).__mul__(context, other);
+//    }
+//
+//    public void __div__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__div__(context, other);
+//        }
+//
+//        return __int__(context).__div__(context, other);
+//    }
+//
+//    public void __floordiv__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__floordiv__(context, other);
+//        }
+//
+//        return __int__(context).__floordiv__(context, other);
+//    }
+//
+//    public void __mod__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__mod__(context, other);
+//        }
+//
+//        return __int__(context).__mod__(context, other);
+//    }
+//
+//    public void __divmod__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__divmod__(context, other);
+//        }
+//
+//        return __int__(context).__divmod__(context, other);
+//    }
+//
+//    public void __pow__(ThreadContext context, PythonObject other) {
+//        if (other instanceof PythonFloat) {
+//            return __float__(context).__pow__(context, other);
+//        }
+//
+//        return __int__(context).__pow__(context, other);
+//    }
 
     public String toString() {
-        if (asBoolean(null)) {
+        if (asBoolean()) {
             return "True";
         } else {
             return "False";
