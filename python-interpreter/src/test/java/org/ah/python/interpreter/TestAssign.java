@@ -16,7 +16,7 @@ public class TestAssign extends BaseTestClass {
 
         block.getStatements().add(assignment);
 
-        context.pushPC(block);
+        context.continuation(block);
 
         for (int i = 0; i < 10000 && context.next(); i++) { }
 

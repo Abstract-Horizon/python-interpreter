@@ -38,16 +38,17 @@ public class Assign extends PythonObject {
     public boolean isLastInstruction() { return this.lastInstruction; }
     public void setLastInstruction(boolean lastInstruction) { this.lastInstruction = lastInstruction; }
 
+
     @Override public void evaluate(ThreadContext context) {
-        context.pushPC(continuation);
         if (reference instanceof Reference) {
             if (((Reference)reference).getScope() != null) {
-                context.pushPC(((Reference)reference).getScope());
+                context.continuationWithEvaluate(continuation, ((Reference)reference).getScope(), expression);
+            } else {
+                context.continuationWithEvaluate(continuation, expression);
             }
         } else {
             throw new RuntimeException("Expected reference");
         }
-        expression.evaluate(context);
     }
 
     public PythonObject getExpression() {
@@ -69,17 +70,17 @@ public class Assign extends PythonObject {
                 Reference callReference = (Reference)call.function;
                 if (callReference.name == "__getitem__") {
                     callReference.name = "__setitem__";
-                    PythonObject[] newArgs = new PythonObject[call.args.length + 1];
-                    System.arraycopy(call.args, 0, newArgs, 0, call.args.length);
-                    newArgs[call.args.length] = expression;
-                    call.args = newArgs;
+                    PythonObject[] newArgs = new PythonObject[call.kargs.length + 1];
+                    System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
+                    newArgs[call.kargs.length] = expression;
+                    call.kargs = newArgs;
                     return call;
                 } else if (callReference.name == "__getattr__") {
                     callReference.name = "__setattr__";
-                    PythonObject[] newArgs = new PythonObject[call.args.length + 1];
-                    System.arraycopy(call.args, 0, newArgs, 0, call.args.length);
-                    newArgs[call.args.length] = expression;
-                    call.args = newArgs;
+                    PythonObject[] newArgs = new PythonObject[call.kargs.length + 1];
+                    System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
+                    newArgs[call.kargs.length] = expression;
+                    call.kargs = newArgs;
                     return call;
                 }
             }

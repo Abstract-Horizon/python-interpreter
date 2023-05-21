@@ -10,7 +10,7 @@ public class Block implements ThreadContext.Executable {
     private ThreadContext.Executable twoStatementsContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 2) {
-                context.pushPC(threeStatementsContinuation);
+                context.continuation(threeStatementsContinuation);
                 statements.get(1).evaluate(context);
                 return;
             }
@@ -22,7 +22,7 @@ public class Block implements ThreadContext.Executable {
     private ThreadContext.Executable threeStatementsContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 3) {
-                context.pushPC(new MoreStatementsContinuation());
+                context.continuation(new MoreStatementsContinuation());
                 statements.get(2).evaluate(context);
                 return;
             }
@@ -37,7 +37,7 @@ public class Block implements ThreadContext.Executable {
         @Override public void evaluate(ThreadContext context) {
             ptr += 1;
             if (ptr < statements.size() - 1) {
-                context.pushPC(this);
+                context.continuation(this);
             }
             statements.get(ptr).evaluate(context);
         }
@@ -69,14 +69,14 @@ public class Block implements ThreadContext.Executable {
             return;
         }
         if (closeScope) {
-            context.pushPC(closeScopeContinuation);
+            context.continuation(closeScopeContinuation);
         }
         if (size == 1) {
             statements.get(0).evaluate(context);
             return;
         }
 
-        context.pushPC(twoStatementsContinuation);
+        context.continuation(twoStatementsContinuation);
         statements.get(0).evaluate(context);
     }
 }

@@ -32,8 +32,8 @@ public class For extends PythonObject {
             PythonObject value = context.popData();
 
             if (value != null) {
-                context.pushPC(forContinuation);
-                context.pushPC(block);
+                context.continuation(forContinuation);
+                context.continuation(block);
                 Assign.createAssignment(target, value, true).evaluate(context);
             } else if (!elseBlock.getStatements().isEmpty()) {
                 elseBlock.evaluate(context);
@@ -54,8 +54,8 @@ public class For extends PythonObject {
             PythonObject value = context.popData();
 
             if (value != null) {
-                context.pushPC(forContinuation2);
-                context.pushPC(block);
+                context.continuation(forContinuation2);
+                context.continuation(block);
                 Assign.createAssignment(target, value, true).evaluate(context);
             } else if (!elseBlock.getStatements().isEmpty()) {
                 elseBlock.evaluate(context);

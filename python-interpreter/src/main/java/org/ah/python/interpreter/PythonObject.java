@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class PythonObject implements ThreadContext.Executable {
 
     public static final boolean PROFILE = false;
@@ -73,9 +75,22 @@ public class PythonObject implements ThreadContext.Executable {
         return TYPE;
     }
 
-    public void evaluateObjectMethod(ThreadContext context, String methodName) {
+    private static Executable evaluateContinuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+
+        }
+    };
+
+
+    public void evaluateObjectMethod(ThreadContext context, String methodName, PythonObject... kargs) {
+        evaluateObjectMethod(context, methodName, null, kargs);
+    }
+
+    public void evaluateObjectMethod(ThreadContext context, String methodName, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         if (pythonClass != null) {
-            context.raise(exception("AttributeError", PythonString.valueOf(methodName + "@" + pythonClass.getName())));
+            context.continuation(evaluateContinuation);
+
+            pythonClass.__getattr__(context, methodName);
         } else {
             context.raise(exception("AttributeError", PythonString.valueOf(methodName + "@" + toString())));
         }
@@ -126,11 +141,6 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __eq__(ThreadContext context, PythonObject other) {
-//        if (other instanceof PythonInteger) {
-//            other = PythonBoolean.valueOf(other.asInteger(context) != 0);
-//        } else if (other instanceof PythonFloat) {
-//            other = PythonBoolean.valueOf(other.asFloat(context) != 0f);
-//        }
         context.pushData(PythonBoolean.valueOf(this == other));
     }
 
@@ -141,19 +151,19 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __lt__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__lt__");
+        evaluateObjectMethod(context, "__lt__", other);
     }
 
     public void __le__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__le__");
+        evaluateObjectMethod(context, "__le__", other);
     }
 
     public void __gt__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__gt__");
+        evaluateObjectMethod(context, "__gt__", other);
     }
 
     public void __ge__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ge__");
+        evaluateObjectMethod(context, "__ge__", other);
     }
 
     public void __getattr__(ThreadContext context, String name) {
@@ -164,7 +174,7 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __setattr__(ThreadContext context, String name, PythonObject value) {
-        evaluateObjectMethod(context, "__setattr__");
+        evaluateObjectMethod(context, "__setattr__", PythonString.valueOf(name), value);
     }
 
     public void __delattr__(ThreadContext context, String name) {
@@ -174,15 +184,15 @@ public class PythonObject implements ThreadContext.Executable {
     // Access
 
     public void __get__(ThreadContext context, PythonObject name, PythonObject type) {
-        evaluateObjectMethod(context, "__get__");
+        evaluateObjectMethod(context, "__get__", name, type);
     }
 
     public void __set__(ThreadContext context, PythonObject name, PythonObject type) {
-        evaluateObjectMethod(context, "__set__");
+        evaluateObjectMethod(context, "__set__", name, type);
     }
 
     public void __del__(ThreadContext context, PythonObject name, PythonObject type) {
-        evaluateObjectMethod(context, "__del__");
+        evaluateObjectMethod(context, "__del__", name, type);
     }
 
 
@@ -197,15 +207,15 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __getitem__(ThreadContext context, PythonObject key) {
-        evaluateObjectMethod(context, "__getitem__");
+        evaluateObjectMethod(context, "__getitem__", key);
     }
 
     public void __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
-        evaluateObjectMethod(context, "__setitem__");
+        evaluateObjectMethod(context, "__setitem__", key, value);
     }
 
     public void __delitem__(ThreadContext context, PythonObject key) {
-        evaluateObjectMethod(context, "__delitem__");
+        evaluateObjectMethod(context, "__delitem__", key);
     }
 
     public void __iter__(ThreadContext context) {
@@ -217,7 +227,7 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __contains__(ThreadContext context, PythonObject value) {
-        evaluateObjectMethod(context, "__contains__");
+        evaluateObjectMethod(context, "__contains__", value);
 //        try {
 //            __getitem__(context, value);
 //            return TRUE;
@@ -227,15 +237,15 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __getslice__(ThreadContext context, PythonObject i, PythonObject j) {
-        evaluateObjectMethod(context, "__getslice__");
+        evaluateObjectMethod(context, "__getslice__", i, j);
     }
 
     public void __setslice__(ThreadContext context, PythonObject i, PythonObject j, PythonObject sequence) {
-        evaluateObjectMethod(context, "__setslice__");
+        evaluateObjectMethod(context, "__setslice__", i, j, sequence);
     }
 
     public void __delslice__(ThreadContext context, PythonObject i, PythonObject j) {
-        evaluateObjectMethod(context, "__delslice__");
+        evaluateObjectMethod(context, "__delslice__", i, j);
     }
 
 
@@ -245,177 +255,177 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __add__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__delslice__");
+        evaluateObjectMethod(context, "__delslice__", other);
     }
 
     public void __sub__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__delslice__");
+        evaluateObjectMethod(context, "__delslice__", other);
     }
 
     public void __mul__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__delslice__");
+        evaluateObjectMethod(context, "__delslice__", other);
     }
 
     public void __floordiv__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__floordiv__)")));
+        evaluateObjectMethod(context, "__floordiv__", other);
     }
 
     public void __mod__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__mod__)")));
+        evaluateObjectMethod(context, "__mod__", other);
     }
 
     public void __divmod__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__divmod__)")));
+        evaluateObjectMethod(context, "__divmod__", other);
     }
 
     public void __pow__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__pow__)")));
+        evaluateObjectMethod(context, "__pow__", other);
     }
 
     public void __pow__(ThreadContext context, PythonObject other, PythonObject moduo) {
-         context.raise(exception("AttributeError", PythonString.valueOf("__pow__)")));
+        evaluateObjectMethod(context, "__pow__", other, moduo);
     }
 
     public void __lshift__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__lshift__)")));
+        evaluateObjectMethod(context, "__lshift__", other);
     }
 
     public void __rshift__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__rshift__)")));
+        evaluateObjectMethod(context, "__rshift__", other);
     }
 
     public void __and__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__and__)")));
+        evaluateObjectMethod(context, "__and__", other);
     }
 
     public void __xor__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__xor__)")));
+        evaluateObjectMethod(context, "__xor__", other);
     }
 
     public void __or__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__or__)")));
+        evaluateObjectMethod(context, "__or__", other);
     }
 
     public void __div__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__div__)")));
+        evaluateObjectMethod(context, "__div__", other);
     }
 
     public void __truediv__(ThreadContext context, PythonObject other) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__truediv__)")));
+        evaluateObjectMethod(context, "__truediv__", other);
     }
 
 
     public void __radd__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__radd__");
+        evaluateObjectMethod(context, "__radd__", other);
     }
 
     public void __rsub__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rsub__");
+        evaluateObjectMethod(context, "__rsub__", other);
     }
 
     public void __rmul__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rmul__");
+        evaluateObjectMethod(context, "__rmul__", other);
     }
 
     public void __rdiv__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rdiv__");
+        evaluateObjectMethod(context, "__rdiv__", other);
     }
 
     public void __rtruediv__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rtruediv__");
+        evaluateObjectMethod(context, "__rtruediv__", other);
     }
 
     public void __rfloordiv__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rfloordiv__");
+        evaluateObjectMethod(context, "__rfloordiv__", other);
     }
 
     public void __rmod__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rmod__");
+        evaluateObjectMethod(context, "__rmod__", other);
     }
 
     public void __rdivmod__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rdivmod__");
+        evaluateObjectMethod(context, "__rdivmod__", other);
     }
 
     public void __rpow__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rpow__");
+        evaluateObjectMethod(context, "__rpow__", other);
     }
 
     public void __rlshift__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rlshift__");
+        evaluateObjectMethod(context, "__rlshift__", other);
     }
 
     public void __rrshift__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rrshift__");
+        evaluateObjectMethod(context, "__rrshift__", other);
     }
 
     public void __rand__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rand__");
+        evaluateObjectMethod(context, "__rand__", other);
     }
 
     public void __rxor__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__rxor__");
+        evaluateObjectMethod(context, "__rxor__", other);
     }
 
     public void __ror__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ror__");
+        evaluateObjectMethod(context, "__ror__", other);
     }
 
 
     public void __iadd__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__iadd__");
+        evaluateObjectMethod(context, "__iadd__", other);
     }
 
     public void __isub__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__isub__");
+        evaluateObjectMethod(context, "__isub__", other);
     }
 
     public void __imul__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__imul__");
+        evaluateObjectMethod(context, "__imul__", other);
     }
 
     public void __idiv__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__idiv__");
+        evaluateObjectMethod(context, "__idiv__", other);
     }
 
     public void __itruediv__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__itruediv__");
+        evaluateObjectMethod(context, "__itruediv__", other);
     }
 
     public void __ifloordiv__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ifloordiv__");
+        evaluateObjectMethod(context, "__ifloordiv__", other);
     }
 
     public void __imod__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__imod__");
+        evaluateObjectMethod(context, "__imod__", other);
     }
 
     public void __ipow__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ipow__");
+        evaluateObjectMethod(context, "__ipow__", other);
     }
 
     public void __ipow__(ThreadContext context, PythonObject other, PythonObject moduo) {
-        evaluateObjectMethod(context, "__ipow__");
+        evaluateObjectMethod(context, "__ipow__", other);
     }
 
     public void __ilshift__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ilshift__");
+        evaluateObjectMethod(context, "__ilshift__", other);
     }
 
     public void __irshift__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__irshift__");
+        evaluateObjectMethod(context, "__irshift__", other);
     }
 
     public void __iand__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__iand__");
+        evaluateObjectMethod(context, "__iand__", other);
     }
 
     public void __ixor__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ixor__");
+        evaluateObjectMethod(context, "__ixor__", other);
     }
 
     public void __ior__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__ior__");
+        evaluateObjectMethod(context, "__ior__", other);
     }
 
     public void __pos__(ThreadContext context) {
@@ -455,7 +465,7 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __exit__(ThreadContext context, PythonObject execType, PythonObject execValue, PythonObject trackBack) {
-        evaluateObjectMethod(context, "__exit__");
+        evaluateObjectMethod(context, "__exit__", execType, execValue, trackBack);
     }
 
     public void __next__(ThreadContext context) {
@@ -468,8 +478,18 @@ public class PythonObject implements ThreadContext.Executable {
         evaluateObjectMethod(context, "__round__");
     }
 
-
     protected static String collectionToString(Collection<?> col, String delimiter) {
+        StringBuilder res = new StringBuilder();
+        boolean first = true;
+        for (Object o : col) {
+            if (first) { first = false; } else { res.append(delimiter); }
+            res.append(o.toString());
+        }
+
+        return res.toString();
+    }
+
+    protected static String arrayToString(Object[] col, String delimiter) {
         StringBuilder res = new StringBuilder();
         boolean first = true;
         for (Object o : col) {

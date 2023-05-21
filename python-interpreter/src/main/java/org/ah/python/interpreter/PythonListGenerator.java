@@ -35,31 +35,8 @@ public class PythonListGenerator extends PythonObject {
     public void evaluate(ThreadContext context) {
         if (elements.length == 0) {
             continuation.evaluate(context);
-            return;
+        } else {
+            context.continuationWithEvaluate(continuation, elements);
         }
-        context.pushPC(continuation);
-
-        for (int i = 0; i < elements.length - 1; i++) {
-            context.pushPC(elements[i]);
-        }
-
-        elements[elements.length - 1].evaluate(context);
     }
-
-//        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
-//            return new Constructor() {
-//                @Override public PythonObject __call__(ThreadContext context) {
-//                    PythonList list = new PythonList();
-//                    for (PythonObject o : storedElements) {
-//                        PythonObject r = o.dereference();
-//                        list.asList().add(r);
-//                    }
-//                    return list;
-//                }
-//                @Override public String toString() {
-//                    return "CreateList" + storedElements;
-//                }
-//        };
-//    };
-
 }

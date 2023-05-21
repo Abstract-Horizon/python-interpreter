@@ -42,7 +42,7 @@ public class TernaryOperator extends PythonObject {
     };
 
     public void evaluate(ThreadContext context) {
-        context.pushPC(continuation);
+        context.continuation(continuation);
         condition.evaluate(context);
     }
 

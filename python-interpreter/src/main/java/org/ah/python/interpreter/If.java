@@ -45,7 +45,7 @@ public class If extends PythonObject {
     };
 
     public void evaluate(ThreadContext context) {
-        context.pushPC(ifContinuation);
+        context.continuation(ifContinuation);
 
         test.evaluate(context);
     }

@@ -66,7 +66,7 @@ public class BaseTestClass {
     public void executeLines(String... lines) {
         parseLines(lines);
 
-        context.pushPC(module.getBlock());
+        context.continuation(module.getBlock());
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
     }

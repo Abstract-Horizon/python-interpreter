@@ -1,6 +1,5 @@
 package org.ah.python.interpreter;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -14,9 +13,9 @@ public class TestExpression extends BaseTestClass {
         PythonObject three = PythonInteger.valueOf(3);
 
         Reference refAdd = new Reference(three, "__add__");
-        Call callAdd = new Call(refAdd, asList(two));
+        Call callAdd = new Call(refAdd, two);
 
-        context.pushPC(callAdd);
+        context.continuation(callAdd);
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
@@ -31,12 +30,12 @@ public class TestExpression extends BaseTestClass {
         PythonObject three = PythonInteger.valueOf(3);
 
         Reference refAdd = new Reference(three, "__add__");
-        Call callAdd = new Call(refAdd, asList(two));
+        Call callAdd = new Call(refAdd, two);
 
         Reference refSub = new Reference(callAdd, "__sub__");
-        Call callSub = new Call(refSub, asList(one));
+        Call callSub = new Call(refSub, one);
 
-        context.pushPC(callSub);
+        context.continuation(callSub);
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
@@ -52,9 +51,9 @@ public class TestExpression extends BaseTestClass {
         PythonObject two = PythonString.valueOf("456");
 
         Reference refAdd = new Reference(one, "__add__");
-        Call callAdd = new Call(refAdd, asList(two));
+        Call callAdd = new Call(refAdd, two);
 
-        context.pushPC(callAdd);
+        context.continuation(callAdd);
 
         for (int i = 0; i < 5 && context.next(); i++) { }
 

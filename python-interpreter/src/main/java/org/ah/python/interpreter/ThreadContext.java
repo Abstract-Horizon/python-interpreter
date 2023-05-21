@@ -44,16 +44,11 @@ public class ThreadContext {
             currentScope = currentScope.getParentScope();
         }
     }
-
-    public void pushPC(Executable newPC) {
-        popped = false;
-        pcStack.push(newPC);
-    }
-
-    public Executable popPC() {
-        popped = true;
-        return pcStack.pop();
-    }
+//
+//    public Executable popPC() {
+//        popped = true;
+//        return pcStack.pop();
+//    }
 
     public PythonObject popData() {
         PythonObject existingA = a;
@@ -89,5 +84,22 @@ public class ThreadContext {
     public void continuation(Executable continuation) {
         popped = false;
         pcStack.push(continuation);
+    }
+
+    public void continuationWithEvaluate(Executable continuation, PythonObject... objectsToEvaluate) {
+        popped = false;
+        pcStack.push(continuation);
+        int len = objectsToEvaluate.length;
+        if (len == 0) {
+            return;
+        }
+        if (len == 1) {
+            objectsToEvaluate[0].evaluate(this);
+        } else {
+            for (int i = 0; i < len - 1; i++) {
+                pcStack.push(objectsToEvaluate[i]);
+            }
+            objectsToEvaluate[len - 1].evaluate(this);
+        }
     }
 }

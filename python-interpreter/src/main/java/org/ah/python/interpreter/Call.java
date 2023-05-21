@@ -1,22 +1,23 @@
 package org.ah.python.interpreter;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 public class Call extends PythonObject {
 
     public static final PythonObject[] EMPTY_ARRAY = new PythonObject[0];
 
     protected PythonObject function;
-    protected PythonObject[] args;
+    protected PythonObject[] kargs;
+    protected Map<String, PythonObject> kwargs;
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private ThreadContext.Executable evaluateFunctionAndArgsContinuation = new ThreadContext.Executable() {
 
         @Override public void evaluate(ThreadContext context) {
             PythonObject function = context.popData();
 
             if (function instanceof BuiltInMethod) {
-                int argNo = args.length;
+                int argNo = kargs.length;
 
                 PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {
@@ -25,7 +26,7 @@ public class Call extends PythonObject {
 
                 ((Function)function).execute(context, args, null);
             } else if (function instanceof BuiltInBoundMethod) {
-                int argNo = args.length + 1;
+                int argNo = kargs.length + 1;
 
                 PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {
@@ -36,7 +37,7 @@ public class Call extends PythonObject {
             } else if (function instanceof BoundMethod) {
                 throw new UnsupportedOperationException("Not implemented for BoundMethod");
             } else {
-                int argNo = args.length;
+                int argNo = kargs.length;
 
                 PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {
@@ -48,33 +49,27 @@ public class Call extends PythonObject {
         }
     };
 
-    public Call(PythonObject function, List<PythonObject> args) {
-        this.function = function;
-        this.args = new PythonObject[args.size()]; // System.out.println("*");
-        args.toArray(this.args);
+
+    public Call(PythonObject function, PythonObject... kargs) {
+        this(function, null, kargs);
     }
 
-    public Call(PythonObject function, PythonObject[] args) {
+    public Call(PythonObject function, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         this.function = function;
-        this.args = args;
+        this.kargs = kargs;
+        this.kwargs = kwargs;
     }
 
     public void evaluate(ThreadContext context) {
-        context.pushPC(continuation);
-        if (args.length == 0) {
-            function.evaluate(context);
-            return;
+        if (kargs.length == 0) {
+            context.continuationWithEvaluate(evaluateFunctionAndArgsContinuation, function);
+        } else {
+            context.continuation(evaluateFunctionAndArgsContinuation);
+            context.continuationWithEvaluate(function, kargs); // TODO evaluate kwargs, too!!!
         }
-
-        context.pushPC(function);
-        for (int i = 0; i < args.length - 1; i++) {
-            context.pushPC(args[i]);
-        }
-
-        args[args.length - 1].evaluate(context);
     }
 
     public String toString() {
-        return "Call[" + function + "](" + collectionToString(Arrays.asList(args), ", ") + ")";
+        return "Call[" + function + "](" + collectionToString(Arrays.asList(kargs), ", ") + ")";
     }
 }

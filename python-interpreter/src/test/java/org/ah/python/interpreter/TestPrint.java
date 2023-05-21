@@ -2,8 +2,6 @@ package org.ah.python.interpreter;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-
 import org.ah.python.modules.BuiltInFunctions;
 import org.junit.Test;
 
@@ -22,10 +20,10 @@ public class TestPrint extends BaseTestClass {
     @Test public void testPrint() {
         Block block = new Block();
         block.getStatements().add(
-                new Call(BuiltInFunctions.getFunction("print"), Arrays.<PythonObject>asList(PythonString.valueOf("Result.")))
+                new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Result."))
         );
 
-        context.pushPC(block);
+        context.continuation(block);
 
 
         for (int i = 0; i < 10000 && context.next(); i++) { }

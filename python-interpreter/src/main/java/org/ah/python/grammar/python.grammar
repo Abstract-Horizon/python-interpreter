@@ -107,8 +107,6 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     import "org.ah.python.interpreter.*";
     import "org.ah.python.interpreter.Module";
     import "java.util.*";
-    import "static java.util.Arrays.asList";
-    
 
 <%
     private Block currentBlock;
@@ -153,16 +151,15 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
         <% throw new UnsupportedOperationException("decorated"); %>
               ;
     
-    funcdef = "def" NAME <% Def def = new Def(t.toString()); %>
+    funcdef = "def" NAME <% String defName = t.toString(); %>
               parameters 
               <%
                  for (PythonObject arg : currentList) {
-                     if (arg instanceof Reference) { 
-                         def.getArguments().add((Reference)arg);
-                     } else {
+                     if (!(arg instanceof Reference)) {
                          throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
                      }
                  }
+                 Def def = new Def(defName, currentList.toArray(new Reference[currentList.size()]));
               %>
               [ DASH_GT test <% throw new UnsupportedOperationException("->"); %> ] COLON 
               <% 
@@ -247,8 +244,8 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             
                             for (int i = 0; i < targets.size(); i++) {
                                 PythonObject target = targets.get(i);
-                                PythonObject value = currentList.get(i);
-                                BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
+                                // PythonObject value = currentList.get(i);
+                                // BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
                                 
                                 if (!(target instanceof Assignable)) {
                                     throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
@@ -516,26 +513,25 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                      } else if (ops.size() == 1) {
                          CmpopType cmpop = ops.get(0);
                          if (cmpop == CmpopType.Lt) {
-                             currentObject = new Call(new Reference(left, "__lt__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__lt__"), currentObject);
                          } else if (cmpop == CmpopType.Gt) {
-                             currentObject = new Call(new Reference(left, "__gt__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__gt__"), currentObject);
                          } else if (cmpop == CmpopType.Eq) {
-                             currentObject = new Call(new Reference(left, "__eq__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__eq__"), currentObject);
                          } else if (cmpop == CmpopType.GtE) {
-                             currentObject = new Call(new Reference(left, "__ge__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__ge__"), currentObject);
                          } else if (cmpop == CmpopType.LtE) {
-                             currentObject = new Call(new Reference(left, "__le__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__le__"), currentObject);
                          } else if (cmpop == CmpopType.NotEq) {
-                             currentObject = new Call(new Reference(left, "__ne__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__ne__"), currentObject);
                          } else if (cmpop == CmpopType.In) {
-                             currentObject = new Call(new Reference(left, "__contains__"), asList(currentObject));
+                             currentObject = new Call(new Reference(left, "__contains__"), currentObject);
                          } else if (cmpop == CmpopType.NotIn) {
                              currentObject = new Call(
                                  new Reference(
-                                     new Call(new Reference(left, "__contains__"), asList(currentObject)),
+                                     new Call(new Reference(left, "__contains__"), currentObject),
                                      "__not__"
-                                 ),
-                                 Arrays.<PythonObject>asList()
+                                 )
                              );
                          } else if (cmpop == CmpopType.Is) {
                              // TODO
@@ -563,17 +559,17 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     star_expr = [STAR <% throw new UnsupportedOperationException("star_expr"); %> ] expr;
 
     expr = xor_expr    <% PythonObject left = currentObject; %>
-         { OR xor_expr <% currentObject = new Call(new Reference(left, "__or__"), asList(currentObject)); %> 
+         { OR xor_expr <% currentObject = new Call(new Reference(left, "__or__"), currentObject); %>
          }
          ;
 
     xor_expr = and_expr     <% PythonObject left = currentObject; %>
-             { XOR and_expr <% currentObject = new Call(new Reference(left, "__xor__"), asList(currentObject)); %>
+             { XOR and_expr <% currentObject = new Call(new Reference(left, "__xor__"), currentObject); %>
              }
              ;
 
     and_expr = shift_expr     <% PythonObject left = currentObject; %>
-             { AND shift_expr <% currentObject = new Call(new Reference(left, "__and__"), asList(currentObject)); %>
+             { AND shift_expr <% currentObject = new Call(new Reference(left, "__and__"), currentObject); %>
              }
              ;
 
@@ -584,9 +580,9 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    ) 
                    arith_expr <%
                             if (op == OperatorType.LShift) {
-                                currentObject = new Call(new Reference(left, "__lshift__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__lshift__"), currentObject);
                             } else {
-                                currentObject = new Call(new Reference(left, "__rshift__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__rshift__"), currentObject);
                             }
                               %>
                };
@@ -598,9 +594,9 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    ) 
                    term <% 
                             if (op == OperatorType.Add) {
-                                currentObject = new Call(new Reference(left, "__add__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__add__"), currentObject);
                             } else {
-                                currentObject = new Call(new Reference(left, "__sub__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__sub__"), currentObject);
                             }
                         %>
                };
@@ -614,13 +610,13 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
              ) 
              factor <%
                             if (op == OperatorType.Mult) {
-                                currentObject = new Call(new Reference(left, "__mul__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__mul__"), currentObject);
                             } else if (op == OperatorType.Div) {
-                                currentObject = new Call(new Reference(left, "__div__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__div__"), currentObject);
                             } else if (op == OperatorType.Mod) {
-                                currentObject = new Call(new Reference(left, "__mod__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__mod__"), currentObject);
                             } else if (op == OperatorType.FloorDiv) {
-                                currentObject = new Call(new Reference(left, "__floordiv__"), asList(currentObject));
+                                currentObject = new Call(new Reference(left, "__floordiv__"), currentObject);
                             }
                     %>
          };
@@ -632,11 +628,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                ) 
                factor <%
                             if (op == UnaryopType.UAdd) {
-                                currentObject = new Call(new Reference(currentObject, "__pos__"), asList(currentObject));
+                                currentObject = new Call(new Reference(currentObject, "__pos__"), currentObject);
                             } else if (op == UnaryopType.USub) {
-                                currentObject = new Call(new Reference(currentObject, "__neg__"), asList(currentObject));
+                                currentObject = new Call(new Reference(currentObject, "__neg__"), currentObject);
                             } else if (op == UnaryopType.Not) {
-                                currentObject = new Call(new Reference(currentObject, "__invert__"), asList(currentObject));
+                                currentObject = new Call(new Reference(currentObject, "__invert__"), currentObject);
                             }
                       %>
            | 
@@ -645,14 +641,14 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     power = atom <% PythonObject atom = currentObject; %>
             { LPAREN   <% currentList = new ArrayList<PythonObject>(); // since arglist is optional - to ensure empty list! %> 
               [ arglist ] 
-              RPAREN   <% currentObject = new Call(atom, new ArrayList<PythonObject>(currentList)); atom = currentObject; %>
+              RPAREN   <% currentObject = new Call(atom, currentList.toArray(new PythonObject[currentList.size()])); atom = currentObject; %>
             | LBRACK 
               subscriptlist 
               RBRACK   <% atom = currentObject; %>
             | DOT NAME <% currentObject = new Reference(atom, PythonString.valueOf(t.toString())); atom = currentObject; %>
             }
             <% PythonObject left = currentObject; %>
-            [ STARSTAR factor <% currentObject = new BinaryOp(left, currentObject, OperatorType.Pow); left = currentObject; %>
+            [ STARSTAR factor <% currentObject = new Call(new Reference(left, "__pow__"), currentObject); left = currentObject; %>
             ]
           ;
 
@@ -763,7 +759,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     subscript = <% PythonObject target = currentObject; %> 
               ( test 
                   <% 
-                      currentObject = new Call(new Reference(target, "__getitem__"), asList(currentObject));
+                      currentObject = new Call(new Reference(target, "__getitem__"), currentObject);
                   %>
               | <% 
                    PythonObject from = null;
@@ -783,7 +779,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                       } else if (to == null) {
                           throw new UnsupportedOperationException("Slice");
                       } else {
-                          currentObject = new Call(new Reference(target, "__getitem__"), asList(from));
+                          currentObject = new Call(new Reference(target, "__getitem__"), from);
                       }
                   %>
               )

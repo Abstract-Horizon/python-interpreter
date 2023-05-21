@@ -2,8 +2,6 @@ package org.ah.python.interpreter;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-
 import org.ah.python.modules.BuiltInFunctions;
 import org.junit.Test;
 //import org.ah.python.interpreter.Modules;
@@ -26,20 +24,19 @@ public class TestDef extends BaseTestClass {
 
     @Test public void testDefOnModule() {
 
-        Def def = new Def("my_method");
-        def.getArguments().add(new Reference(null, "x"));
+        Def def = new Def("my_method", new Reference[] {new Reference(null, "x")});
         def.getBlock().getStatements().add(
-                new Call(BuiltInFunctions.getFunction("print"), Arrays.<PythonObject>asList(PythonString.valueOf("Print from method")))
+                new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Print from method"))
         );
 
         Block block = new Block();
         block.getStatements().add(def);
 
-        Call call = new Call(new Reference(null, "my_method"), Arrays.<PythonObject>asList(PythonInteger.valueOf(3)));
+        Call call = new Call(new Reference(null, "my_method"), PythonInteger.valueOf(3));
 
         block.getStatements().add(call);
 
-        context.pushPC(block);
+        context.continuation(block);
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
@@ -50,26 +47,24 @@ public class TestDef extends BaseTestClass {
 
     @Test public void testDefOnModuleAccessingParameter() {
 
-        Def def = new Def("my_method");
-        def.getArguments().add(new Reference(null, "x"));
+        Def def = new Def("my_method", new Reference[] {new Reference(null, "x")});
         def.getBlock().getStatements().add(
-            new Call(BuiltInFunctions.getFunction("print"), Arrays.<PythonObject>asList(
+            new Call(BuiltInFunctions.getFunction("print"),
                 new Call(
                     new Reference(PythonString.valueOf("Print from method, x="), "__add__"),
-                    Arrays.<PythonObject>asList(
-                            new Reference(null, "x"))
+                    new Reference(null, "x")
                 )
             )
-        ));
+        );
 
         Block block = new Block();
         block.getStatements().add(def);
 
-        Call call = new Call(new Reference(null, "my_method"), Arrays.<PythonObject>asList(PythonString.valueOf("value_of_x")));
+        Call call = new Call(new Reference(null, "my_method"), PythonString.valueOf("value_of_x"));
 
         block.getStatements().add(call);
 
-        context.pushPC(block);
+        context.continuation(block);
 
 
         for (int i = 0; i < 10000 && context.next(); i++) {}

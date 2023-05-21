@@ -23,8 +23,8 @@ public class While extends PythonObject {
         @Override public void evaluate(ThreadContext context) {
             if (context.a instanceof PythonBoolean) {
                 if (((PythonBoolean)context.a).asBoolean()) {
-                    context.pushPC(whiteContinuation);
-                    context.pushPC(test);
+                    context.continuation(whiteContinuation);
+                    context.continuation(test);
                     block.evaluate(context);
                 } else if (!elseBlock.getStatements().isEmpty()) {
                     elseBlock.evaluate(context);
@@ -39,8 +39,8 @@ public class While extends PythonObject {
     private ThreadContext.Executable whiteBoolContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (((PythonBoolean)context.a).asBoolean()) {
-                context.pushPC(whiteContinuation);
-                context.pushPC(test);
+                context.continuation(whiteContinuation);
+                context.continuation(test);
                 block.evaluate(context);
             } else if (!elseBlock.getStatements().isEmpty()) {
                 elseBlock.evaluate(context);
@@ -49,7 +49,7 @@ public class While extends PythonObject {
     };
 
     public void evaluate(ThreadContext context) {
-        context.pushPC(whiteContinuation);
+        context.continuation(whiteContinuation);
 
         test.evaluate(context);
     }

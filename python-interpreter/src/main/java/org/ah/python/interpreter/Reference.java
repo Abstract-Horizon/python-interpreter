@@ -32,7 +32,7 @@ public class Reference extends PythonObject implements Assignable {
 
     public void evaluate(ThreadContext context) {
         if (scope != null) {
-            context.pushPC(continuation);
+            context.continuation(continuation);
             scope.evaluate(context);
         } else {
             PythonObject scope = context.getCurrentScope();

@@ -21,7 +21,7 @@ public class TestArrays extends BaseTestClass {
 
         Reference aReference2 = new Reference(null, "a");
         Reference refAdd = new Reference(aReference2, "__getitem__");
-        Call callAccess = new Call(refAdd, Arrays.<PythonObject>asList(PythonInteger.ZERO));
+        Call callAccess = new Call(refAdd, PythonInteger.ZERO);
 
         Reference bReference = new Reference(null, "b");
 
@@ -30,7 +30,7 @@ public class TestArrays extends BaseTestClass {
 
         block.getStatements().add(bAssignment);
 
-        context.pushPC(block);
+        context.continuation(block);
 
         for (int i = 0; i < 10000 && context.next(); i++) { }
 

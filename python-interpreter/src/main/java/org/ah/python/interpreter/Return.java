@@ -18,7 +18,7 @@ public class Return extends PythonObject {
     };
 
     public void evaluate(ThreadContext context) {
-        context.pushPC(continuation);
+        context.continuation(continuation);
         ret.evaluate(context);
     }
 

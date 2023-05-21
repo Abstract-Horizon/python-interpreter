@@ -7,7 +7,7 @@ import java.util.Map;
 public class Def extends PythonObject {
 
     private String name;
-    private List<Reference> args = new ArrayList<Reference>();
+    private Reference[] args = null;
     private boolean instanceMethod = false;
 
     private Block block = new Block();
@@ -17,8 +17,8 @@ public class Def extends PythonObject {
     private ThreadContext.Executable continuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
             final List<Reference> functionArgs = new ArrayList<Reference>();
-            for (int i = 0; i < args.size(); i++) {
-                Reference r = args.get(i);
+            for (int i = 0; i < args.length; i++) {
+                Reference r = args[i];
                 if (r.getScope() != null && !r.getScope().isConstant()) {
                     PythonObject o = context.popData();
                     Reference reference = new Reference(o, r.getName());
@@ -36,8 +36,9 @@ public class Def extends PythonObject {
         }
     };
 
-    public Def(String name) {
+    public Def(String name, Reference[] args) {
         this.name = name;
+        this.args = args;
     }
 
     public boolean isInstanceMethod() {
@@ -47,111 +48,34 @@ public class Def extends PythonObject {
     public Block getBlock() {
         return block;
     }
-
-    public List<Reference> getArguments() {
-        return args;
-    }
+//
+//    public List<Reference> getArguments() {
+//        return args;
+//    }
 
     @Override public void evaluate(ThreadContext context) {
         PythonObject last = null;
-        for (int i = args.size() - 1; i >= 0; i--) {
-            Reference o = args.get(i);
+        for (int i = args.length - 1; i >= 0; i--) {
+            Reference o = args[i];
             if (o.getScope() != null && !o.getScope().isConstant()) {
                 if (last == null) {
                     last = o.getScope();
                 } else {
-                    context.pushPC(o);
+                    context.continuation(o);
                 }
             }
         }
 
         if (last != null) {
-            context.pushPC(continuation);
+            context.continuation(continuation);
             last.evaluate(context);
-            return;
+        } else {
+            continuation.evaluate(context);
         }
-
-        continuation.evaluate(context);
     }
-//
-//    public PythonObject __call__(ThreadContext context) {
-//        Scope scope = GlobalScope.currentScope();
-//        if (scope instanceof PythonClassType) {
-//            if (args.size() == 0) {
-//                throw new IllegalStateException("Class def with no parameters");
-//            }
-//            scope.__setattr__(context, name, new InstanceMethod<PythonObject>() {
-//
-//                @Override public PythonObject __call__(ThreadContext context, PythonObject self, PythonObject[] args) {
-//
-//                    if (args.length < Def.this.args.size() - 1) {
-//                        throw new IllegalArgumentException("Not enough parameters for " + name);
-//                    }
-//
-//                    Scope parentScope = GlobalScope.currentScope();
-//                    Scope scope = new ExecutionScope(parentScope);
-//                    GlobalScope.pushScope(scope);
-//                    try {
-//                        Reference selfArgReference = Def.this.args.get(0);
-//                        selfArgReference.assign(context, self);
-//
-//                        for (int i = 1; i < Def.this.args.size(); i++) {
-//                            Reference argReference = Def.this.args.get(i);
-//                            PythonObject argValue = args[i].dereference();
-//
-//                            argReference.assign(context, argValue);
-//                        }
-//                        getSuite().__call__(context);
-//                        if (RETURN != null) {
-//                            Suite.BREAKOUT = false;
-//                            PythonObject ret = RETURN;
-//                            RETURN = null;
-//                            return ret;
-//                        }
-//                        return PythonNone.NONE;
-//                    } finally {
-//                        GlobalScope.popScope();
-//                    }
-//                }
-//            });
-//        } else {
-//            scope.__setattr__(context, name, new Function() {
-//
-//              @Override public PythonObject __call__(ThreadContext context, PythonObject[] args) {
-//
-//                  if (args.length < Def.this.args.size()) {
-//                      throw new IllegalArgumentException("Not enough parameters for " + name);
-//                  }
-//
-//                  Scope parentScope = GlobalScope.currentScope();
-//                  Scope scope = new ExecutionScope(parentScope);
-//                  GlobalScope.pushScope(scope);
-//                  try {
-//                      for (int i = 0; i < Def.this.args.size(); i++) {
-//                          Reference argReference = Def.this.args.get(i);
-//                          PythonObject argValue = args[i].dereference();
-//
-//                          argReference.assign(context, argValue);
-//                      }
-//                      getSuite().__call__(context);
-//                      if (RETURN != null) {
-//                          Suite.BREAKOUT = false;
-//                          PythonObject ret = RETURN;
-//                          RETURN = null;
-//                          return ret;
-//                      }
-//                      return PythonNone.NONE;
-//                  } finally {
-//                      GlobalScope.popScope();
-//                  }
-//              }
-//          });
-//        }
-//        return PythonNone.NONE;
-//    }
 
     public String toString() {
-        return "def " + name + "(" + collectionToString(args, ", ") + "): "; //  + method;
+        return "def " + name + "(" + arrayToString(args, ", ") + "): "; //  + method;
     }
 
     public static class DefFunction extends Function {
@@ -199,7 +123,7 @@ public class Def extends PythonObject {
                 }
             }
 
-            context.pushPC(closeScopeContinuation);
+            context.continuation(closeScopeContinuation);
 
             List<ThreadContext.Executable> statements = block.getStatements();
             if (!(statements.get(statements.size() - 1) instanceof Return)) {
