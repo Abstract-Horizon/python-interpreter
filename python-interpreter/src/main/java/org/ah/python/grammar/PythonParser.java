@@ -15,6 +15,7 @@ public class PythonParser {
     private OperatorType operatorType;
     private CmpopType cmpopType;
     private PythonObject currentObject;
+    private Def.Argument currentArgument;
 
     private List<String> stringList = new ArrayList<String>();
     private Import currentImport;
@@ -217,11 +218,11 @@ public class PythonParser {
         parameters();
         
                  for (PythonObject arg : currentList) {
-                     if (!(arg instanceof Reference)) { 
+                     if (!(arg instanceof Def.Argument)) {
                          throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
                      }
                  }
-                 Def def = new Def(defName, currentList.toArray(new Reference[currentList.size()]));
+                 Def def = new Def(defName, currentList.toArray(new Def.Argument[currentList.size()]));
               
         if ((id == PythonScanner.TOKEN_DASH_GT)) {
             if (id == PythonScanner.TOKEN_DASH_GT) {
@@ -268,7 +269,7 @@ public class PythonParser {
     public void typedargslist() throws ParserError {
         if ((id == PythonScanner.TOKEN_NAME)) {
             tfpdef();
-             List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
+             List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentArgument); 
             if ((id == PythonScanner.TOKEN_EQ)) {
                 if (id == PythonScanner.TOKEN_EQ) {
                     next(); // <-- here 2
@@ -285,7 +286,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COMMA");
                 }
                 tfpdef();
-                 args.add(currentObject); 
+                 args.add(currentArgument); 
                 if ((id == PythonScanner.TOKEN_EQ)) {
                     if (id == PythonScanner.TOKEN_EQ) {
                         next(); // <-- here 2
@@ -413,7 +414,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         currentObject = new Reference(null, PythonString.valueOf(t.toString())); 
+         currentArgument = new Def.Argument(t.toString(), null); 
         if ((id == PythonScanner.TOKEN_COLON)) {
             if (id == PythonScanner.TOKEN_COLON) {
                 next(); // <-- here 2
@@ -2472,7 +2473,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         PythonClassDef cls = new PythonClassDef(t.toString()); 
+         String className = t.toString(); PythonObject[] parents = null; 
         if ((id == PythonScanner.TOKEN_LPAREN)) {
             if (id == PythonScanner.TOKEN_LPAREN) {
                 next(); // <-- here 2
@@ -2488,7 +2489,9 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "RPAREN");
             }
-             cls.setParentArgs(currentList); 
+             
+                      parents = currentList.toArray(new PythonObject[currentList.size()]);
+                  
         } 
         if (id == PythonScanner.TOKEN_COLON) {
             next(); // <-- here 2
@@ -2496,7 +2499,8 @@ public class PythonParser {
             throw new ParserError(t, nt, "COLON");
         }
          
-                 Block savedBlock = currentBlock; currentBlock = cls.getBlock();
+                   PythonClassDef cls = new PythonClassDef(className, parents);
+                   Block savedBlock = currentBlock; currentBlock = cls.getBlock();
               
         suite();
          currentBlock = savedBlock; currentBlock.getStatements().add(cls); 

@@ -125,7 +125,11 @@ public class PythonObject implements ThreadContext.Executable {
     }
 
     public void __call__(ThreadContext context) {
-        evaluateObjectMethod(context, "__call__");
+        evaluateObjectMethod(context, "__call__", (Map<String, PythonObject>)null);
+    }
+
+    public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... kargs) {
+        evaluateObjectMethod(context, "__call__", kwargs, kargs);
     }
 
     public void __del__(ThreadContext context) {

@@ -36,7 +36,18 @@ public class Scope extends PythonObject {
     }
 
     public PythonObject getAttribute(String name) {
-        return attributes.get(name);
+        PythonObject attr = attributes.get(name);
+        if (attr != null) {
+            return attr;
+        }
+        if (parentScope != null) {
+            return parentScope.getAttribute(name);
+        }
+        return null;
+    }
+
+    public boolean contains(String name) {
+        return attributes.containsKey(name) || (parentScope != null && parentScope.contains(name));
     }
 
     public PythonObject __getitem__(String attr) {

@@ -44,7 +44,7 @@ public class Call extends PythonObject {
                     args[i] = context.popData();
                 }
 
-                ((Function)function).execute(context, args, null);
+                function.__call__(context, null, args);
             }
         }
     };

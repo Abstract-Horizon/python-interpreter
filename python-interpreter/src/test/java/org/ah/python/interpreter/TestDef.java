@@ -24,7 +24,7 @@ public class TestDef extends BaseTestClass {
 
     @Test public void testDefOnModule() {
 
-        Def def = new Def("my_method", new Reference[] {new Reference(null, "x")});
+        Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
         def.getBlock().getStatements().add(
                 new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Print from method"))
         );
@@ -47,7 +47,7 @@ public class TestDef extends BaseTestClass {
 
     @Test public void testDefOnModuleAccessingParameter() {
 
-        Def def = new Def("my_method", new Reference[] {new Reference(null, "x")});
+        Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
         def.getBlock().getStatements().add(
             new Call(BuiltInFunctions.getFunction("print"),
                 new Call(

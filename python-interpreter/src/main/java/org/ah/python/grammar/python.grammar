@@ -113,6 +113,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     private OperatorType operatorType;
     private CmpopType cmpopType;
     private PythonObject currentObject;
+    private Def.Argument currentArgument;
 
     private List<String> stringList = new ArrayList<String>();
     private Import currentImport;
@@ -155,11 +156,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               parameters 
               <%
                  for (PythonObject arg : currentList) {
-                     if (!(arg instanceof Reference)) {
+                     if (!(arg instanceof Def.Argument)) {
                          throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
                      }
                  }
-                 Def def = new Def(defName, currentList.toArray(new Reference[currentList.size()]));
+                 Def def = new Def(defName, currentList.toArray(new Def.Argument[currentList.size()]));
               %>
               [ DASH_GT test <% throw new UnsupportedOperationException("->"); %> ] COLON 
               <% 
@@ -174,9 +175,9 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     parameters = LPAREN <% currentList = new ArrayList<PythonObject>(); %> [ typedargslist ] RPAREN
                ;
 
-    typedargslist = ( tfpdef <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+    typedargslist = ( tfpdef <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentArgument); %>
                         [ EQ test <% throw new UnsupportedOperationException("named parameters"); %> ] 
-                        { COMMA tfpdef <% args.add(currentObject); %>
+                        { COMMA tfpdef <% args.add(currentArgument); %>
                             [ EQ test <% throw new UnsupportedOperationException("named parameters"); %> ]
                         }  
                         [ COMMA
@@ -199,7 +200,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                   | STARSTAR tfpdef <% throw new UnsupportedOperationException("starstar parameters"); %>
                   );
 
-    tfpdef = NAME <% currentObject = new Reference(null, PythonString.valueOf(t.toString())); %>
+    tfpdef = NAME <% currentArgument = new Def.Argument(t.toString(), null); %>
              [ COLON test <% throw new UnsupportedOperationException("parameter types"); %> ];
 
     varargslist = (vfpdef [EQ test] { COMMA vfpdef [EQ test] }
@@ -805,16 +806,18 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               <% currentList = args; %>
               ;
 
-    classdef = "class" NAME <% PythonClassDef cls = new PythonClassDef(t.toString()); %>
+    classdef = "class" NAME <% String className = t.toString(); PythonObject[] parents = null; %>
               [ LPAREN <% currentList = new ArrayList<PythonObject>(); %>
-                  [ arglist ] 
+                  [ arglist ]
                 RPAREN 
-                  <% cls.setParentArgs(currentList); %>
+                  <%
+                      parents = currentList.toArray(new PythonObject[currentList.size()]);
+                  %>
               ] 
               COLON 
-              
               <% 
-                 Block savedBlock = currentBlock; currentBlock = cls.getBlock();
+                   PythonClassDef cls = new PythonClassDef(className, parents);
+                   Block savedBlock = currentBlock; currentBlock = cls.getBlock();
               %>
               suite
               <% currentBlock = savedBlock; currentBlock.getStatements().add(cls); %>
