@@ -32,12 +32,17 @@ public class TestClass extends BaseTestClass {
             "    def y(self):",
             "        print(\"y\")",
             "",
+            "    def z(self):",
+            "        self.x()",
+            "        print(\"z\")",
+            "",
             "c = ClsTwo()",
             "c.x()",
-            "c.y()"
+            "c.y()",
+            "c.z()"
         );
 
-        assertEquals("x\ny\n", result());
+        assertEquals("x\ny\nx\nz\n", result());
     }
 
     @Test

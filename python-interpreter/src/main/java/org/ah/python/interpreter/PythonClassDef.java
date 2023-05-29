@@ -16,9 +16,15 @@ public class PythonClassDef extends PythonObject {
         public void __getattr__(ThreadContext context, String name) {
             if (contains(name)) {
                 context.pushData(getAttribute(name));
-            } else if (pythonClassDef.parent != null && pythonClassDef.parent.contains(name)) {
-                context.pushData(pythonClassDef.parent.getAttribute(name));
             } else {
+                if (pythonClassDef.evaluatedParents != null) {
+                    for (PythonClass parent : pythonClassDef.evaluatedParents) {
+                        if (parent.contains(name)) {
+                            context.pushData(parent.getAttribute(name));
+                            return;
+                        }
+                    }
+                }
                 context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + this.name + "' class has no attribute '" + name + "'")));
             }
         }
@@ -28,27 +34,15 @@ public class PythonClassDef extends PythonObject {
     private Block block = new Block();
 
     private String name;
-    private PythonClass parent;
+    private PythonObject[] parentObjects;
+    private PythonClass[] evaluatedParents;
     private PythonClass pythonClassType;
 
-    public PythonClassDef(String name, PythonObject[] parents) {
+    public PythonClassDef(String name, PythonObject[] parentObjects) {
         this.name = name;
+        this.parentObjects = parentObjects;
 
         pythonClassType = new PythonClassType(name, this);
-
-        if (parents != null) {
-            for (PythonObject parent : parents) {
-                if (!(parent instanceof PythonClassDef)) {
-                    throw new UnsupportedOperationException("Only parent class definition allowed; got " + parent.asString());
-                }
-            }
-
-            if (parents.length == 1) {
-                parent = ((PythonClassDef)parents[0]).getPythonClassType();
-            } else {
-                throw new UnsupportedOperationException("Class parent arguments with more than one element");
-            }
-        }
     }
 
     public PythonClass getPythonClassType() { return pythonClassType; }
@@ -64,21 +58,61 @@ public class PythonClassDef extends PythonObject {
         }
     };
 
+    private ThreadContext.Executable parentsContinuation = new ThreadContext.Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            evaluatedParents = new PythonClass[parentObjects.length];
+
+            for (int i = 0; i < parentObjects.length; i++) {
+                // PythonObject parentObject = parentObjects[i];
+                PythonObject parentObject = context.popData();
+                if (!(parentObject instanceof PythonClassDef)) {
+                    throw new UnsupportedOperationException("Only parent class definition allowed; got " + parentObject.asString());
+                }
+                evaluatedParents[i] = ((PythonClassDef) parentObject).getPythonClassType();
+            }
+
+            block.evaluate(context);
+        }
+    };
+
     public void evaluate(ThreadContext context) {
         context.currentScope.__setattr__(context, name, this);
         context.pushScope(pythonClassType);
         context.continuation(closeScopeContinuation);
-        block.evaluate(context);
+        if (this.parentObjects != null) {
+            context.continuationWithEvaluate(parentsContinuation, parentObjects);
+        } else {
+            block.evaluate(context);
+        }
     }
 
     public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         PythonObjectInstance instance = new PythonObjectInstance(pythonClassType);
         instance.pythonClass = pythonClassType;
         context.pushData(instance);
-        // TODO invoke __init__ if existing!
+        if (pythonClassType.contains("__init__")) {
+            PythonObject[] newArgs = new PythonObject[kargs.length + 1];
+            newArgs[0] = instance;
+            System.arraycopy(kargs, 0, newArgs, 1, kargs.length);
+            pythonClassType.getAttribute("__init__").__call__(context, kwargs, newArgs);
+        } else if (kargs != null && kargs.length != 0) {
+            context.raise(new PythonBaseException("TypeError", PythonString.valueOf(this.name + "() takes no arguments")));
+        }
+    }
+
+    private static String parentsToString(PythonClass[] parents) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+
+        for (PythonClass pythonClass : parents) {
+            if (first) { first = false; } else { sb.append(", "); }
+            sb.append(pythonClass.getName());
+        }
+
+        return sb.toString();
     }
 
     public String toString() {
-        return "class " + name + "(" + (parent != null ? parent.name : "") +  ")"; // + methods;
+        return "class " + name + "(" + parentsToString(evaluatedParents) +  ")"; // + methods;
     }
 }
