@@ -7,13 +7,13 @@ public class PythonScannerFixed extends PythonScanner {
 
     private Stack<Integer> indents = new Stack<Integer>();
     private int currentIndent = 0;
-    
+
     private Stack<Boolean> inStatements = new Stack<Boolean>();
     private boolean inStatement = true;
     private boolean afterNewLine = true;
-    
+
     private Token waitingToken = null;
-    
+
     public PythonScannerFixed() {
     }
 
@@ -21,23 +21,27 @@ public class PythonScannerFixed extends PythonScanner {
         super(r);
     }
 
+    public int getStartLine() {
+        return startLine;
+    }
+
     public boolean inStatement() {
         return inStatement;
     }
-    
+
     public void setInStatement(boolean inStatement) {
         this.inStatement = inStatement;
     }
-    
+
     public void pushNotInStatement() {
         inStatements.push(inStatement);
         inStatement = false;
     }
-    
+
     public void popNotInStatement() {
         inStatement = inStatements.pop();
     }
-    
+
     protected Token getNextTokenImpl() {
         if (inStatement) {
             if (waitingToken != null) {

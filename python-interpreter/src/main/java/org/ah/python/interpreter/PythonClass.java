@@ -76,6 +76,26 @@ public class PythonClass extends Scope {
         });
     }
 
+    public static void populateCommonContainerClassMethods(PythonClass pythonClass) {
+        pythonClass.__setattr__(null, "__getitem__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__getitem__(context, args[1]);
+            }
+        });
+        pythonClass.__setattr__(null, "__setitem__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__setitem__(context, args[1], args[2]);
+                context.pushData(PythonNone.NONE);
+            }
+        });
+        pythonClass.__setattr__(null, "__delitem__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__delitem__(context, args[1]);
+                context.pushData(PythonNone.NONE);
+            }
+        });
+    }
+
     public String getName() {
         return name;
     }

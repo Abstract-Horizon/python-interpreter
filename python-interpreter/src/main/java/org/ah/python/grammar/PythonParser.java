@@ -28,6 +28,13 @@ public class PythonParser {
 
     public void setModule(Module module) { this.module = module; }
 
+    private void addStatement(Block block, PythonObject statement) {
+        block.addStatement(statement, scanner.getStartLine());
+    }
+
+    private void addStatement(PythonObject statement) {
+        currentBlock.addStatement(statement, scanner.getStartLine());
+    }
 
 
     public PythonParser() {
@@ -243,7 +250,7 @@ public class PythonParser {
               
         suite();
          
-                  currentBlock = savedBlock; currentBlock.getStatements().add(def);
+                  currentBlock = savedBlock; addStatement(def);
               
     } // funcdef
 
@@ -715,7 +722,7 @@ public class PythonParser {
                         if (lastTarget instanceof Assign) {
 	                        ((Assign)lastTarget).setLastInstruction(true);
 	                    }
-                        currentBlock.getStatements().add(lastTarget);
+                        addStatement(lastTarget);
                     
         }
     } // expr_stmt
@@ -853,7 +860,7 @@ public class PythonParser {
         exprlist();
         
                     currentObject = new Del(currentList);
-                    currentBlock.getStatements().add(currentObject);
+                    addStatement(currentObject);
                 
     } // del_stmt
 
@@ -890,7 +897,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "\"break\"");
         }
-         currentBlock.getStatements().add(new Break()); 
+         addStatement(new Break()); 
     } // break_stmt
 
     // public continue_stmt<null> = "continue" CODE;
@@ -900,7 +907,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "\"continue\"");
         }
-         currentBlock.getStatements().add(new Continue()); 
+         addStatement(new Continue()); 
     } // continue_stmt
 
     // public return_stmt<null> = "return" CODE [testlist] CODE;
@@ -914,7 +921,7 @@ public class PythonParser {
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             testlist();
         } 
-         currentBlock.getStatements().add(new Return(currentObject)); 
+         addStatement(new Return(currentObject)); 
     } // return_stmt
 
     // public yield_stmt<null> = yield_expr CODE;
@@ -955,7 +962,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, "'from','import'");
         }
-         currentBlock.getStatements().add(currentImport); 
+         addStatement(currentImport); 
     } // import_stmt
 
     // public import_name<null> = "import" dotted_as_names;
@@ -1176,7 +1183,7 @@ public class PythonParser {
             }
              stringList.add(t.toString()); 
         } // while 
-         currentBlock.getStatements().add(new Global(stringList)); 
+         addStatement(new Global(stringList)); 
     } // global_stmt
 
     // public nonlocal_stmt<null> = "nonlocal" NAME {COMMA NAME};
@@ -1282,7 +1289,7 @@ public class PythonParser {
             }
              
                       If elif = new If(currentObject);
-                      iff.getElseBlock().getStatements().add(elif);
+                      addStatement(iff.getElseBlock(), elif);
                       iff = elif;
                       currentBlock = elif.getBlock();
                    
@@ -1304,7 +1311,7 @@ public class PythonParser {
         } 
         
                        currentBlock = savedBlock;
-                       currentBlock.getStatements().add(originalIf);
+                       addStatement(originalIf);
                    
     } // if_stmt
 
@@ -1340,7 +1347,7 @@ public class PythonParser {
              currentBlock = whle.getElseBlock(); 
             suite();
         } 
-         currentBlock = savedBlock; currentBlock.getStatements().add(whle); 
+         currentBlock = savedBlock; addStatement(whle); 
     } // while_stmt
 
     // public for_stmt<null> = "for" exprlist CODE "in" testlist COLON CODE suite ["else" COLON CODE suite] CODE;
@@ -1385,7 +1392,7 @@ public class PythonParser {
              currentBlock = fr.getElseBlock(); 
             suite();
         } 
-         currentBlock = savedBlock; currentBlock.getStatements().add(fr); 
+         currentBlock = savedBlock; addStatement(fr); 
     } // for_stmt
 
     // public try_stmt<null> = "try" COLON suite (.k=1.) except_clause COLON suite {except_clause COLON suite} ["else" COLON suite] ["finally" COLON suite]|"finally" COLON suite;
@@ -2207,7 +2214,7 @@ public class PythonParser {
                 }
             } 
             
-               currentObject = PythonDictionary.constructor(map); 
+               currentObject = new PythonDictGenerator(map); 
                scanner.popNotInStatement();
              
             if (id == PythonScanner.TOKEN_RKBRACK) {
@@ -2489,7 +2496,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "RPAREN");
             }
-             
+            
                       parents = currentList.toArray(new PythonObject[currentList.size()]);
                   
         } 
@@ -2503,7 +2510,7 @@ public class PythonParser {
                    Block savedBlock = currentBlock; currentBlock = cls.getBlock();
               
         suite();
-         currentBlock = savedBlock; currentBlock.getStatements().add(cls); 
+         currentBlock = savedBlock; addStatement(cls); 
     } // classdef
 
     // public arglist<null> = (.k=1.) CODE argument CODE {COMMA argument CODE} [(.k=1.) STAR test {COMMA argument} [COMMA STARSTAR test] CODE|STARSTAR test CODE] CODE|STAR test {COMMA argument} [COMMA STARSTAR test] CODE|STARSTAR test CODE;

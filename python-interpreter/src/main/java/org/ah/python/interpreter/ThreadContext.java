@@ -17,6 +17,7 @@ public class ThreadContext {
     public Scope currentScope;
 
     public boolean popped;
+    public int line;
 
     public ThreadContext(Scope globalScope) {
         this.globalScope = globalScope;
@@ -78,7 +79,7 @@ public class ThreadContext {
     }
 
     public PythonObject raise(PythonBaseException exception) {
-        throw new RuntimeException(exception.asString());
+        throw new RuntimeException("@ line " + line + ", " + exception.asString());
     }
 
     public void continuation(Executable continuation) {

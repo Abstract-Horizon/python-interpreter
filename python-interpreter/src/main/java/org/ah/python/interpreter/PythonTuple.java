@@ -31,8 +31,6 @@ public class PythonTuple extends PythonSequence {
     }
 
     public static PythonObject constructor(final List<PythonObject> elements) {
-        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
-
         boolean constant = true;
         Iterator<PythonObject> iterator = elements.iterator();
         while (constant && iterator.hasNext()) {
@@ -46,20 +44,7 @@ public class PythonTuple extends PythonSequence {
             }
             return tuple;
         } else {
-            throw new UnsupportedOperationException("Tuple.constructor");
-//            return new Constructor() {
-//                @Override public PythonObject __call__(ThreadContext context) {
-//                    PythonTuple tuple = new PythonTuple();
-//                    for (PythonObject o : storedElements) {
-//                        PythonObject r = o.dereference();
-//                        tuple.asList().add(r);
-//                    }
-//                    return tuple;
-//                }
-//                @Override public String toString() {
-//                    return "CreateTuple" + storedElements;
-//                }
-//            };
+            throw new UnsupportedOperationException("Tuple.constructor for non constructor values");
         }
     };
 

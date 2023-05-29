@@ -1,76 +1,27 @@
 package org.ah.python.interpreter;
 
 import static org.ah.python.interpreter.PythonBaseException.exception;
+import static org.ah.python.interpreter.PythonClass.populateCommonContainerClassMethods;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PythonDictionary extends PythonObject {
 
-//    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PythonDictionary.class);
+    public static PythonClass PYTHON_DICT_CLASS = new PythonClass("dict");
+    {
+        populateCommonContainerClassMethods(PYTHON_DICT_CLASS);
+    }
 
     protected Map<PythonObject, PythonObject> map = new HashMap<PythonObject, PythonObject>();
 
     public PythonDictionary() {
+        pythonClass = PYTHON_DICT_CLASS;
     }
 
     public Map<PythonObject, PythonObject> asMap() {
         return map;
     }
-
-    public static PythonObject constructor(final Map<PythonObject, PythonObject> values) {
-        return new Constructor() {
-//            @Override public PythonObject __call__(ThreadContext context) {
-//                PythonDictionary dict = new PythonDictionary();
-//                for (Map.Entry<PythonObject, PythonObject> entry : values.entrySet()) {
-//                    PythonObject key = entry.getKey().dereference();
-//                    PythonObject value = entry.getValue();
-//                    if (value != null) {
-//                        value = value.dereference();
-//                    }
-//                    dict.asMap().put(key, value);
-//                }
-//                return dict;
-//            }
-            @Override public String toString() {
-                StringBuilder res = new StringBuilder();
-                res.append("CreateDict{");
-                boolean first = true;
-                for (Map.Entry<PythonObject, PythonObject> e : values.entrySet()) {
-                    if (first) { first = false; } else { res.append(", "); }
-                    res.append(e.getKey()).append(": ").append(e.getValue());
-                }
-                res.append("}");
-                return res.toString();
-            }
-        };
-    }
-
-//    public static PythonObject constructor(final List<PythonObject> keys, final List<PythonObject> values) {
-//        return new Constructor() {
-//            @Override public PythonObject __call__(ThreadContext context) {
-//            PythonDictionary dict = new PythonDictionary();
-//            for (int i = 0; i < keys.size(); i++) {
-//                PythonObject key = keys.get(i).dereference();
-//                PythonObject value = values.get(i).dereference();
-//                dict.asMap().put(key, value);
-//            }
-//            return dict;
-//            }
-//            @Override public String toString() {
-//                StringBuilder res = new StringBuilder();
-//                res.append("CreateDict{");
-//                boolean first = true;
-//                for (int i = 0; i < keys.size(); i++) {
-//
-//                    if (first) { first = false; } else { res.append(", "); }
-//                    res.append(keys.get(i)).append(": ").append(values.get(i));
-//                }
-//                res.append("}");
-//                return res.toString();
-//            }
-//        };
-//    };
 
     public boolean asBoolean() {
         return map.size() != 0;

@@ -24,7 +24,7 @@ public class If extends PythonObject {
             if (context.a instanceof PythonBoolean) {
                 if (((PythonBoolean)context.a).asBoolean()) {
                     block.evaluate(context);
-                } else if (!elseBlock.getStatements().isEmpty()) {
+                } else if (!elseBlock.isEmpty()) {
                     elseBlock.evaluate(context);
                 }
             } else {
@@ -38,7 +38,7 @@ public class If extends PythonObject {
         @Override public void evaluate(ThreadContext context) {
             if (((PythonBoolean)context.a).asBoolean()) {
                 block.evaluate(context);
-            } else if (!elseBlock.getStatements().isEmpty()) {
+            } else if (!elseBlock.isEmpty()) {
                 elseBlock.evaluate(context);
             }
         }

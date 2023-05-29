@@ -97,7 +97,6 @@ scanner PythonScanner package org.ah.python.grammar {
     //  DEDENT = "ALB  ";
     INDENT = "!!!";
     DEDENT = "@@@";
-    
 
 }
 
@@ -126,6 +125,13 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     public void setModule(Module module) { this.module = module; }
 
+    private void addStatement(Block block, PythonObject statement) {
+        block.addStatement(statement, scanner.getStartLine());
+    }
+
+    private void addStatement(PythonObject statement) {
+        currentBlock.addStatement(statement, scanner.getStartLine());
+    }
 %>
 
     single_input = (NEWLINE | simple_stmt | compound_stmt NEWLINE { NEWLINE } );
@@ -168,7 +174,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               %>
               suite
               <% 
-                  currentBlock = savedBlock; currentBlock.getStatements().add(def);
+                  currentBlock = savedBlock; addStatement(def);
               %>
             ;
 
@@ -290,7 +296,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                         if (lastTarget instanceof Assign) {
 	                        ((Assign)lastTarget).setLastInstruction(true);
 	                    }
-                        currentBlock.getStatements().add(lastTarget);
+                        addStatement(lastTarget);
                     %>
                 )
                 ;
@@ -326,7 +332,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     del_stmt = "del" exprlist 
                 <%
                     currentObject = new Del(currentList);
-                    currentBlock.getStatements().add(currentObject);
+                    addStatement(currentObject);
                 %>  
              ;
 
@@ -338,11 +344,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               | raise_stmt 
               | yield_stmt;
 
-    break_stmt = "break" <% currentBlock.getStatements().add(new Break()); %>;
+    break_stmt = "break" <% addStatement(new Break()); %>;
 
-    continue_stmt = "continue" <% currentBlock.getStatements().add(new Continue()); %>;
+    continue_stmt = "continue" <% addStatement(new Continue()); %>;
 
-    return_stmt = "return" <% currentObject = PythonNone.NONE; %> [ testlist ] <% currentBlock.getStatements().add(new Return(currentObject)); %>;
+    return_stmt = "return" <% currentObject = PythonNone.NONE; %> [ testlist ] <% addStatement(new Return(currentObject)); %>;
 
     yield_stmt = yield_expr <% throw new UnsupportedOperationException("yield_stmt"); %>;
 
@@ -353,7 +359,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                 ( import_name 
                 | import_from <% throw new UnsupportedOperationException("import_from"); %>
                 )
-                <% currentBlock.getStatements().add(currentImport); %>
+                <% addStatement(currentImport); %>
                 ;
 
     import_name = "import" dotted_as_names;
@@ -376,7 +382,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     dotted_name = NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); %>  { DOT NAME <% stringList.add(t.toString()); %> };
 
     global_stmt = "global" NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); %> { COMMA NAME <% stringList.add(t.toString()); %> }
-                <% currentBlock.getStatements().add(new Global(stringList)); %>
+                <% addStatement(new Global(stringList)); %>
                 ;
 
     nonlocal_stmt = "nonlocal" NAME { COMMA NAME };
@@ -403,7 +409,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
              { "elif" test COLON
                    <% 
                       If elif = new If(currentObject);
-                      iff.getElseBlock().getStatements().add(elif);
+                      addStatement(iff.getElseBlock(), elif);
                       iff = elif;
                       currentBlock = elif.getBlock();
                    %>
@@ -415,7 +421,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
              ]
                    <%
                        currentBlock = savedBlock;
-                       currentBlock.getStatements().add(originalIf);
+                       addStatement(originalIf);
                    %>
              ;
 
@@ -429,7 +435,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    <% currentBlock = whle.getElseBlock(); %>
                  suite 
                ]
-                   <% currentBlock = savedBlock; currentBlock.getStatements().add(whle); %>
+                   <% currentBlock = savedBlock; addStatement(whle); %>
                ;
 
     for_stmt = "for" exprlist <% PythonObject target = currentObject; %>
@@ -446,7 +452,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    <% currentBlock = fr.getElseBlock(); %>
                   suite 
                 ]
-                   <% currentBlock = savedBlock; currentBlock.getStatements().add(fr); %>
+                   <% currentBlock = savedBlock; addStatement(fr); %>
                 ;
 
     try_stmt = ("try" COLON suite
@@ -692,7 +698,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                  ] 
                  
              <%
-               currentObject = PythonDictionary.constructor(map); 
+               currentObject = new PythonDictGenerator(map);
                scanner.popNotInStatement();
              %>  
              RKBRACK
@@ -820,7 +826,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    Block savedBlock = currentBlock; currentBlock = cls.getBlock();
               %>
               suite
-              <% currentBlock = savedBlock; currentBlock.getStatements().add(cls); %>
+              <% currentBlock = savedBlock; addStatement(cls); %>
               ;
 
     arglist = 

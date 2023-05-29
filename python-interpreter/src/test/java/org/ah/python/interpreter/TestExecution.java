@@ -13,7 +13,7 @@ public class TestExecution extends BaseTestClass {
 
         StringBuilder b = new StringBuilder();
         for (int k = 0; k < j; k++) {
-            block.getStatements().add(new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("" + k)));
+            block.addStatement(new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("" + k)), k + 1);
             b.append(k + "\n");
         }
 

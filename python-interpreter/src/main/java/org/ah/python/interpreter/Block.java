@@ -5,16 +5,27 @@ import java.util.List;
 
 public class Block implements ThreadContext.Executable {
 
-    private List<ThreadContext.Executable> statements = new ArrayList<ThreadContext.Executable>();
+    private static class BlockEntry {
+        protected ThreadContext.Executable executable;
+        protected int line;
+
+        protected BlockEntry(ThreadContext.Executable executable, int line) {
+            this.executable = executable;
+            this.line = line;
+        }
+    }
+
+    private List<BlockEntry> statements = new ArrayList<BlockEntry>();
 
     private ThreadContext.Executable twoStatementsContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 2) {
                 context.continuation(threeStatementsContinuation);
-                statements.get(1).evaluate(context);
+                statements.get(1).executable.evaluate(context);
                 return;
             }
-            statements.get(1).evaluate(context);
+            context.line = statements.get(1).line;
+            statements.get(1).executable.evaluate(context);
         }
 
     };
@@ -23,10 +34,12 @@ public class Block implements ThreadContext.Executable {
         @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 3) {
                 context.continuation(new MoreStatementsContinuation());
-                statements.get(2).evaluate(context);
+                context.line = statements.get(2).line;
+                statements.get(2).executable.evaluate(context);
                 return;
             }
-            statements.get(2).evaluate(context);
+            context.line = statements.get(2).line;
+            statements.get(2).executable.evaluate(context);
         }
 
     };
@@ -39,7 +52,8 @@ public class Block implements ThreadContext.Executable {
             if (ptr < statements.size() - 1) {
                 context.continuation(this);
             }
-            statements.get(ptr).evaluate(context);
+            context.line = statements.get(ptr).line;
+            statements.get(ptr).executable.evaluate(context);
         }
     };
 
@@ -59,8 +73,8 @@ public class Block implements ThreadContext.Executable {
         this.closeScope = closeScope;
     }
 
-    public List<ThreadContext.Executable> getStatements() {
-        return statements;
+    public void addStatement(ThreadContext.Executable executable, int line) {
+        statements.add(new BlockEntry(executable, line));
     }
 
     @Override public void evaluate(ThreadContext context) {
@@ -72,11 +86,23 @@ public class Block implements ThreadContext.Executable {
             context.continuation(closeScopeContinuation);
         }
         if (size == 1) {
-            statements.get(0).evaluate(context);
+            context.line = statements.get(0).line;
+            statements.get(0).executable.evaluate(context);
             return;
         }
 
         context.continuation(twoStatementsContinuation);
-        statements.get(0).evaluate(context);
+        context.line = statements.get(0).line;
+        statements.get(0).executable.evaluate(context);
+    }
+
+    public void terminateWithReturn() {
+        if (!(statements.get(statements.size() - 1).executable instanceof Return)) {
+            statements.add(new BlockEntry(new Return(PythonNone.NONE), -1));
+        }
+    }
+
+    public boolean isEmpty() {
+        return statements.isEmpty();
     }
 }

@@ -25,16 +25,17 @@ public class TestDef extends BaseTestClass {
     @Test public void testDefOnModule() {
 
         Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
-        def.getBlock().getStatements().add(
-                new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Print from method"))
+        def.getBlock().addStatement(
+                new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Print from method")),
+                1
         );
 
         Block block = new Block();
-        block.getStatements().add(def);
+        block.addStatement(def, 2);
 
         Call call = new Call(new Reference(null, "my_method"), PythonInteger.valueOf(3));
 
-        block.getStatements().add(call);
+        block.addStatement(call, 3);
 
         context.continuation(block);
 
@@ -48,21 +49,21 @@ public class TestDef extends BaseTestClass {
     @Test public void testDefOnModuleAccessingParameter() {
 
         Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
-        def.getBlock().getStatements().add(
+        def.getBlock().addStatement(
             new Call(BuiltInFunctions.getFunction("print"),
                 new Call(
                     new Reference(PythonString.valueOf("Print from method, x="), "__add__"),
                     new Reference(null, "x")
                 )
-            )
+            ), 1
         );
 
         Block block = new Block();
-        block.getStatements().add(def);
+        block.addStatement(def, 2);
 
         Call call = new Call(new Reference(null, "my_method"), PythonString.valueOf("value_of_x"));
 
-        block.getStatements().add(call);
+        block.addStatement(call, 3);
 
         context.continuation(block);
 

@@ -46,6 +46,27 @@ public class TestClass extends BaseTestClass {
     }
 
     @Test
+    public void canInterpretDefWithExtension2() {
+        executeLines(
+            "class ClsOne:",
+            "    def x(self):",
+            "        self.z()",
+            "",
+            "class ClsTwo(ClsOne):",
+            "    def y(self):",
+            "        self.x()",
+            "",
+            "    def z(self):",
+            "        print(\"z\")",
+            "",
+            "c = ClsTwo()",
+            "c.y()"
+        );
+
+        assertEquals("z\n", result());
+    }
+
+    @Test
     public void canInvokeConstructor() {
         executeLines(
             "class Cls:",

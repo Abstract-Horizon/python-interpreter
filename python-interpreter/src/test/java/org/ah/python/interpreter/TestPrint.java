@@ -19,8 +19,9 @@ public class TestPrint extends BaseTestClass {
 
     @Test public void testPrint() {
         Block block = new Block();
-        block.getStatements().add(
-                new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Result."))
+        block.addStatement(
+            new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Result.")),
+            1
         );
 
         context.continuation(block);

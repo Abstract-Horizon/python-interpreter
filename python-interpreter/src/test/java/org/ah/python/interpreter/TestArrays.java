@@ -16,7 +16,7 @@ public class TestArrays extends BaseTestClass {
 
         Assign aAssignment = new Assign(aReference, expression, true);
 
-        block.getStatements().add(aAssignment);
+        block.addStatement(aAssignment, 1);
 
 
         Reference aReference2 = new Reference(null, "a");
@@ -28,7 +28,7 @@ public class TestArrays extends BaseTestClass {
         Assign bAssignment = new Assign(bReference, callAccess, true);
         bAssignment.setLastInstruction(true);
 
-        block.getStatements().add(bAssignment);
+        block.addStatement(bAssignment, 2);
 
         context.continuation(block);
 

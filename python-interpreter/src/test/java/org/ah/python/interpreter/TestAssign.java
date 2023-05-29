@@ -14,7 +14,7 @@ public class TestAssign extends BaseTestClass {
 
         Assign assignment = new Assign(reference, expression, true);
 
-        block.getStatements().add(assignment);
+        block.addStatement(assignment, 1);
 
         context.continuation(block);
 

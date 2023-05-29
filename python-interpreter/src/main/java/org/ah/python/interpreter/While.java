@@ -26,7 +26,7 @@ public class While extends PythonObject {
                     context.continuation(whiteContinuation);
                     context.continuation(test);
                     block.evaluate(context);
-                } else if (!elseBlock.getStatements().isEmpty()) {
+                } else if (!elseBlock.isEmpty()) {
                     elseBlock.evaluate(context);
                 }
             } else {
@@ -42,7 +42,7 @@ public class While extends PythonObject {
                 context.continuation(whiteContinuation);
                 context.continuation(test);
                 block.evaluate(context);
-            } else if (!elseBlock.getStatements().isEmpty()) {
+            } else if (!elseBlock.isEmpty()) {
                 elseBlock.evaluate(context);
             }
         }
