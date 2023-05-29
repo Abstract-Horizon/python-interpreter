@@ -13,12 +13,12 @@ public class PythonTuple extends PythonSequence {
 
     static {
         PYTHON_TUPLE_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__add__(context, args[1]);
             }
         });
         PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__getitem__(context, args[1]);
             }
         });

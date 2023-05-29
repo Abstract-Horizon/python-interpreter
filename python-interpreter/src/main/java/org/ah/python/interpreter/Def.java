@@ -61,10 +61,12 @@ public class Def extends PythonObject {
                 }
             }
 
-            System.out.println("Assigning def to " + context.currentScope + " with name " + name);
-
             functionScope = context.currentScope;
-            // Function function = new DefFunction(name, functionArgs, context.currentScope, block);
+            if (functionScope instanceof PythonClassDef.PythonClassType) {
+                instanceMethod = true;
+            }
+
+            System.out.println("Assigning def to " + context.currentScope + " with name " + name + (instanceMethod ? "as instance method" : ""));
 
             context.currentScope.__setattr__(context, name, Def.this);
         }
@@ -100,7 +102,7 @@ public class Def extends PythonObject {
 
     private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
-            context.popData();
+            // context.popData();
             context.currentScope.close();
             context.pushData(PythonNone.NONE);
         }
@@ -136,7 +138,6 @@ public class Def extends PythonObject {
             statements.add(new Return(PythonNone.NONE));
         }
         block.evaluate(context);
-
     }
 
     public String toString() {

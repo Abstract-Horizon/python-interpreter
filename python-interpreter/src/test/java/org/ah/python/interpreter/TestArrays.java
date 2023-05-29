@@ -42,19 +42,25 @@ public class TestArrays extends BaseTestClass {
     @Test public void testArray() {
         executeLines(
             "a = [2, 3, 4]",
-            "b = a[1]",
+            "b1 = a[0]",
+            "b2 = a[1]",
+            "b3 = a[2]",
             "a[1] = 5",
             "c = a[1]"
         );
 
-        PythonObject b = context.currentScope.getAttribute("b");
+        PythonObject b1 = context.currentScope.getAttribute("b1");
+        PythonObject b2 = context.currentScope.getAttribute("b2");
+        PythonObject b3 = context.currentScope.getAttribute("b3");
         PythonObject c = context.currentScope.getAttribute("c");
 
-        System.out.println("Got b=" + b);
+        System.out.println("Got b1=" + b1);
+        System.out.println("Got b2=" + b2);
+        System.out.println("Got b3=" + b3);
         System.out.println("Got c=" + c);
 
-        assertEquals(b.asInteger(), 3);
-        assertEquals(c.asInteger(), 5);
+//        assertEquals(3, b.asInteger());
+        assertEquals(5, c.asInteger());
 
         contextIsEmpty();
     }

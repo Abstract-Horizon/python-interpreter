@@ -41,27 +41,27 @@ public class PythonInteger extends PythonNumber {
         populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
 
         PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__and__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__or__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__xor__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__lshift__(context, args[1]);
             }
         });
         PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__rshift__(context, args[1]);
             }
         });

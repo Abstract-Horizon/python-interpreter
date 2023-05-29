@@ -17,27 +17,27 @@ public class PythonList extends PythonSequence {
         populateCommonSequenceObjects(PYTHON_LIST_CLASS);
 
         PYTHON_LIST_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__add__(context, args[1]);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__len__(context);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("append", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).append(context, args[1]);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("clear", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).clear(context);
             }
         });
         PYTHON_LIST_CLASS.__setattr__("remove", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).remove(context, args[1]);
             }
         });

@@ -16,16 +16,7 @@ public class Call extends PythonObject {
         @Override public void evaluate(ThreadContext context) {
             PythonObject function = context.popData();
 
-            if (function instanceof BuiltInMethod) {
-                int argNo = kargs.length;
-
-                PythonObject[] args = new PythonObject[argNo];
-                for (int i = 0; i < argNo; i++) {
-                    args[i] = context.popData();
-                }
-
-                ((Function)function).execute(context, args, null);
-            } else if (function instanceof BuiltInBoundMethod) {
+            if (function instanceof BuiltInBoundMethod) {
                 int argNo = kargs.length + 1;
 
                 PythonObject[] args = new PythonObject[argNo];
@@ -33,11 +24,30 @@ public class Call extends PythonObject {
                     args[i] = context.popData();
                 }
 
-                ((Function)function).execute(context, args, null);
-            } else if (function instanceof BoundMethod) {
-                throw new UnsupportedOperationException("Not implemented for BoundMethod");
+                function.__call__(context, null, args);
+//            } else if (function instanceof BoundMethod) {
+//                int argNo = kargs.length + 1;
+//
+//                PythonObject[] args = new PythonObject[argNo];
+//                for (int i = 0; i < argNo; i++) {
+//                    args[i] = context.popData();
+//                }
+//
+//                function.__call__(context, null, args);
+            } else if (function instanceof BuiltInMethod) {
+                int argNo = kargs.length;
+
+                PythonObject[] args = new PythonObject[argNo];
+                for (int i = 0; i < argNo; i++) {
+                    args[i] = context.popData();
+                }
+
+                function.__call__(context, null, args);
             } else {
                 int argNo = kargs.length;
+                if (function instanceof Def && ((Def)function).isInstanceMethod()) {
+                    argNo += 1;
+                }
 
                 PythonObject[] args = new PythonObject[argNo];
                 for (int i = 0; i < argNo; i++) {

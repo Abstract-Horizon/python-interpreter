@@ -105,18 +105,18 @@ public class Scope extends PythonObject {
 
     public static void populateCommonContainerClassMethods(PythonClass pythonClass) {
         pythonClass.__setattr__(null, "__getitem__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__getitem__(context, args[0]);
             }
         });
         pythonClass.__setattr__(null, "__setitem__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__setitem__(context, args[0], args[1]);
                 context.pushData(PythonNone.NONE);
             }
         });
         pythonClass.__setattr__(null, "__delitem__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__delitem__(context, args[0]);
                 context.pushData(PythonNone.NONE);
             }

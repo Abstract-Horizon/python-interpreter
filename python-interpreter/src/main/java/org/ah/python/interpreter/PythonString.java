@@ -12,27 +12,27 @@ public class PythonString extends PythonObject {
 
     static {
         PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__add__(context, args[1]);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__len__(context);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__int__(context);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__float__(context);
             }
         });
         PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInBoundMethod() {
-            public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__bool__(context);
             }
         });

@@ -96,7 +96,10 @@ public class ThreadContext {
         if (len == 1) {
             objectsToEvaluate[0].evaluate(this);
         } else {
-            for (int i = len - 2; i >= 0; i--) {
+//            for (int i = len - 2; i >= 0; i--) {
+//                pcStack.push(objectsToEvaluate[i]);
+//            }
+            for (int i = 0; i < len - 1; i++) {
                 pcStack.push(objectsToEvaluate[i]);
             }
             objectsToEvaluate[len - 1].evaluate(this);
