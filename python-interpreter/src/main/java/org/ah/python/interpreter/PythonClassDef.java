@@ -1,6 +1,8 @@
 package org.ah.python.interpreter;
 
 import java.util.Map;
+import static org.ah.python.interpreter.ThreadContext.Executable;
+
 
 public class PythonClassDef extends PythonObject {
 
@@ -51,14 +53,14 @@ public class PythonClassDef extends PythonObject {
         return block;
     }
 
-    private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
+    private Executable closeScopeContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.currentScope.close();
             context.popScope();
         }
     };
 
-    private ThreadContext.Executable parentsContinuation = new ThreadContext.Executable() {
+    private Executable parentsContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             evaluatedParents = new PythonClass[parentObjects.length];
 
@@ -86,6 +88,12 @@ public class PythonClassDef extends PythonObject {
         }
     }
 
+    private Executable removeReturnValueContinuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.popData();
+        }
+    };
+
     public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         PythonObjectInstance instance = new PythonObjectInstance(pythonClassType);
         instance.pythonClass = pythonClassType;
@@ -94,6 +102,7 @@ public class PythonClassDef extends PythonObject {
             PythonObject[] newArgs = new PythonObject[kargs.length + 1];
             newArgs[0] = instance;
             System.arraycopy(kargs, 0, newArgs, 1, kargs.length);
+            context.continuation(removeReturnValueContinuation);
             pythonClassType.getAttribute("__init__").__call__(context, kwargs, newArgs);
         } else if (kargs != null && kargs.length != 0) {
             context.raise(new PythonBaseException("TypeError", PythonString.valueOf(this.name + "() takes no arguments")));

@@ -36,7 +36,7 @@ public class Def extends PythonObject {
         }
     }
 
-    private String name;
+    protected String name;
     private Argument[] args = null;
     private Argument[] argsToBeEvaluated = null;
     private Argument[] evaluatedArguments = null;
@@ -74,6 +74,7 @@ public class Def extends PythonObject {
 
     public Def(String name, Argument[] args) {
         this.name = name;
+        this.pythonClass = new PythonMethodClass("<function " + name + ">");
         this.args = args;
         List<Argument> argsToBeEvaluated = new ArrayList<Argument>();
         for (Argument arg : args) {
@@ -100,13 +101,17 @@ public class Def extends PythonObject {
         }
     }
 
-    private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
+    private static ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
             // context.popData();
             context.currentScope.close();
             context.pushData(PythonNone.NONE);
         }
     };
+
+    @Override public void __call__(ThreadContext context) {
+        this.__call__(context, null);
+    }
 
     @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         System.out.println("Executing function " + name + " with args " + arrayToString(evaluatedArguments, ", "));

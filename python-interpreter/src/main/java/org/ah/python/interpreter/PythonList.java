@@ -3,6 +3,7 @@ package org.ah.python.interpreter;
 import static org.ah.python.interpreter.PythonBaseException.exception;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,11 @@ public class PythonList extends PythonSequence {
                 args[0].__len__(context);
             }
         });
+        PYTHON_LIST_CLASS.__setattr__("__iter__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__iter__(context);
+            }
+        });
         PYTHON_LIST_CLASS.__setattr__("append", new BuiltInBoundMethod() {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).append(context, args[1]);
@@ -39,6 +45,11 @@ public class PythonList extends PythonSequence {
         PYTHON_LIST_CLASS.__setattr__("remove", new BuiltInBoundMethod() {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).remove(context, args[1]);
+            }
+        });
+        PYTHON_LIST_CLASS.__setattr__("__reversed__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                ((PythonList)args[0]).__reversed__(context);
             }
         });
     }
@@ -239,6 +250,13 @@ public class PythonList extends PythonSequence {
     @Override
     public void __iter__(ThreadContext context) {
         context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
+    }
+
+    @Override
+    public void __reversed__(ThreadContext context) {
+        List<PythonObject> copy = new ArrayList<PythonObject>(list);
+        Collections.reverse(copy);
+        context.pushData(new PythonList(copy));
     }
 
 

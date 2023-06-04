@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.ah.python.interpreter.PythonList.ListIterator;
+
 public class PythonTuple extends PythonSequence {
 
     public static PythonClass PYTHON_TUPLE_CLASS = new PythonClass("tuple");
@@ -20,6 +22,11 @@ public class PythonTuple extends PythonSequence {
         PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod() {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__getitem__(context, args[1]);
+            }
+        });
+        PYTHON_TUPLE_CLASS.__setattr__("__iter__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__iter__(context);
             }
         });
     }
@@ -89,9 +96,18 @@ public class PythonTuple extends PythonSequence {
         context.raise(exception("AttributeError", PythonString.valueOf("__delitem__)")));
     }
 
+    @Override
+    public void __iter__(ThreadContext context) {
+        context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
+    }
+
+    public String asString() {
+        return toString();
+    }
+
     public String toString() {
         StringBuilder res = new StringBuilder();
-        res.append("Tuple(");
+        res.append("(");
         res.append(collectionToString(asList(), ", "));
         res.append(")");
         return res.toString();

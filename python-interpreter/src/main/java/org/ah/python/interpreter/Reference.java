@@ -1,14 +1,32 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.ThreadContext.Executable;
+
 public class Reference extends PythonObject implements Assignable {
 
     protected PythonObject scope;
     protected String name;
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private Executable continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
+            // PythonObject o = context.popData();
             // TODO - this directly going to pythonClass is wrong! This needs to be moved to PythonObject.__getattr__
-            context.a.pythonClass.__getattr__(context, name.toString());
+            PythonObject o = context.a;
+            context.continuation(checkBoundMethodContinuation);
+            o.__getattr__(context, name.toString());
+        }
+    };
+
+    private Executable checkBoundMethodContinuation = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            // TODO optimise BuiltInBoundMethod and Def.isInstanceMethod
+            if (!(context.a instanceof BuiltInBoundMethod
+                    || (context.a instanceof Def && ((Def)context.a).isInstanceMethod()))) {
+                // Remove 'self'
+                PythonObject data = context.a;
+                context.popData();
+                context.a = data;
+            }
         }
     };
 

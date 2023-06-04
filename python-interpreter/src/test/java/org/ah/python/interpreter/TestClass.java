@@ -24,7 +24,7 @@ public class TestClass extends BaseTestClass {
     @Test
     public void canInterpretDefWithExtension() {
         executeLines(
-            "class ClsOne:",
+            "class ClsOne():",
             "    def x(self):",
             "        print(\"x\")",
             "",
@@ -48,7 +48,7 @@ public class TestClass extends BaseTestClass {
     @Test
     public void canInterpretDefWithExtension2() {
         executeLines(
-            "class ClsOne:",
+            "class ClsOne():",
             "    def x(self):",
             "        self.z()",
             "",
@@ -69,13 +69,33 @@ public class TestClass extends BaseTestClass {
     @Test
     public void canInvokeConstructor() {
         executeLines(
-            "class Cls:",
+            "class Cls():",
             "    def __init__(self):",
             "        print(\"Constructor invoked\")",
+            "    def x():",
+            "        print(\"x\")",
             "",
-            "c = Cls()"
+            "c = Cls()",
+            "c.x()"
         );
 
-        assertEquals("Constructor invoked\n", result());
+        assertEquals("Constructor invoked\nx\n", result());
+    }
+
+    @Test
+    public void canReturningSelf() {
+        executeLines(
+            "class Cls():",
+            "    def x(self):",
+            "        print(\"x\")",
+            "        return self",
+            "    def y():",
+            "        print(\"y\")",
+            "",
+            "c = Cls()",
+            "c.x().y()"
+        );
+
+        assertEquals("x\ny\n", result());
     }
 }

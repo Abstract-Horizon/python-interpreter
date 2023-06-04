@@ -54,7 +54,11 @@ public class ThreadContext {
     public PythonObject popData() {
         PythonObject existingA = a;
         if (dataStack.isEmpty()) {
+            // TODO is this right?
             a = null;
+            if (existingA == null) {
+                throw new IllegalStateException("Stack is empty!");
+            }
         } else {
             a = dataStack.pop();
         }

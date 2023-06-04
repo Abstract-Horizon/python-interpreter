@@ -1,6 +1,7 @@
 package org.ah.python.interpreter;
 
 import static org.ah.python.interpreter.util.MapBuilder.newmap;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -24,6 +25,11 @@ public class BaseTestClass {
 
     protected String result() {
         return new String(res.toByteArray());
+    }
+
+    protected void clearResult() {
+        res = new ByteArrayOutputStream();
+        BuiltInFunctions.setOutput(res);
     }
 
     @Before
@@ -63,12 +69,14 @@ public class BaseTestClass {
         parser.existing_module_file_input();
     }
 
-    public void executeLines(String... lines) {
+    public AssertDSL executeLines(String... lines) {
         parseLines(lines);
 
         context.continuation(module.getBlock());
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
+
+        return new AssertDSL();
     }
 
     public void contextIsEmpty() {
@@ -81,6 +89,13 @@ public class BaseTestClass {
         }
         if (message.length() > 0) {
             assertTrue(message.toString(), false);
+        }
+    }
+
+    public class AssertDSL {
+        public AssertDSL() {}
+        public void assertResult(String value) {
+            assertEquals(value, result());
         }
     }
 }

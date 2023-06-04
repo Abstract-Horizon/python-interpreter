@@ -21,22 +21,25 @@ public class If extends PythonObject {
 
     private ThreadContext.Executable ifContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
-            if (context.a instanceof PythonBoolean) {
-                if (((PythonBoolean)context.a).asBoolean()) {
+            PythonObject a = context.popData();
+            if (a instanceof PythonBoolean) {
+                if (((PythonBoolean)a).asBoolean()) {
                     block.evaluate(context);
                 } else if (!elseBlock.isEmpty()) {
                     elseBlock.evaluate(context);
                 }
             } else {
                 context.continuation(ifBoolContinuation);
-                context.a.__bool__(context);
+                a.__bool__(context);
             }
         }
     };
 
     private ThreadContext.Executable ifBoolContinuation = new ThreadContext.Executable() {
         @Override public void evaluate(ThreadContext context) {
-            if (((PythonBoolean)context.a).asBoolean()) {
+            PythonObject a = context.popData();
+
+            if (((PythonBoolean)a).asBoolean()) {
                 block.evaluate(context);
             } else if (!elseBlock.isEmpty()) {
                 elseBlock.evaluate(context);

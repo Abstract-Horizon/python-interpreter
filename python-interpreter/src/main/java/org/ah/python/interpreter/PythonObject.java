@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ah.python.interpreter.ThreadContext.Executable;
+import org.ah.python.interpreter.Call.EvaluateFunctionAndArgsContinuation;
 
 public class PythonObject implements ThreadContext.Executable {
 
@@ -75,20 +75,19 @@ public class PythonObject implements ThreadContext.Executable {
         return TYPE;
     }
 
-    private static Executable evaluateContinuation = new Executable() {
-        @Override public void evaluate(ThreadContext context) {
-
-        }
-    };
-
-
     public void evaluateObjectMethod(ThreadContext context, String methodName, PythonObject... kargs) {
         evaluateObjectMethod(context, methodName, null, kargs);
     }
 
     public void evaluateObjectMethod(ThreadContext context, String methodName, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         if (pythonClass != null) {
-            context.continuation(evaluateContinuation);
+            for (int i = kargs.length - 1; i >= 0; i++) {
+                context.pushData(kargs[i]);
+            }
+            // TODO we do this thinking it is OK - but we don't know!!!
+            context.pushData(this);
+            context.continuation(new EvaluateFunctionAndArgsContinuation(kargs.length));
+            // context.continuation(evaluateContinuation);
 
             pythonClass.__getattr__(context, methodName);
         } else {
@@ -207,7 +206,7 @@ public class PythonObject implements ThreadContext.Executable {
     // Container types
 
     public void __len__(ThreadContext context) {
-        context.raise(exception("AttributeError", PythonString.valueOf("__len__")));
+        evaluateObjectMethod(context, "__len__");
     }
 
     public void __getitem__(ThreadContext context, PythonObject key) {

@@ -1,12 +1,14 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.ThreadContext.Executable;
+
 public class Assign extends PythonObject {
 
     private PythonObject reference;
     private PythonObject expression;
     private boolean lastInstruction = false;
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private Executable continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject ref;
 
@@ -73,15 +75,17 @@ public class Assign extends PythonObject {
                     PythonObject[] newArgs = new PythonObject[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
                     newArgs[call.kargs.length] = expression;
-                    call.kargs = newArgs;
-                    return call;
+                    // call.kargs = newArgs;
+                    // return call;
+                    return new Call(callReference, call.kwargs, newArgs);
                 } else if (callReference.name == "__getattr__") {
                     callReference.name = "__setattr__";
                     PythonObject[] newArgs = new PythonObject[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
                     newArgs[call.kargs.length] = expression;
-                    call.kargs = newArgs;
-                    return call;
+                    // call.kargs = newArgs;
+                    // return call;
+                    return new Call(callReference, call.kwargs, newArgs);
                 }
             }
         }

@@ -65,6 +65,12 @@ public class PythonInteger extends PythonNumber {
                 args[0].__rshift__(context, args[1]);
             }
         });
+
+        PYTHON_INTEGER_CLASS.__setattr__("__neg__", new BuiltInBoundMethod() {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__neg__(context);
+            }
+        });
     }
 
     public static PythonInteger valueOf(String s) {
