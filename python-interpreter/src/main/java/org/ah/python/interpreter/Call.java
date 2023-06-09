@@ -25,18 +25,9 @@ public class Call extends PythonObject implements Executable {
         @Override public void evaluate(ThreadContext context) {
             PythonObject function = context.popData();
 
-            if (function instanceof BuiltInBoundMethod) {
-                // int argNo = kargs.length + 1;
-                int argNo = kargsLength + 1;
-
-                PythonObject[] args = new PythonObject[argNo];
-                for (int i = 0; i < argNo; i++) {
-                    args[i] = context.popData();
-                }
-
-                function.__call__(context, null, args);
-//            } else if (function instanceof BoundMethod) {
-//                int argNo = kargs.length + 1;
+//            if (function instanceof BuiltInBoundMethod) {
+//                // int argNo = kargs.length + 1;
+//                int argNo = kargsLength + 1;
 //
 //                PythonObject[] args = new PythonObject[argNo];
 //                for (int i = 0; i < argNo; i++) {
@@ -44,18 +35,18 @@ public class Call extends PythonObject implements Executable {
 //                }
 //
 //                function.__call__(context, null, args);
-            } else if (function instanceof BuiltInMethod) {
+//            } else if (function instanceof BuiltInMethod) {
+//                int argNo = kargsLength;
+//
+//                PythonObject[] args = new PythonObject[argNo];
+//                for (int i = 0; i < argNo; i++) {
+//                    args[i] = context.popData();
+//                }
+//
+//                function.__call__(context, null, args);
+//            } else {
                 int argNo = kargsLength;
-
-                PythonObject[] args = new PythonObject[argNo];
-                for (int i = 0; i < argNo; i++) {
-                    args[i] = context.popData();
-                }
-
-                function.__call__(context, null, args);
-            } else {
-                int argNo = kargsLength;
-                if (function instanceof Def && ((Def)function).isInstanceMethod()) {
+                if (function instanceof Function && ((Function)function).isInstanceMethod()) {
                     argNo += 1;
                 }
 
@@ -65,7 +56,7 @@ public class Call extends PythonObject implements Executable {
                 }
 
                 function.__call__(context, null, args);
-            }
+//            }
         }
     };
 

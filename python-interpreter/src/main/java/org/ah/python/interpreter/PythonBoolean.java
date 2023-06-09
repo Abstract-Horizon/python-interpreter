@@ -6,36 +6,37 @@ import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class PythonBoolean extends PythonNumber {
 
-    public static PythonClass PYTHON_BOOL_CLASS = new PythonClass("bool");
-
-    static {
-        populateCommonNumberClassMethods(PYTHON_BOOL_CLASS);
-        PYTHON_BOOL_CLASS.__setattr__("__and__", new BuiltInBoundMethod("__and__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__and__(context, args[1]);
-            }
-        });
-        PYTHON_BOOL_CLASS.__setattr__("__or__", new BuiltInBoundMethod("__or__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__or__(context, args[1]);
-            }
-        });
-        PYTHON_BOOL_CLASS.__setattr__("__xor__", new BuiltInBoundMethod("__xor__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__xor__(context, args[1]);
-            }
-        });
-        PYTHON_BOOL_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod("__lshift__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__lshift__(context, args[1]);
-            }
-        });
-        PYTHON_BOOL_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod("__rshift__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__rshift__(context, args[1]);
-            }
-        });
-    }
+    public static PythonClass PYTHON_BOOL_CLASS = new PythonClass("bool") {
+        {
+            populateCommonMethods();
+            populateCommonNumberClassMethods(this);
+            addMethod(new BuiltInBoundMethod("__and__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__and__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__or__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__or__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__xor__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__xor__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__lshift__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__lshift__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__rshift__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__rshift__(context, args[1]);
+                }
+            });
+        }
+    };
 
     public static final PythonBoolean TRUE = new PythonBoolean(true);
     public static final PythonBoolean FALSE = new PythonBoolean(false);

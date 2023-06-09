@@ -74,15 +74,6 @@ public class PythonList extends PythonSequence {
         return true;
     }
 
-    public PythonObject dereferenceConstant() {
-        return this;
-    }
-//
-//    @Override
-//    public boolean asBoolean(ThreadContext context) {
-//        return list.size() != 0;
-//    }
-
     public void __bool__(ThreadContext context) {
         context.pushData(PythonBoolean.valueOf(list.size() != 0));
     }

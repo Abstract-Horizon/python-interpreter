@@ -6,11 +6,12 @@ import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class PythonFloat extends PythonNumber {
 
-    public static PythonClass PYTHON_FLOAT_CLASS = new PythonClass("float");
-
-    static {
-        populateCommonNumberClassMethods(PYTHON_FLOAT_CLASS);
-    }
+    public static PythonClass PYTHON_FLOAT_CLASS = new PythonClass("float") {
+        {
+            populateCommonMethods();
+            populateCommonNumberClassMethods(this);
+        }
+    };
 
     public static PythonFloat valueOf(String s) {
         return valueOf(Double.parseDouble(s));

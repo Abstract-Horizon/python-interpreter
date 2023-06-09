@@ -43,6 +43,10 @@ public class Scope extends PythonObject {
         return null;
     }
 
+    public void addMethod(Function method) {
+        attributes.put(method.getName(), method);
+    }
+
     public boolean contains(String name) {
         return attributes.containsKey(name) || (parentScope != null && parentScope.contains(name));
     }

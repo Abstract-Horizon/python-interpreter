@@ -4,8 +4,20 @@ import java.util.Map;
 
 public class Function extends PythonObject {
 
-    public Function(PythonClass pythonClass) {
+    protected String name;
+    protected boolean instanceMethod = false;
+
+    public Function(PythonClass pythonClass, String name) {
         super(pythonClass);
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isInstanceMethod() {
+        return instanceMethod;
     }
 
     public void execute(ThreadContext context, PythonObject[] args, Map<String, PythonObject> kwargs) {

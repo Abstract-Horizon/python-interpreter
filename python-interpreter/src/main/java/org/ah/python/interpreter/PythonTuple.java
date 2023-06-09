@@ -11,25 +11,25 @@ import org.ah.python.interpreter.PythonList.ListIterator;
 
 public class PythonTuple extends PythonSequence {
 
-    public static PythonClass PYTHON_TUPLE_CLASS = new PythonClass("tuple");
-
-    static {
-        PYTHON_TUPLE_CLASS.__setattr__("__add__", new BuiltInBoundMethod("__add__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__add__(context, args[1]);
-            }
-        });
-        PYTHON_TUPLE_CLASS.__setattr__("__getitem__", new BuiltInBoundMethod("__getitem__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__getitem__(context, args[1]);
-            }
-        });
-        PYTHON_TUPLE_CLASS.__setattr__("__iter__", new BuiltInBoundMethod("__iter__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__iter__(context);
-            }
-        });
-    }
+    public static PythonClass PYTHON_TUPLE_CLASS = new PythonClass("tuple") {
+        {
+            addMethod(new BuiltInBoundMethod("__add__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__add__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__getitem__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__getitem__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__iter__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__iter__(context);
+                }
+            });
+        }
+    };
 
     private final List<PythonObject> list;
 

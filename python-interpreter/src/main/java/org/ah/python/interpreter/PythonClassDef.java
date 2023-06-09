@@ -13,6 +13,7 @@ public class PythonClassDef extends PythonObject {
         public PythonClassType(String name, PythonClassDef pythonClassDef) {
             super(name);
             this.pythonClassDef = pythonClassDef;
+            populateCommonMethods();
         }
 
         public void __getattr__(ThreadContext context, String name) {

@@ -23,7 +23,44 @@ public class PythonInteger extends PythonNumber {
 
     public static Map<Integer, PythonInteger> allIntegers = new HashMap<Integer, PythonInteger>();
 
-    public static PythonClass PYTHON_INTEGER_CLASS = new PythonClass("int");
+    public static PythonClass PYTHON_INTEGER_CLASS = new PythonClass("int") {
+        {
+            populateCommonMethods();
+            populateCommonNumberClassMethods(this);
+
+            addMethod(new BuiltInBoundMethod("__and__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__and__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__or__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__or__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__xor__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__xor__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__lshift__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__lshift__(context, args[1]);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__rshift__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__rshift__(context, args[1]);
+                }
+            });
+
+            addMethod(new BuiltInBoundMethod("__neg__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__neg__(context);
+                }
+            });
+        }
+    };
 
     static {
         for (int i = 0; i < positiveCache.length; i++) {
@@ -38,41 +75,8 @@ public class PythonInteger extends PythonNumber {
         THREE = positiveCache[3];
         FOUR = positiveCache[4];
         FIVE = positiveCache[5];
-
-        populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
-
-        PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInBoundMethod("__and__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__and__(context, args[1]);
-            }
-        });
-        PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInBoundMethod("__or__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__or__(context, args[1]);
-            }
-        });
-        PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInBoundMethod("__xor__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__xor__(context, args[1]);
-            }
-        });
-        PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod("__lshift__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__lshift__(context, args[1]);
-            }
-        });
-        PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod("__rshift__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__rshift__(context, args[1]);
-            }
-        });
-
-        PYTHON_INTEGER_CLASS.__setattr__("__neg__", new BuiltInBoundMethod("__neg__") {
-            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-                args[0].__neg__(context);
-            }
-        });
     }
+
 
     public static PythonInteger valueOf(String s) {
         return valueOf(Integer.parseInt(s));

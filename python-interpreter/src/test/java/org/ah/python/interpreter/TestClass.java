@@ -83,6 +83,23 @@ public class TestClass extends BaseTestClass {
     }
 
     @Test
+    public void canInvokeConstructorWithParameters() {
+        executeLines(
+            "class Cls():",
+            "    def __init__(self, x):",
+            "        print(\"Constructor invoked, x=\" + str(x))",
+            "        self._x = x",
+            "    def x(self):",
+            "        print(\"x=\" + str(self._x))",
+            "",
+            "c = Cls(5)",
+            "c.x()"
+        );
+
+        assertEquals("Constructor invoked, x=5\nx=5\n", result());
+    }
+
+    @Test
     public void canReturningSelf() {
         executeLines(
             "class Cls():",

@@ -22,7 +22,7 @@ public class SysModule extends org.ah.python.interpreter.Module {
     }
 
     {
-        this.__setattr__("exit", new BuiltInMethod("exit") {
+        addMethod(new BuiltInMethod("exit") {
             @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 if (args == null || args.length == 0) {
                     systemBridge.exit(0);

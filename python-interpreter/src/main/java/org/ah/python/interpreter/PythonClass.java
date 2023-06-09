@@ -4,15 +4,23 @@ import java.util.Map;
 
 public class PythonClass extends Scope {
 
+    public static PythonClass PYTHON_CLASS = new PythonClass();
     public static PythonClass PYTHON_INTERNAL_CLASS_NOT_DEFINED = new PythonClass("python-internal-class-not-defined");
-    public static PythonClass PYTHON_CLASS = new PythonClass("class");
 
     protected String name;
 
-    public PythonClass(String name) {
+    private PythonClass() {
         super(null, null);
+        name = "class";
+    }
+
+    public PythonClass(String name) {
+        this(PYTHON_CLASS, name);
+    }
+
+    public PythonClass(PythonClass pythonClass, String name) {
+        super(pythonClass, null);
         this.name = name;
-        populateCommonMethods();
     }
 
     public String toString() {

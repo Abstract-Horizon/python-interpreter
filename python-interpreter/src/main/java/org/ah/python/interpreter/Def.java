@@ -9,7 +9,7 @@ import java.util.Map;
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 
-public class Def extends PythonObject {
+public class Def extends Function {
 
     public static class Argument extends PythonObject {
         private String name;
@@ -41,12 +41,10 @@ public class Def extends PythonObject {
         }
     }
 
-    protected String name;
     private Argument[] args = null;
     private Argument[] argsToBeEvaluated = null;
     private Argument[] evaluatedArguments = null;
     private Scope functionScope = null;
-    private boolean instanceMethod = false;
 
     private Block block = new Block();
 
@@ -78,8 +76,7 @@ public class Def extends PythonObject {
     };
 
     public Def(String name, Argument[] args) {
-        super(new PythonMethodClass("<function " + name + ">"));
-        this.name = name;
+        super(new PythonMethodClass("<function " + name + ">"), name);
         this.args = args;
         List<Argument> argsToBeEvaluated = new ArrayList<Argument>();
         for (Argument arg : args) {
@@ -88,10 +85,6 @@ public class Def extends PythonObject {
             }
         }
         this.argsToBeEvaluated = argsToBeEvaluated.toArray(new Argument[argsToBeEvaluated.size()]);
-    }
-
-    public boolean isInstanceMethod() {
-        return instanceMethod;
     }
 
     public Block getBlock() {

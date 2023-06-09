@@ -1,17 +1,18 @@
 package org.ah.python.interpreter;
 
 import static org.ah.python.interpreter.PythonBaseException.exception;
-import static org.ah.python.interpreter.PythonClass.populateCommonContainerClassMethods;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PythonDictionary extends PythonObject {
 
-    public static PythonClass PYTHON_DICT_CLASS = new PythonClass("dict");
-    {
-        populateCommonContainerClassMethods(PYTHON_DICT_CLASS);
-    }
+    public static PythonClass PYTHON_DICT_CLASS = new PythonClass("dict") {
+        {
+            populateCommonMethods();
+            populateCommonContainerClassMethods(this);
+        }
+    };
 
     protected Map<PythonObject, PythonObject> map = new HashMap<PythonObject, PythonObject>();
 
