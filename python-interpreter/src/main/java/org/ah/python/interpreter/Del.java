@@ -1,14 +1,18 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonObject.collectionToString;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Del extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class Del implements Executable {
 
     private List<Subscript> targets = new ArrayList<Subscript>();;
 
-    public Del(List<PythonObject> targets) {
-        for (PythonObject target : targets) {
+    public Del(List<Executable> targets) {
+        for (Executable target : targets) {
             if (target instanceof Subscript) {
                 this.targets.add((Subscript)target);
             } else {
@@ -19,6 +23,11 @@ public class Del extends PythonObject {
 
     public String toString() {
         return "del " + collectionToString(targets, ",");
+    }
+
+    @Override
+    public void evaluate(ThreadContext context) {
+        throw new UnsupportedOperationException("del");
     }
 
 }

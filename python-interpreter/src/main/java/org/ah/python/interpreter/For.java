@@ -1,13 +1,15 @@
 package org.ah.python.interpreter;
 
-public class For extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class For implements Executable {
 
     private Reference target;
-    private PythonObject iter;
+    private Executable iter;
     private Block block = new Block();
     private Block elseBlock = new Block();
 
-    public For(Reference target, PythonObject iter) {
+    public For(Reference target, Executable iter) {
         this.target = target;
         this.iter = iter;
     }
@@ -20,14 +22,14 @@ public class For extends PythonObject {
         return elseBlock;
     }
 
-    private ThreadContext.Executable forContinuation = new ThreadContext.Executable() {
+    private Executable forContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.continuation(forContinuationNext);
             context.a.__next__(context); // Keep iterator on the stack
         }
     };
 
-    private ThreadContext.Executable forContinuationNext = new ThreadContext.Executable() {
+    private Executable forContinuationNext = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject value = context.popData();
 
@@ -41,7 +43,7 @@ public class For extends PythonObject {
         }
     };
 
-    private ThreadContext.Executable forContinuation2 = new ThreadContext.Executable() {
+    private Executable forContinuation2 = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.continuation(forContinuation2Next);
             PythonObject iter = context.a;
@@ -49,7 +51,7 @@ public class For extends PythonObject {
         }
     };
 
-    private ThreadContext.Executable forContinuation2Next = new ThreadContext.Executable() {
+    private Executable forContinuation2Next = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject value = context.popData();
 

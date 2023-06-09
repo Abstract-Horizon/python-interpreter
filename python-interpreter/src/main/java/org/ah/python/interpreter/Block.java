@@ -3,13 +3,15 @@ package org.ah.python.interpreter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Block implements ThreadContext.Executable {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class Block implements Executable {
 
     private static class BlockEntry {
-        protected ThreadContext.Executable executable;
+        protected Executable executable;
         protected int line;
 
-        protected BlockEntry(ThreadContext.Executable executable, int line) {
+        protected BlockEntry(Executable executable, int line) {
             this.executable = executable;
             this.line = line;
         }
@@ -17,7 +19,7 @@ public class Block implements ThreadContext.Executable {
 
     private List<BlockEntry> statements = new ArrayList<BlockEntry>();
 
-    private ThreadContext.Executable twoStatementsContinuation = new ThreadContext.Executable() {
+    private Executable twoStatementsContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 2) {
                 context.continuation(threeStatementsContinuation);
@@ -30,7 +32,7 @@ public class Block implements ThreadContext.Executable {
 
     };
 
-    private ThreadContext.Executable threeStatementsContinuation = new ThreadContext.Executable() {
+    private Executable threeStatementsContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (statements.size() > 3) {
                 context.continuation(new MoreStatementsContinuation());
@@ -44,7 +46,7 @@ public class Block implements ThreadContext.Executable {
 
     };
 
-    private class MoreStatementsContinuation implements ThreadContext.Executable {
+    private class MoreStatementsContinuation implements Executable {
         private int ptr = 2;
 
         @Override public void evaluate(ThreadContext context) {
@@ -57,7 +59,7 @@ public class Block implements ThreadContext.Executable {
         }
     };
 
-    private ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
+    private Executable closeScopeContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.currentScope.close();
         }
@@ -73,7 +75,7 @@ public class Block implements ThreadContext.Executable {
         this.closeScope = closeScope;
     }
 
-    public void addStatement(ThreadContext.Executable executable, int line) {
+    public void addStatement(Executable executable, int line) {
         statements.add(new BlockEntry(executable, line));
     }
 

@@ -1,13 +1,14 @@
 package org.ah.python.interpreter;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
 
-public class If extends PythonObject {
+public class If implements Executable {
 
-    private PythonObject test;
+    private Executable test;
     private Block block = new Block();
     private Block elseBlock = new Block();
 
-    public If(PythonObject test) {
+    public If(Executable test) {
         this.test = test;
     }
 
@@ -19,7 +20,7 @@ public class If extends PythonObject {
         return elseBlock;
     }
 
-    private ThreadContext.Executable ifContinuation = new ThreadContext.Executable() {
+    private Executable ifContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject a = context.popData();
             if (a instanceof PythonBoolean) {
@@ -35,7 +36,7 @@ public class If extends PythonObject {
         }
     };
 
-    private ThreadContext.Executable ifBoolContinuation = new ThreadContext.Executable() {
+    private Executable ifBoolContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject a = context.popData();
 

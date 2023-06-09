@@ -10,27 +10,27 @@ public class PythonBoolean extends PythonNumber {
 
     static {
         populateCommonNumberClassMethods(PYTHON_BOOL_CLASS);
-        PYTHON_BOOL_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
+        PYTHON_BOOL_CLASS.__setattr__("__and__", new BuiltInBoundMethod("__and__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__and__(context, args[1]);
             }
         });
-        PYTHON_BOOL_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
+        PYTHON_BOOL_CLASS.__setattr__("__or__", new BuiltInBoundMethod("__or__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__or__(context, args[1]);
             }
         });
-        PYTHON_BOOL_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
+        PYTHON_BOOL_CLASS.__setattr__("__xor__", new BuiltInBoundMethod("__xor__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__xor__(context, args[1]);
             }
         });
-        PYTHON_BOOL_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
+        PYTHON_BOOL_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod("__lshift__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__lshift__(context, args[1]);
             }
         });
-        PYTHON_BOOL_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
+        PYTHON_BOOL_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod("__rshift__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__rshift__(context, args[1]);
             }
@@ -46,8 +46,8 @@ public class PythonBoolean extends PythonNumber {
     private boolean value;
 
     private PythonBoolean(boolean value) {
+        super(PYTHON_BOOL_CLASS);
         this.value = value;
-        this.pythonClass = PYTHON_BOOL_CLASS;
     }
 
     public static PythonBoolean valueOf(boolean value) {

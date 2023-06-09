@@ -1,5 +1,7 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED;
+
 import org.ah.python.modules.BuiltInFunctions;
 
 public class Module extends Scope {
@@ -7,11 +9,7 @@ public class Module extends Scope {
     private Block block = new Block();
 
     public Module() {
-        super(BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE);
-    }
-
-    public Module(Scope parentScope) {
-        super(parentScope);
+        super(PYTHON_INTERNAL_CLASS_NOT_DEFINED, BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE);
     }
 
     public Block getBlock() {

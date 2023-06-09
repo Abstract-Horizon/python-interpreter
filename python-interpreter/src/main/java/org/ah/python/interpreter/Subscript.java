@@ -2,17 +2,21 @@ package org.ah.python.interpreter;
 
 public class Subscript extends PythonObject implements Assignable {
 
+    public static PythonClass PYTHON_SUBSCRIPT_CLASS = new PythonClass("subscript");
+
     private PythonObject scope;
     private PythonObject from;
     private PythonObject to;
 
     public Subscript(PythonObject scope, PythonObject index) {
+        super(PYTHON_SUBSCRIPT_CLASS);
         this.scope = scope;
         this.from = index;
         this.to = index;
     }
 
     public Subscript(PythonObject scope, PythonObject from, PythonObject to) {
+        super(PYTHON_SUBSCRIPT_CLASS);
         this.scope = scope;
         this.from = from;
         this.to = to;

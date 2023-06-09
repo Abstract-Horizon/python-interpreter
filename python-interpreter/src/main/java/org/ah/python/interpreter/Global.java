@@ -1,9 +1,13 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonObject.collectionToString;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Global extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class Global implements Executable {
 
     private List<PythonString> vars = new ArrayList<PythonString>();
 
@@ -24,8 +28,13 @@ public class Global extends PythonObject {
 //        }
 //        return PythonNone.NONE;
 //    }
+    @Override
+    public void evaluate(ThreadContext context) {
+        throw new UnsupportedOperationException("global");
+    }
 
     public String toString() {
         return "global " + collectionToString(vars, ", ");
     }
+
 }

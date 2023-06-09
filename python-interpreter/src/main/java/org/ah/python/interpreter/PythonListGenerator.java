@@ -2,17 +2,20 @@ package org.ah.python.interpreter;
 
 import java.util.List;
 
-public class PythonListGenerator extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class PythonListGenerator extends PythonObject implements Executable {
 
     private PythonObject[] elements;
     private PythonClass targetPythonClass;
 
-    public PythonListGenerator(final List<PythonObject> elements, PythonClass pythonClass) {
+    public PythonListGenerator(final List<Executable> elements, PythonClass pythonClass) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.elements = elements.toArray(new PythonObject[elements.size()]);
         this.targetPythonClass = pythonClass;
     }
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private Executable continuation = new Executable() {
 
         @Override public void evaluate(ThreadContext context) {
             PythonSequence returnValue;

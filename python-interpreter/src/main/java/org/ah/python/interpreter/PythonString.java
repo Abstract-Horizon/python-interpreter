@@ -11,27 +11,27 @@ public class PythonString extends PythonObject {
     public static PythonClass PYTHON_STRING_CLASS = new PythonClass("str");
 
     static {
-        PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
+        PYTHON_STRING_CLASS.__setattr__("__add__", new BuiltInBoundMethod("__add__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__add__(context, args[1]);
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
+        PYTHON_STRING_CLASS.__setattr__("__len__", new BuiltInBoundMethod("__len__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__len__(context);
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInBoundMethod() {
+        PYTHON_STRING_CLASS.__setattr__("__int__", new BuiltInBoundMethod("__int__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__int__(context);
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInBoundMethod() {
+        PYTHON_STRING_CLASS.__setattr__("__float__", new BuiltInBoundMethod("__float__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__float__(context);
             }
         });
-        PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInBoundMethod() {
+        PYTHON_STRING_CLASS.__setattr__("__bool__", new BuiltInBoundMethod("__bool__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__bool__(context);
             }
@@ -45,8 +45,8 @@ public class PythonString extends PythonObject {
     }
 
     private PythonString(String value) {
+        super(PYTHON_STRING_CLASS);
         this.value = value;
-        this.pythonClass = PYTHON_STRING_CLASS;
     }
 
     public String asString() {

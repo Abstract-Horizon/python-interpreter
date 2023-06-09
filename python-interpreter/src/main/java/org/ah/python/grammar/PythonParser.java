@@ -14,12 +14,12 @@ public class PythonParser {
     private Block currentBlock;
     private OperatorType operatorType;
     private CmpopType cmpopType;
-    private PythonObject currentObject;
+    private ThreadContext.Executable currentObject;
     private Def.Argument currentArgument;
 
     private List<String> stringList = new ArrayList<String>();
     private Import currentImport;
-    private List<PythonObject> currentList;
+    private List<ThreadContext.Executable> currentList;
 
     private Module module;
     private boolean trailingComma = false;
@@ -28,11 +28,11 @@ public class PythonParser {
 
     public void setModule(Module module) { this.module = module; }
 
-    private void addStatement(Block block, PythonObject statement) {
+    private void addStatement(Block block, ThreadContext.Executable statement) {
         block.addStatement(statement, scanner.getStartLine());
     }
 
-    private void addStatement(PythonObject statement) {
+    private void addStatement(ThreadContext.Executable statement) {
         currentBlock.addStatement(statement, scanner.getStartLine());
     }
 
@@ -224,7 +224,7 @@ public class PythonParser {
          String defName = t.toString(); 
         parameters();
         
-                 for (PythonObject arg : currentList) {
+                 for (ThreadContext.Executable arg : currentList) {
                      if (!(arg instanceof Def.Argument)) {
                          throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
                      }
@@ -261,7 +261,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "LPAREN");
         }
-         currentList = new ArrayList<PythonObject>(); 
+         currentList = new ArrayList<ThreadContext.Executable>(); 
         if (((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_NAME)) {
             typedargslist();
         } 
@@ -276,7 +276,7 @@ public class PythonParser {
     public void typedargslist() throws ParserError {
         if ((id == PythonScanner.TOKEN_NAME)) {
             tfpdef();
-             List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentArgument); 
+             List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentArgument); 
             if ((id == PythonScanner.TOKEN_EQ)) {
                 if (id == PythonScanner.TOKEN_EQ) {
                     next(); // <-- here 2
@@ -649,7 +649,7 @@ public class PythonParser {
     // public expr_stmt<null> = testlist_star_expr CODE (.k=1.) augassign (.k=1.) yield_expr CODE|testlist CODE|CODE {EQ (.k=1.) yield_expr CODE|testlist_star_expr CODE} CODE;
     public void expr_stmt() throws ParserError {
         testlist_star_expr();
-         List<PythonObject> targets = currentList; 
+         List<ThreadContext.Executable> targets = currentList; 
         if (((id >= 34) && (id <=45))) {
             augassign();
             if ((id == 17)) {
@@ -663,7 +663,7 @@ public class PythonParser {
                             }
                             
                             for (int i = 0; i < targets.size(); i++) {
-                                PythonObject target = targets.get(i);
+                                ThreadContext.Executable target = targets.get(i);
                                 // PythonObject value = currentList.get(i);
                                 // BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
                                 
@@ -672,7 +672,7 @@ public class PythonParser {
                                 }
                                 
                                 // TODO Add this!!!
-                                // PythonObject assign = Assign.createAssignment(target, binaryOp, true);
+                                // ThreadContext.Executable assign = Assign.createAssignment(target, binaryOp, true);
                                 // currentSuite.asList().add(assign);
                             }
                          
@@ -682,7 +682,7 @@ public class PythonParser {
         } else if ((id == PythonScanner.TOKEN_EQ) || (id == PythonScanner.TOKEN_SEMICOLON) || (id == PythonScanner.TOKEN_NEWLINE)) {
             
                          if (targets.size() > 1) {
-                             PythonObject tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
+                             ThreadContext.Executable tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
                              targets.clear();
                              targets.add(tuple);
                          }
@@ -702,7 +702,7 @@ public class PythonParser {
                             if (currentList.size() == 1) {
                                 targets.add(currentList.get(0));
                             } else {
-                                PythonObject tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
+                                ThreadContext.Executable tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
                                 targets.add(tuple);
                             }
                             currentList.clear();
@@ -718,7 +718,7 @@ public class PythonParser {
                             targets.remove(targets.size() - 1);
                             targets.add(assign);
                         }
-                        PythonObject lastTarget = targets.get(0);
+                        ThreadContext.Executable lastTarget = targets.get(0);
                         if (lastTarget instanceof Assign) {
 	                        ((Assign)lastTarget).setLastInstruction(true);
 	                    }
@@ -737,7 +737,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
+         List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -1358,7 +1358,7 @@ public class PythonParser {
             throw new ParserError(t, nt, "\"for\"");
         }
         exprlist();
-         PythonObject target = currentObject; 
+         ThreadContext.Executable target = currentObject; 
         if (id == 22) {
             next(); // <-- here 2
         } else {
@@ -1575,9 +1575,9 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "\"if\"");
                 }
-                 PythonObject ifExpression = currentObject; 
+                 ThreadContext.Executable ifExpression = currentObject; 
                 or_test();
-                 PythonObject condition = currentObject; 
+                 ThreadContext.Executable condition = currentObject; 
                 if (id == 13) {
                     next(); // <-- here 2
                 } else {
@@ -1644,7 +1644,7 @@ public class PythonParser {
     // public or_test<null> = and_test CODE {"or" and_test CODE} CODE;
     public void or_test() throws ParserError {
         and_test();
-         List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); 
+         List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); 
         while ((id == 30)) {
             if (id == 30) {
                 next(); // <-- here 2
@@ -1660,7 +1660,7 @@ public class PythonParser {
     // public and_test<null> = not_test CODE {"and" not_test CODE} CODE;
     public void and_test() throws ParserError {
         not_test();
-         List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); 
+         List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); 
         while ((id == 29)) {
             if (id == 29) {
                 next(); // <-- here 2
@@ -1694,9 +1694,9 @@ public class PythonParser {
     public void comparison() throws ParserError {
         star_expr();
         
-                       PythonObject left = currentObject;
+                       ThreadContext.Executable left = currentObject;
                        List<CmpopType> ops = new ArrayList<CmpopType>();
-                       List<PythonObject> operands = new ArrayList<PythonObject>();
+                       List<ThreadContext.Executable> operands = new ArrayList<ThreadContext.Executable>();
                    
         while (((id >= 22) && (id <=23)) || (id == 28) || ((id >= PythonScanner.TOKEN_EQUAL) && (id <=PythonScanner.TOKEN_LT))) {
             comp_op();
@@ -1843,7 +1843,7 @@ public class PythonParser {
     // public expr<null> = xor_expr CODE {OR xor_expr CODE};
     public void expr() throws ParserError {
         xor_expr();
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         while ((id == PythonScanner.TOKEN_OR)) {
             if (id == PythonScanner.TOKEN_OR) {
                 next(); // <-- here 2
@@ -1858,7 +1858,7 @@ public class PythonParser {
     // public xor_expr<null> = and_expr CODE {XOR and_expr CODE};
     public void xor_expr() throws ParserError {
         and_expr();
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         while ((id == PythonScanner.TOKEN_XOR)) {
             if (id == PythonScanner.TOKEN_XOR) {
                 next(); // <-- here 2
@@ -1873,7 +1873,7 @@ public class PythonParser {
     // public and_expr<null> = shift_expr CODE {AND shift_expr CODE};
     public void and_expr() throws ParserError {
         shift_expr();
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         while ((id == PythonScanner.TOKEN_AND)) {
             if (id == PythonScanner.TOKEN_AND) {
                 next(); // <-- here 2
@@ -1888,7 +1888,7 @@ public class PythonParser {
     // public shift_expr<null> = arith_expr CODE {CODE (.k=1.) LSHIFT CODE|RSHIFT CODE arith_expr CODE};
     public void shift_expr() throws ParserError {
         arith_expr();
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         while (((id >= PythonScanner.TOKEN_LSHIFT) && (id <=PythonScanner.TOKEN_RSHIFT))) {
              OperatorType op; 
             if ((id == PythonScanner.TOKEN_LSHIFT)) {
@@ -1922,7 +1922,7 @@ public class PythonParser {
     // public arith_expr<null> = term CODE {CODE (.k=1.) PLUS CODE|MINUS CODE term CODE};
     public void arith_expr() throws ParserError {
         term();
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         while (((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS))) {
              OperatorType op; 
             if ((id == PythonScanner.TOKEN_PLUS)) {
@@ -1956,7 +1956,7 @@ public class PythonParser {
     // public term<null> = factor CODE {CODE (.k=1.) STAR CODE|SLASH CODE|MOD CODE|SLASHSLASH CODE factor CODE};
     public void term() throws ParserError {
         factor();
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         while ((id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_MOD) && (id <=PythonScanner.TOKEN_SLASHSLASH))) {
              OperatorType op; 
             if ((id == PythonScanner.TOKEN_STAR)) {
@@ -2053,7 +2053,7 @@ public class PythonParser {
     // public power<null> = atom CODE {(.k=1.) LPAREN CODE [arglist] RPAREN CODE|LBRACK subscriptlist RBRACK CODE|DOT NAME CODE} CODE [STARSTAR factor CODE];
     public void power() throws ParserError {
         atom();
-         PythonObject atom = currentObject; 
+         ThreadContext.Executable atom = currentObject; 
         while ((id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_DOT)) {
             if ((id == PythonScanner.TOKEN_LPAREN)) {
                 if (id == PythonScanner.TOKEN_LPAREN) {
@@ -2061,7 +2061,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "LPAREN");
                 }
-                 currentList = new ArrayList<PythonObject>(); // since arglist is optional - to ensure empty list! 
+                 currentList = new ArrayList<ThreadContext.Executable>(); // since arglist is optional - to ensure empty list! 
                 if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || ((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                     arglist();
                 } 
@@ -2070,7 +2070,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "RPAREN");
                 }
-                 currentObject = new Call(atom, currentList.toArray(new PythonObject[currentList.size()])); atom = currentObject; 
+                 currentObject = new Call(atom, currentList.toArray(new ThreadContext.Executable[currentList.size()])); atom = currentObject; 
             } else if ((id == PythonScanner.TOKEN_LBRACK)) {
                 if (id == PythonScanner.TOKEN_LBRACK) {
                     next(); // <-- here 2
@@ -2100,7 +2100,7 @@ public class PythonParser {
                 throw new ParserError(t, "LPAREN,LBRACK,DOT");
             }
         } // while 
-         PythonObject left = currentObject; 
+         ThreadContext.Executable left = currentObject; 
         if ((id == PythonScanner.TOKEN_STARSTAR)) {
             if (id == PythonScanner.TOKEN_STARSTAR) {
                 next(); // <-- here 2
@@ -2152,7 +2152,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "LBRACK");
             }
-             currentList = new ArrayList<PythonObject>(); // just in case we don't get to testlist_comp 
+             currentList = new ArrayList<ThreadContext.Executable>(); // just in case we don't get to testlist_comp 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 testlist_comp();
             } 
@@ -2172,10 +2172,10 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "LKBRACK");
             }
-             Map<PythonObject, PythonObject> map = new LinkedHashMap<PythonObject, PythonObject>(); 
+             Map<ThreadContext.Executable, ThreadContext.Executable> map = new LinkedHashMap<ThreadContext.Executable, ThreadContext.Executable>(); 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 PythonObject key = currentObject; PythonObject value = null; 
+                 ThreadContext.Executable key = currentObject; ThreadContext.Executable value = null; 
                 if ((id == PythonScanner.TOKEN_COLON)) {
                     if (id == PythonScanner.TOKEN_COLON) {
                         next(); // <-- here 2
@@ -2214,7 +2214,7 @@ public class PythonParser {
                 }
             } 
             
-               currentObject = new PythonDictGenerator(map); 
+               currentObject = new PythonDictGenerator(map);
                scanner.popNotInStatement();
              
             if (id == PythonScanner.TOKEN_RKBRACK) {
@@ -2315,7 +2315,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
+         List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); 
         if ((id == 14)) {
             comp_for();
              throw new UnsupportedOperationException("comp_for"); 
@@ -2360,7 +2360,7 @@ public class PythonParser {
 
     // public subscript<null> = (.k=1.) test CODE|CODE [test CODE] COLON [test CODE] [sliceop] CODE;
     public void subscript() throws ParserError {
- PythonObject target = currentObject; 
+ ThreadContext.Executable target = currentObject; 
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             test();
              
@@ -2368,8 +2368,8 @@ public class PythonParser {
                   
         } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_COLON) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
              
-                   PythonObject from = null;
-                   PythonObject to = null;
+                   ThreadContext.Executable from = null;
+                   ThreadContext.Executable to = null;
                 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
@@ -2428,7 +2428,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, "'None','True','False',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
         }
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
+         List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -2453,7 +2453,7 @@ public class PythonParser {
     // public testlist<null> = test CODE {COMMA [test CODE]} CODE;
     public void testlist() throws ParserError {
         test();
-         List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); 
+         List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); 
         while ((id == PythonScanner.TOKEN_COMMA)) {
             if (id == PythonScanner.TOKEN_COMMA) {
                 next(); // <-- here 2
@@ -2480,14 +2480,14 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "NAME");
         }
-         String className = t.toString(); PythonObject[] parents = null; 
+         String className = t.toString(); ThreadContext.Executable[] parents = null; 
         if ((id == PythonScanner.TOKEN_LPAREN)) {
             if (id == PythonScanner.TOKEN_LPAREN) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "LPAREN");
             }
-             currentList = new ArrayList<PythonObject>(); 
+             currentList = new ArrayList<ThreadContext.Executable>(); 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || ((id >= PythonScanner.TOKEN_STAR) && (id <=PythonScanner.TOKEN_STARSTAR)) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 arglist();
             } 
@@ -2497,7 +2497,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "RPAREN");
             }
             
-                      parents = currentList.toArray(new PythonObject[currentList.size()]);
+                      parents = currentList.toArray(new ThreadContext.Executable[currentList.size()]);
                   
         } 
         if (id == PythonScanner.TOKEN_COLON) {
@@ -2516,7 +2516,7 @@ public class PythonParser {
     // public arglist<null> = (.k=1.) CODE argument CODE {COMMA argument CODE} [(.k=1.) STAR test {COMMA argument} [COMMA STARSTAR test] CODE|STARSTAR test CODE] CODE|STAR test {COMMA argument} [COMMA STARSTAR test] CODE|STARSTAR test CODE;
     public void arglist() throws ParserError {
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
-             List<PythonObject> args = new ArrayList<PythonObject>(); 
+             List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); 
             argument();
              args.add(currentObject); 
             while ((id == PythonScanner.TOKEN_COMMA)) {

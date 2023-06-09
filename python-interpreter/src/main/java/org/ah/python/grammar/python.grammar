@@ -111,12 +111,12 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     private Block currentBlock;
     private OperatorType operatorType;
     private CmpopType cmpopType;
-    private PythonObject currentObject;
+    private ThreadContext.Executable currentObject;
     private Def.Argument currentArgument;
 
     private List<String> stringList = new ArrayList<String>();
     private Import currentImport;
-    private List<PythonObject> currentList;
+    private List<ThreadContext.Executable> currentList;
 
     private Module module;
     private boolean trailingComma = false;
@@ -125,11 +125,11 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     public void setModule(Module module) { this.module = module; }
 
-    private void addStatement(Block block, PythonObject statement) {
+    private void addStatement(Block block, ThreadContext.Executable statement) {
         block.addStatement(statement, scanner.getStartLine());
     }
 
-    private void addStatement(PythonObject statement) {
+    private void addStatement(ThreadContext.Executable statement) {
         currentBlock.addStatement(statement, scanner.getStartLine());
     }
 %>
@@ -161,7 +161,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     funcdef = "def" NAME <% String defName = t.toString(); %>
               parameters 
               <%
-                 for (PythonObject arg : currentList) {
+                 for (ThreadContext.Executable arg : currentList) {
                      if (!(arg instanceof Def.Argument)) {
                          throw new IllegalArgumentException("Expected a varibale for function def argument but got " + arg);
                      }
@@ -178,10 +178,10 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               %>
             ;
 
-    parameters = LPAREN <% currentList = new ArrayList<PythonObject>(); %> [ typedargslist ] RPAREN
+    parameters = LPAREN <% currentList = new ArrayList<ThreadContext.Executable>(); %> [ typedargslist ] RPAREN
                ;
 
-    typedargslist = ( tfpdef <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentArgument); %>
+    typedargslist = ( tfpdef <% List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentArgument); %>
                         [ EQ test <% throw new UnsupportedOperationException("named parameters"); %> ] 
                         { COMMA tfpdef <% args.add(currentArgument); %>
                             [ EQ test <% throw new UnsupportedOperationException("named parameters"); %> ]
@@ -240,7 +240,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                  | assert_stmt    <% throw new UnsupportedOperationException("assert_stmt"); %>
                  );
 
-    expr_stmt = testlist_star_expr <% List<PythonObject> targets = currentList; %>
+    expr_stmt = testlist_star_expr <% List<ThreadContext.Executable> targets = currentList; %>
                 ( augassign
                     ( yield_expr <% throw new UnsupportedOperationException("yield_expr"); %>
                     | testlist
@@ -250,7 +250,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             }
                             
                             for (int i = 0; i < targets.size(); i++) {
-                                PythonObject target = targets.get(i);
+                                ThreadContext.Executable target = targets.get(i);
                                 // PythonObject value = currentList.get(i);
                                 // BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
                                 
@@ -259,14 +259,14 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                                 }
                                 
                                 // TODO Add this!!!
-                                // PythonObject assign = Assign.createAssignment(target, binaryOp, true);
+                                // ThreadContext.Executable assign = Assign.createAssignment(target, binaryOp, true);
                                 // currentSuite.asList().add(assign);
                             }
                          %>
                     )
                 |   <%
                          if (targets.size() > 1) {
-                             PythonObject tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
+                             ThreadContext.Executable tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
                              targets.clear();
                              targets.add(tuple);
                          }
@@ -278,7 +278,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             if (currentList.size() == 1) {
                                 targets.add(currentList.get(0));
                             } else {
-                                PythonObject tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
+                                ThreadContext.Executable tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
                                 targets.add(tuple);
                             }
                             currentList.clear();
@@ -292,7 +292,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             targets.remove(targets.size() - 1);
                             targets.add(assign);
                         }
-                        PythonObject lastTarget = targets.get(0);
+                        ThreadContext.Executable lastTarget = targets.get(0);
                         if (lastTarget instanceof Assign) {
 	                        ((Assign)lastTarget).setLastInstruction(true);
 	                    }
@@ -304,7 +304,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     testlist_star_expr = ( test
                          | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
                          )
-                         <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %> 
+                         <% List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); %> 
                          { COMMA 
                              [ test <% args.add(currentObject); %>
                              | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
@@ -438,7 +438,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    <% currentBlock = savedBlock; addStatement(whle); %>
                ;
 
-    for_stmt = "for" exprlist <% PythonObject target = currentObject; %>
+    for_stmt = "for" exprlist <% ThreadContext.Executable target = currentObject; %>
                "in" testlist COLON 
                    <%
                       if (!(target instanceof Reference)) {
@@ -479,8 +479,8 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     test = (or_test
                [ 
-                   "if" <% PythonObject ifExpression = currentObject; %> 
-                   or_test <% PythonObject condition = currentObject; %>
+                   "if" <% ThreadContext.Executable ifExpression = currentObject; %> 
+                   or_test <% ThreadContext.Executable condition = currentObject; %>
                    "else"
                    test <% currentObject = new TernaryOperator(condition, ifExpression, currentObject); %> 
                ]
@@ -493,12 +493,12 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     
     lambdef_nocond = "lambda" [varargslist] COLON test_nocond;
 
-    or_test = and_test        <% List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); %>
+    or_test = and_test        <% List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); %>
             { "or" and_test   <% list.add(currentObject); %>
             }                 <% if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.Or); } %>
             ;
 
-    and_test = not_test       <% List<PythonObject> list = new ArrayList<PythonObject>(); list.add(currentObject); %>
+    and_test = not_test       <% List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); %>
              { "and" not_test <% list.add(currentObject); %>
              }                <% if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.And); } %>
              ;
@@ -509,9 +509,9 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     comparison = star_expr 
                    <%
-                       PythonObject left = currentObject;
+                       ThreadContext.Executable left = currentObject;
                        List<CmpopType> ops = new ArrayList<CmpopType>();
-                       List<PythonObject> operands = new ArrayList<PythonObject>();
+                       List<ThreadContext.Executable> operands = new ArrayList<ThreadContext.Executable>();
                    %>
                { comp_op <% ops.add(cmpopType); %> star_expr <% operands.add(currentObject); %>
                }
@@ -565,22 +565,22 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     star_expr = [STAR <% throw new UnsupportedOperationException("star_expr"); %> ] expr;
 
-    expr = xor_expr    <% PythonObject left = currentObject; %>
+    expr = xor_expr    <% ThreadContext.Executable left = currentObject; %>
          { OR xor_expr <% currentObject = new Call(new Reference(left, "__or__"), currentObject); %>
          }
          ;
 
-    xor_expr = and_expr     <% PythonObject left = currentObject; %>
+    xor_expr = and_expr     <% ThreadContext.Executable left = currentObject; %>
              { XOR and_expr <% currentObject = new Call(new Reference(left, "__xor__"), currentObject); %>
              }
              ;
 
-    and_expr = shift_expr     <% PythonObject left = currentObject; %>
+    and_expr = shift_expr     <% ThreadContext.Executable left = currentObject; %>
              { AND shift_expr <% currentObject = new Call(new Reference(left, "__and__"), currentObject); %>
              }
              ;
 
-    shift_expr = arith_expr    <% PythonObject left = currentObject; %>
+    shift_expr = arith_expr    <% ThreadContext.Executable left = currentObject; %>
                { <% OperatorType op; %> 
                    ( LSHIFT <% op = OperatorType.LShift; %> 
                    | RSHIFT <% op = OperatorType.RShift; %> 
@@ -594,7 +594,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                               %>
                };
 
-    arith_expr = term   <% PythonObject left = currentObject; %>
+    arith_expr = term   <% ThreadContext.Executable left = currentObject; %>
                { <% OperatorType op; %> 
                    ( PLUS  <% op = OperatorType.Add; %> 
                    | MINUS <% op = OperatorType.Sub; %> 
@@ -608,7 +608,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                         %>
                };
 
-    term = factor <% PythonObject left = currentObject; %>
+    term = factor <% ThreadContext.Executable left = currentObject; %>
          {  <% OperatorType op; %> 
              ( STAR       <% op = OperatorType.Mult; %> 
              | SLASH      <% op = OperatorType.Div; %> 
@@ -645,16 +645,16 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
            | 
            power;
 
-    power = atom <% PythonObject atom = currentObject; %>
-            { LPAREN   <% currentList = new ArrayList<PythonObject>(); // since arglist is optional - to ensure empty list! %> 
+    power = atom <% ThreadContext.Executable atom = currentObject; %>
+            { LPAREN   <% currentList = new ArrayList<ThreadContext.Executable>(); // since arglist is optional - to ensure empty list! %> 
               [ arglist ] 
-              RPAREN   <% currentObject = new Call(atom, currentList.toArray(new PythonObject[currentList.size()])); atom = currentObject; %>
+              RPAREN   <% currentObject = new Call(atom, currentList.toArray(new ThreadContext.Executable[currentList.size()])); atom = currentObject; %>
             | LBRACK 
               subscriptlist 
               RBRACK   <% atom = currentObject; %>
             | DOT NAME <% currentObject = new Reference(atom, PythonString.valueOf(t.toString())); atom = currentObject; %>
             }
-            <% PythonObject left = currentObject; %>
+            <% ThreadContext.Executable left = currentObject; %>
             [ STARSTAR factor <% currentObject = new Call(new Reference(left, "__pow__"), currentObject); left = currentObject; %>
             ]
           ;
@@ -673,7 +673,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
              <% scanner.popNotInStatement(); %>  RPAREN 
            | <% scanner.pushNotInStatement(); %>
              LBRACK
-             <% currentList = new ArrayList<PythonObject>(); // just in case we don't get to testlist_comp %>
+             <% currentList = new ArrayList<ThreadContext.Executable>(); // just in case we don't get to testlist_comp %>
                  [ testlist_comp ] 
              <% 
                 currentObject = new PythonListGenerator(currentList,  PythonList.PYTHON_LIST_CLASS);
@@ -682,8 +682,8 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
              RBRACK
            | <% scanner.pushNotInStatement(); %>
              LKBRACK
-                 <% Map<PythonObject, PythonObject> map = new LinkedHashMap<PythonObject, PythonObject>(); %>
-                 [ test <% PythonObject key = currentObject; PythonObject value = null; %>
+                 <% Map<ThreadContext.Executable, ThreadContext.Executable> map = new LinkedHashMap<ThreadContext.Executable, ThreadContext.Executable>(); %>
+                 [ test <% ThreadContext.Executable key = currentObject; ThreadContext.Executable value = null; %>
                      [ COLON test <% value = currentObject; %> ]
                      <% map.put(key, value); %> 
                      ( comp_for <% throw new UnsupportedOperationException("comp_for"); %>
@@ -744,7 +744,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     testlist_comp = ( test 
                     | star_expr         <% throw new UnsupportedOperationException("star_expr"); %>
                     )
-                    <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+                    <% List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); %>
                     ( comp_for          <% throw new UnsupportedOperationException("comp_for"); %>
                     | 
                         { COMMA <% trailingComma = true; %>
@@ -763,14 +763,14 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                   } 
                   ;
 
-    subscript = <% PythonObject target = currentObject; %> 
+    subscript = <% ThreadContext.Executable target = currentObject; %> 
               ( test 
                   <% 
                       currentObject = new Call(new Reference(target, "__getitem__"), currentObject);
                   %>
               | <% 
-                   PythonObject from = null;
-                   PythonObject to = null;
+                   ThreadContext.Executable from = null;
+                   ThreadContext.Executable to = null;
                 %>
                   [ test <% from = currentObject; %> ] 
                   COLON 
@@ -796,7 +796,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     exprlist = ( expr 
                | star_expr <% throw new UnsupportedOperationException("star_expr"); %>
-               ) <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+               ) <% List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); %>
                { COMMA
                  [ expr <% args.add(currentObject); %>
                     | star_expr <% throw new UnsupportedOperationException("star_expr"); %> ] 
@@ -804,7 +804,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                <% currentList = args; %>
                ;
 
-    testlist = test <% List<PythonObject> args = new ArrayList<PythonObject>(); args.add(currentObject); %>
+    testlist = test <% List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); args.add(currentObject); %>
               { COMMA
                   [ test <% args.add(currentObject); %> 
                   ] 
@@ -812,12 +812,12 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               <% currentList = args; %>
               ;
 
-    classdef = "class" NAME <% String className = t.toString(); PythonObject[] parents = null; %>
-              [ LPAREN <% currentList = new ArrayList<PythonObject>(); %>
+    classdef = "class" NAME <% String className = t.toString(); ThreadContext.Executable[] parents = null; %>
+              [ LPAREN <% currentList = new ArrayList<ThreadContext.Executable>(); %>
                   [ arglist ]
                 RPAREN 
                   <%
-                      parents = currentList.toArray(new PythonObject[currentList.size()]);
+                      parents = currentList.toArray(new ThreadContext.Executable[currentList.size()]);
                   %>
               ] 
               COLON 
@@ -830,7 +830,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               ;
 
     arglist = 
-            ( <% List<PythonObject> args = new ArrayList<PythonObject>(); %>
+            ( <% List<ThreadContext.Executable> args = new ArrayList<ThreadContext.Executable>(); %>
               argument           <% args.add(currentObject); %>
                 { COMMA argument <% args.add(currentObject); %>
                 } 

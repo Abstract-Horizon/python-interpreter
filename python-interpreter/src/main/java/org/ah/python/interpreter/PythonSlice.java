@@ -2,6 +2,8 @@ package org.ah.python.interpreter;
 
 public class PythonSlice extends PythonObject {
 
+    public static PythonClass PYTHON_SLICE_CLASS = new PythonClass("slice");
+
     private int from = 0;
     private int to = -1;
     private int step;
@@ -36,6 +38,7 @@ public class PythonSlice extends PythonObject {
 
 
     protected PythonSlice() {
+        super(PYTHON_SLICE_CLASS);
     }
 
     public int getFrom() {

@@ -1,6 +1,13 @@
 package org.ah.python.interpreter;
 
-public class Continue extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class Continue implements Executable {
 
     public String toString() { return "continue"; }
+
+    @Override
+    public void evaluate(ThreadContext context) {
+        throw new UnsupportedOperationException("continue");
+    }
 }

@@ -1,14 +1,16 @@
 package org.ah.python.interpreter;
 
-public class Return extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
 
-    private PythonObject ret;
+public class Return implements Executable {
 
-    public Return(PythonObject ret) {
+    private Executable ret;
+
+    public Return(Executable ret) {
         this.ret = ret;
     }
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private Executable continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject returnValue = context.popData();
             context.currentScope.close();

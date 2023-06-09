@@ -23,8 +23,8 @@ public class PythonFloat extends PythonNumber {
     protected double value;
 
     protected PythonFloat(double value) {
+        super(PYTHON_FLOAT_CLASS);
         this.value = value;
-        this.pythonClass = PYTHON_FLOAT_CLASS;
     }
 
     public String asString() {

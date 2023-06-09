@@ -9,8 +9,8 @@ public class BuiltInMethod extends Function {
     }
 
     public BuiltInMethod(String name) {
+        super(new PythonMethodClass("<built-in function " + name + ">"));
         this.name = name;
-        this.pythonClass = new PythonMethodClass("<built-in function " + name + ">");
     }
 
     public String getName() {

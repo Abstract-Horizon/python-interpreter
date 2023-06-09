@@ -17,44 +17,42 @@ public class PythonList extends PythonSequence {
     static {
         populateCommonSequenceObjects(PYTHON_LIST_CLASS);
 
-        PYTHON_LIST_CLASS.__setattr__("__add__", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("__add__", new BuiltInBoundMethod("__add__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__add__(context, args[1]);
             }
         });
-        PYTHON_LIST_CLASS.__setattr__("__len__", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("__len__", new BuiltInBoundMethod("__len__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__len__(context);
             }
         });
-        PYTHON_LIST_CLASS.__setattr__("__iter__", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("__iter__", new BuiltInBoundMethod("__iter__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__iter__(context);
             }
         });
-        PYTHON_LIST_CLASS.__setattr__("append", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("append", new BuiltInBoundMethod("append") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).append(context, args[1]);
             }
         });
-        PYTHON_LIST_CLASS.__setattr__("clear", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("clear", new BuiltInBoundMethod("clear") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).clear(context);
             }
         });
-        PYTHON_LIST_CLASS.__setattr__("remove", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("remove", new BuiltInBoundMethod("remove") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).remove(context, args[1]);
             }
         });
-        PYTHON_LIST_CLASS.__setattr__("__reversed__", new BuiltInBoundMethod() {
+        PYTHON_LIST_CLASS.__setattr__("__reversed__", new BuiltInBoundMethod("__reversed__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 ((PythonList)args[0]).__reversed__(context);
             }
         });
     }
-
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PythonList.class);
 
     private final List<PythonObject> list;
 
@@ -63,13 +61,8 @@ public class PythonList extends PythonSequence {
     }
 
     public PythonList(List<PythonObject> list) {
-        this.pythonClass = PYTHON_LIST_CLASS;
+        super(PYTHON_LIST_CLASS);
         this.list = list;
-    }
-
-
-    public PythonType getType() {
-        return TYPE;
     }
 
     public boolean isConstant() {
@@ -116,7 +109,7 @@ public class PythonList extends PythonSequence {
         return context.raise(exception("AttributeError", PythonString.valueOf("list.remove")));
     }
 
-//    private ThreadContext.Executable setItemContinuation = new ThreadContext.Executable() {
+//    private Executable setItemContinuation = new Executable() {
 //        @Override public void evaluate(ThreadContext context) {
 //        }
 //    };

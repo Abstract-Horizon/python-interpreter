@@ -2,13 +2,16 @@ package org.ah.python.interpreter;
 
 import java.util.List;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class BoolOp extends PythonObject {
 
-    private List<PythonObject> values;
+    private List<Executable> values;
     private BoolopType op;
 
 
-    public BoolOp(List<PythonObject> values, BoolopType op) {
+    public BoolOp(List<Executable> values, BoolopType op) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.values = values;
         this.op = op;
     }
@@ -20,7 +23,7 @@ public class BoolOp extends PythonObject {
 
         }
 
-        context.pushData(this);
+//        context.pushData(this);
     }
 
     public PythonObject dereference() {
@@ -28,8 +31,8 @@ public class BoolOp extends PythonObject {
     }
 
     public boolean isConstant() {
-        for (PythonObject v : values) {
-            if (!v.isConstant()) {
+        for (Executable v : values) {
+            if (v instanceof PythonObject && !((PythonObject)v).isConstant()) {
                 return false;
             }
         }
@@ -52,7 +55,7 @@ public class BoolOp extends PythonObject {
         } else {
             throw new UnsupportedOperationException("BoolOp[" + op + "]");
         }
-        for (PythonObject o : values) {
+        for (Executable o : values) {
             if (first) { first = false; } else { res.append(operator); }
             res.append(o);
         }

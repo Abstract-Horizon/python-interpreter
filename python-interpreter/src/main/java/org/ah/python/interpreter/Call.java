@@ -1,17 +1,17 @@
 package org.ah.python.interpreter;
 
-import static org.ah.python.interpreter.ThreadContext.Executable;
-
 import java.util.Arrays;
 import java.util.Map;
 
-public class Call extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
+
+public class Call extends PythonObject implements Executable {
 
     public static final PythonObject[] EMPTY_ARRAY = new PythonObject[0];
 
-    protected PythonObject function;
-    protected PythonObject[] kargs;
-    protected Map<String, PythonObject> kwargs;
+    protected Executable function;
+    protected Executable[] kargs;
+    protected Map<String, Executable> kwargs;
     private Executable evaluateFunctionAndArgsContinuation;
 
     public static class EvaluateFunctionAndArgsContinuation implements Executable {
@@ -70,11 +70,12 @@ public class Call extends PythonObject {
     };
 
 
-    public Call(PythonObject function, PythonObject... kargs) {
+    public Call(Executable function, Executable... kargs) {
         this(function, null, kargs);
     }
 
-    public Call(PythonObject function, Map<String, PythonObject> kwargs, PythonObject... kargs) {
+    public Call(Executable function, Map<String, Executable> kwargs, Executable... kargs) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.function = function;
 
         this.kargs = kargs;

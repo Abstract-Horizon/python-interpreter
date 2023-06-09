@@ -4,8 +4,8 @@ import static org.ah.python.interpreter.ThreadContext.Executable;
 
 public class Assign extends PythonObject {
 
-    private PythonObject reference;
-    private PythonObject expression;
+    private Executable reference;
+    private Executable expression;
     private boolean lastInstruction = false;
 
     private Executable continuation = new Executable() {
@@ -31,7 +31,8 @@ public class Assign extends PythonObject {
         }
     };
 
-    public Assign(PythonObject reference, PythonObject expression, boolean lastInstruction) {
+    public Assign(Executable reference, Executable expression, boolean lastInstruction) {
+        super(null); // TODO
         this.reference = reference;
         this.expression = expression;
         this.lastInstruction = lastInstruction;
@@ -53,7 +54,7 @@ public class Assign extends PythonObject {
         }
     }
 
-    public PythonObject getExpression() {
+    public Executable getExpression() {
         return expression;
     }
 
@@ -65,14 +66,14 @@ public class Assign extends PythonObject {
         return createAssignment(reference, expression, false);
     }
 
-    public static PythonObject createAssignment(PythonObject reference, PythonObject expression, boolean lastInstruction) {
+    public static PythonObject createAssignment(Executable reference, Executable expression, boolean lastInstruction) {
         if (reference instanceof Call) {
             Call call = (Call)reference;
             if (call.function instanceof Reference) {
                 Reference callReference = (Reference)call.function;
                 if (callReference.name == "__getitem__") {
                     callReference.name = "__setitem__";
-                    PythonObject[] newArgs = new PythonObject[call.kargs.length + 1];
+                    Executable[] newArgs = new Executable[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
                     newArgs[call.kargs.length] = expression;
                     // call.kargs = newArgs;
@@ -80,7 +81,7 @@ public class Assign extends PythonObject {
                     return new Call(callReference, call.kwargs, newArgs);
                 } else if (callReference.name == "__getattr__") {
                     callReference.name = "__setattr__";
-                    PythonObject[] newArgs = new PythonObject[call.kargs.length + 1];
+                    Executable[] newArgs = new Executable[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
                     newArgs[call.kargs.length] = expression;
                     // call.kargs = newArgs;

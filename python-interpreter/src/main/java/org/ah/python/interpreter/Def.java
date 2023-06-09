@@ -1,8 +1,12 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.ah.python.interpreter.ThreadContext.Executable;
 
 
 public class Def extends PythonObject {
@@ -12,6 +16,7 @@ public class Def extends PythonObject {
         private PythonObject defaultValue;
 
         public Argument(String name, PythonObject defaultValue) {
+            super(PYTHON_INTERNAL_CLASS_NOT_DEFINED);
             this.name = name;
             this.defaultValue = defaultValue;
         }
@@ -47,7 +52,7 @@ public class Def extends PythonObject {
 
     public static PythonObject RETURN = null;
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private Executable continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             Def.this.evaluatedArguments = new Argument[args.length];
 
@@ -73,8 +78,8 @@ public class Def extends PythonObject {
     };
 
     public Def(String name, Argument[] args) {
+        super(new PythonMethodClass("<function " + name + ">"));
         this.name = name;
-        this.pythonClass = new PythonMethodClass("<function " + name + ">");
         this.args = args;
         List<Argument> argsToBeEvaluated = new ArrayList<Argument>();
         for (Argument arg : args) {
@@ -101,9 +106,8 @@ public class Def extends PythonObject {
         }
     }
 
-    private static ThreadContext.Executable closeScopeContinuation = new ThreadContext.Executable() {
+    private static Executable closeScopeContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
-            // context.popData();
             context.currentScope.close();
             context.pushData(PythonNone.NONE);
         }

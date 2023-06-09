@@ -14,11 +14,8 @@ public class Scope extends PythonObject {
 
     public static PythonClass CLASS_DICT = classDict();
 
-    public Scope() {
-        this(null);
-    }
-
-    public Scope(Scope parentScope) {
+    public Scope(PythonClass pythonClass, Scope parentScope) {
+        super(pythonClass);
         this.parentScope = parentScope;
         attributes = new HashMap<String, PythonObject>();
         pythonClass = CLASS_DICT;

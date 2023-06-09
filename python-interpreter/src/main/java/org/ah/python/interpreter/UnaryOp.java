@@ -1,17 +1,20 @@
 package org.ah.python.interpreter;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
+
 public class UnaryOp extends PythonObject {
 
-    private PythonObject operand;
+    private Executable operand;
     private UnaryopType op;
 
-    public UnaryOp(PythonObject operand, UnaryopType op) {
+    public UnaryOp(Executable operand, UnaryopType op) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.operand = operand;
         this.op = op;
     }
 
     public boolean isConstant() {
-        return operand.isConstant();
+        return operand instanceof PythonObject && ((PythonObject)operand).isConstant();
     }
 
     public String toString() {

@@ -1,13 +1,15 @@
 package org.ah.python.interpreter;
 
-public class While extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
 
-    private PythonObject test;
+public class While implements Executable {
+
+    private Executable test;
 
     private Block block = new Block();
     private Block elseBlock = new Block();
 
-    public While(PythonObject test) {
+    public While(Executable test) {
         this.test = test;
     }
 
@@ -19,7 +21,7 @@ public class While extends PythonObject {
         return elseBlock;
     }
 
-    private ThreadContext.Executable whiteContinuation = new ThreadContext.Executable() {
+    private Executable whiteContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (context.a instanceof PythonBoolean) {
                 if (((PythonBoolean)context.a).asBoolean()) {
@@ -36,7 +38,7 @@ public class While extends PythonObject {
         }
     };
 
-    private ThreadContext.Executable whiteBoolContinuation = new ThreadContext.Executable() {
+    private Executable whiteBoolContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             if (((PythonBoolean)context.a).asBoolean()) {
                 context.continuation(whiteContinuation);

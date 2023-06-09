@@ -2,12 +2,14 @@ package org.ah.python.interpreter;
 
 import java.util.Iterator;
 
-public class PythonIterator extends PythonType {
+public class PythonIterator extends PythonObject {
+
+    public static PythonClass PYTHON_ITERATOR_CLASS = new PythonClass("iterator");
 
     private Iterator<PythonObject> it;
 
     public PythonIterator(Iterator<PythonObject> it) {
-        super("Iterator");
+        super(PYTHON_ITERATOR_CLASS);
         this.it = it;
     }
 

@@ -1,9 +1,15 @@
 package org.ah.python.interpreter;
 
-public class Break extends PythonObject {
+import static org.ah.python.interpreter.ThreadContext.Executable;
 
+public class Break implements Executable {
 
     public String toString() {
         return "break";
+    }
+
+    @Override
+    public void evaluate(ThreadContext context) {
+        throw new UnsupportedOperationException("break");
     }
 }

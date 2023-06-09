@@ -1,10 +1,10 @@
 package org.ah.python.interpreter;
 
-import static org.ah.python.interpreter.ThreadContext.Executable;
+import org.ah.python.interpreter.ThreadContext.Executable;
 
-public class Reference extends PythonObject implements Assignable {
+public class Reference extends PythonObject implements Executable, Assignable {
 
-    protected PythonObject scope;
+    protected Executable scope;
     protected String name;
 
     private Executable continuation = new Executable() {
@@ -30,17 +30,19 @@ public class Reference extends PythonObject implements Assignable {
         }
     };
 
-    public Reference(PythonObject scope, PythonString name) {
+    public Reference(Executable scope, PythonString name) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.scope = scope;
         this.name = name.asString();
     }
 
-    public Reference(PythonObject scope, String name) {
+    public Reference(Executable scope, String name) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.scope = scope;
         this.name = name;
     }
 
-    public PythonObject getScope() {
+    public Executable getScope() {
         return scope;
     }
 

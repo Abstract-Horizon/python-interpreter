@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
+import org.ah.python.interpreter.ThreadContext.Executable;
 import org.junit.Test;
 
 public class TestArrays extends BaseTestClass {
@@ -12,7 +13,7 @@ public class TestArrays extends BaseTestClass {
         Block block = new Block();
 
         Reference aReference = new Reference(null, "a");
-        PythonObject expression = new PythonListGenerator(Arrays.<PythonObject>asList(PythonString.valueOf("value")), PythonList.PYTHON_LIST_CLASS);
+        PythonObject expression = new PythonListGenerator(Arrays.<Executable>asList(PythonString.valueOf("value")), PythonList.PYTHON_LIST_CLASS);
 
         Assign aAssignment = new Assign(aReference, expression, true);
 

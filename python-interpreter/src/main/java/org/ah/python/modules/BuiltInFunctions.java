@@ -5,7 +5,6 @@ import static org.ah.python.interpreter.PythonBoolean.FALSE;
 import static org.ah.python.interpreter.PythonInteger.ONE;
 import static org.ah.python.interpreter.PythonInteger.ZERO;
 import static org.ah.python.interpreter.PythonNone.NONE;
-import static org.ah.python.interpreter.ThreadContext.Executable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,10 +12,9 @@ import java.io.PrintStream;
 import java.util.Map;
 
 import org.ah.python.interpreter.BuiltInMethod;
-import org.ah.python.interpreter.Call;
 import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.PythonBaseException;
 import org.ah.python.interpreter.PythonBoolean;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonFloat;
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonIterator;
@@ -28,11 +26,14 @@ import org.ah.python.interpreter.PythonString;
 import org.ah.python.interpreter.PythonTuple;
 import org.ah.python.interpreter.Scope;
 import org.ah.python.interpreter.ThreadContext;
+import org.ah.python.interpreter.ThreadContext.Executable;
 import org.ah.python.interpreter.util.RangeIterator;
 
 public class BuiltInFunctions extends Scope {
 
-//    private static final Map<String, PythonObject> functions = new HashMap<String, PythonObject>();
+    public BuiltInFunctions() {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED, null);
+    }
 
     public static BuiltInFunctions BUILT_IN_FUNCTIONS_SCOPE;
 
@@ -40,17 +41,13 @@ public class BuiltInFunctions extends Scope {
         return BUILT_IN_FUNCTIONS_SCOPE.attributes.containsKey(name);
     }
 
-    public static PythonObject getClosure(String name, PythonObject[] args) {
-        return new Call(BUILT_IN_FUNCTIONS_SCOPE.attributes.get(name), args);
-    }
+//    public static PythonObject getClosure(String name, PythonObject[] args) {
+//        return new Call(BUILT_IN_FUNCTIONS_SCOPE.attributes.get(name), args);
+//    }
 
     public static PythonObject getFunction(String name) {
         return BUILT_IN_FUNCTIONS_SCOPE.attributes.get(name);
     }
-
-//    public static PythonObject invoke(String name, PythonObject[] args) {
-//        return functions.get(name).__call__(args);
-//    }
 
     public static void setOutput(OutputStream os) {
         out = new PrintStream(os);
@@ -58,7 +55,6 @@ public class BuiltInFunctions extends Scope {
 
     private static PrintStream out = System.out;
     private static InputStream in;
-//    private static Scanner scanner;
 
     public static PrintInterface printInterface = new PrintInterface() {
         @Override

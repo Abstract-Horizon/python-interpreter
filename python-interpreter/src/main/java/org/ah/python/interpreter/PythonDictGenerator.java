@@ -2,15 +2,18 @@ package org.ah.python.interpreter;
 
 import java.util.Map;
 
-public class PythonDictGenerator extends PythonObject {
+import org.ah.python.interpreter.ThreadContext.Executable;
 
-    private Map<PythonObject, PythonObject> elements;
+public class PythonDictGenerator extends PythonObject implements Executable {
 
-    public PythonDictGenerator(final Map<PythonObject, PythonObject> elements) {
+    private Map<Executable, Executable> elements;
+
+    public PythonDictGenerator(final Map<Executable, Executable> elements) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.elements = elements;
     }
 
-    private ThreadContext.Executable continuation = new ThreadContext.Executable() {
+    private Executable continuation = new Executable() {
 
         @Override public void evaluate(ThreadContext context) {
             PythonDictionary returnValue = new PythonDictionary();
@@ -29,9 +32,9 @@ public class PythonDictGenerator extends PythonObject {
         if (elements.size() == 0) {
             continuation.evaluate(context);
         } else {
-            PythonObject[] zipped = new PythonObject[elements.size() * 2];
+            Executable[] zipped = new Executable[elements.size() * 2];
             int p = 0;
-            for (Map.Entry<PythonObject, PythonObject> entry : elements.entrySet()) {
+            for (Map.Entry<Executable, Executable> entry : elements.entrySet()) {
                 zipped[p] = entry.getKey();
                 zipped[p + 1] = entry.getValue();
                 p = p + 2;

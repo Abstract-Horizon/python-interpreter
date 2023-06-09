@@ -36,11 +36,12 @@ public class PythonClassDef extends PythonObject {
     private Block block = new Block();
 
     private String name;
-    private PythonObject[] parentObjects;
+    private Executable[] parentObjects;
     private PythonClass[] evaluatedParents;
     private PythonClass pythonClassType;
 
-    public PythonClassDef(String name, PythonObject[] parentObjects) {
+    public PythonClassDef(String name, Executable[] parentObjects) {
+        super(null);
         this.name = name;
         this.parentObjects = parentObjects;
 

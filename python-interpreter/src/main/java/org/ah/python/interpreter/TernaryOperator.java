@@ -2,13 +2,14 @@ package org.ah.python.interpreter;
 
 import org.ah.python.interpreter.ThreadContext.Executable;
 
-public class TernaryOperator extends PythonObject {
+public class TernaryOperator extends PythonObject implements Executable {
 
-    private PythonObject condition;
-    private PythonObject ifExpression;
-    private PythonObject elseExpression;
+    private Executable condition;
+    private Executable ifExpression;
+    private Executable elseExpression;
 
-    public TernaryOperator(PythonObject condition, PythonObject ifExpression, PythonObject elseExpression) {
+    public TernaryOperator(Executable condition, Executable ifExpression, Executable elseExpression) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.condition = condition;
         this.ifExpression = ifExpression;
         this.elseExpression = elseExpression;

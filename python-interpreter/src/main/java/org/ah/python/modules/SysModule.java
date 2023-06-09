@@ -1,14 +1,12 @@
 package org.ah.python.modules;
 
+import java.util.Map;
+
 import org.ah.python.interpreter.BuiltInMethod;
-import org.ah.python.interpreter.Proxy;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
 import org.ah.python.interpreter.ThreadContext;
 
-public class SysModule extends Proxy {
-
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, SysModule.class);
+public class SysModule extends org.ah.python.interpreter.Module {
 
     public static interface SystemBridge {
         void exit(int status);
@@ -23,18 +21,14 @@ public class SysModule extends Proxy {
     public SysModule() {
     }
 
-    @Override
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.__setattr__("exit", new BuiltInMethod() {
-            @Override public PythonObject call0(ThreadContext context) {
-                systemBridge.exit(0);
-                return null;
-            }
-            @Override public PythonObject call0(ThreadContext context, PythonObject arg) {
-                systemBridge.exit(arg.asInteger());
-                return null;
+    {
+        this.__setattr__("exit", new BuiltInMethod("exit") {
+            @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                if (args == null || args.length == 0) {
+                    systemBridge.exit(0);
+                } else {
+                    systemBridge.exit(args[0].asInteger());
+                }
             }
         });
     }

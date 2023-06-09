@@ -16,7 +16,7 @@ public class PythonDictionary extends PythonObject {
     protected Map<PythonObject, PythonObject> map = new HashMap<PythonObject, PythonObject>();
 
     public PythonDictionary() {
-        pythonClass = PYTHON_DICT_CLASS;
+        super(PYTHON_DICT_CLASS);
     }
 
     public Map<PythonObject, PythonObject> asMap() {

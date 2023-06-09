@@ -3,6 +3,7 @@ package org.ah.python.interpreter;
 import static org.ah.python.interpreter.PythonBaseException.exception;
 import static org.ah.python.interpreter.PythonBoolean.FALSE;
 import static org.ah.python.interpreter.PythonBoolean.TRUE;
+import static org.ah.python.interpreter.ThreadContext.Executable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,33 +41,33 @@ public class PythonInteger extends PythonNumber {
 
         populateCommonNumberClassMethods(PYTHON_INTEGER_CLASS);
 
-        PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInBoundMethod() {
+        PYTHON_INTEGER_CLASS.__setattr__("__and__", new BuiltInBoundMethod("__and__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__and__(context, args[1]);
             }
         });
-        PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInBoundMethod() {
+        PYTHON_INTEGER_CLASS.__setattr__("__or__", new BuiltInBoundMethod("__or__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__or__(context, args[1]);
             }
         });
-        PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInBoundMethod() {
+        PYTHON_INTEGER_CLASS.__setattr__("__xor__", new BuiltInBoundMethod("__xor__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__xor__(context, args[1]);
             }
         });
-        PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod() {
+        PYTHON_INTEGER_CLASS.__setattr__("__lshift__", new BuiltInBoundMethod("__lshift__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__lshift__(context, args[1]);
             }
         });
-        PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod() {
+        PYTHON_INTEGER_CLASS.__setattr__("__rshift__", new BuiltInBoundMethod("__rshift__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__rshift__(context, args[1]);
             }
         });
 
-        PYTHON_INTEGER_CLASS.__setattr__("__neg__", new BuiltInBoundMethod() {
+        PYTHON_INTEGER_CLASS.__setattr__("__neg__", new BuiltInBoundMethod("__neg__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__neg__(context);
             }
@@ -97,8 +98,8 @@ public class PythonInteger extends PythonNumber {
     protected int value;
 
     protected PythonInteger(int value) {
+        super(PYTHON_INTEGER_CLASS);
         this.value = value;
-        this.pythonClass = PYTHON_INTEGER_CLASS;
     }
 
     public String asString() {
@@ -145,7 +146,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable lt_continuation = new ThreadContext.Executable() {
+    private static Executable lt_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value > ((PythonInteger)context.popData()).value));
         }
@@ -163,7 +164,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable le_continuation = new ThreadContext.Executable() {
+    private static Executable le_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value >= ((PythonInteger)context.popData()).value));
         }
@@ -181,7 +182,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable gt_continuation = new ThreadContext.Executable() {
+    private static Executable gt_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value < ((PythonInteger)context.popData()).value));
         }
@@ -199,7 +200,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable ge_continuation = new ThreadContext.Executable() {
+    private static Executable ge_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value <= ((PythonInteger)context.popData()).value));
         }
@@ -217,7 +218,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable eq_continuation = new ThreadContext.Executable() {
+    private static Executable eq_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value == ((PythonInteger)context.popData()).value));
         }
@@ -235,7 +236,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable ne_continuation = new ThreadContext.Executable() {
+    private static Executable ne_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonBoolean.valueOf(((PythonInteger)context.popData()).value != ((PythonInteger)context.popData()).value));
         }
@@ -257,7 +258,7 @@ public class PythonInteger extends PythonNumber {
         context.pushData(PythonInteger.valueOf(-value));
     }
 
-    private static ThreadContext.Executable add_continuation = new ThreadContext.Executable() {
+    private static Executable add_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonInteger.valueOf(((PythonInteger)context.popData()).value + ((PythonInteger)context.popData()).value));
         }
@@ -275,7 +276,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable sub_continuation = new ThreadContext.Executable() {
+    private static Executable sub_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -295,7 +296,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable mul_continuation = new ThreadContext.Executable() {
+    private static Executable mul_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.pushData(PythonInteger.valueOf(((PythonInteger)context.popData()).value * ((PythonInteger)context.popData()).value));
         }
@@ -313,7 +314,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable div_continuation = new ThreadContext.Executable() {
+    private static Executable div_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -334,7 +335,7 @@ public class PythonInteger extends PythonNumber {
     }
 
 
-    private static ThreadContext.Executable floordiv_continuation = new ThreadContext.Executable() {
+    private static Executable floordiv_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -354,7 +355,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable mod_continuation = new ThreadContext.Executable() {
+    private static Executable mod_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -387,7 +388,7 @@ public class PythonInteger extends PythonNumber {
         context.raise(exception("NotImplementedError", PythonString.valueOf("__pow__")));
     }
 
-    private static ThreadContext.Executable lshift_continuation = new ThreadContext.Executable() {
+    private static Executable lshift_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -407,7 +408,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable rshift_continuation = new ThreadContext.Executable() {
+    private static Executable rshift_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -427,7 +428,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable and_continuation = new ThreadContext.Executable() {
+    private static Executable and_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -447,7 +448,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable or_continuation = new ThreadContext.Executable() {
+    private static Executable or_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();
@@ -467,7 +468,7 @@ public class PythonInteger extends PythonNumber {
         }
     }
 
-    private static ThreadContext.Executable xor_continuation = new ThreadContext.Executable() {
+    private static Executable xor_continuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonInteger other = (PythonInteger)context.popData();
             PythonInteger self = (PythonInteger)context.popData();

@@ -8,19 +8,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.ah.python.interpreter.Call.EvaluateFunctionAndArgsContinuation;
+import org.ah.python.interpreter.ThreadContext.Executable;
 
-public class PythonObject implements ThreadContext.Executable {
+public class PythonObject implements Executable {
 
     public static final boolean PROFILE = false;
 
     public static int createdObjects = 0;
     public static Map<String, Integer> createdTypes = new HashMap<String, Integer>();
 
-    public static PythonType TYPE = new PythonType(PythonObject.class);
+    protected PythonClass pythonClass;
 
-    protected PythonClass pythonClass = PythonObjectClass.PYTHON_OBJECT_CLASS;
-
-    public PythonObject() {
+    public PythonObject(PythonClass pythonClass) {
         if (PROFILE) {
             createdObjects = createdObjects + 1;
             String name = getClass().getName();
@@ -31,6 +30,7 @@ public class PythonObject implements ThreadContext.Executable {
             soFar = soFar + 1;
             createdTypes.put(name, soFar);
         }
+        this.pythonClass = pythonClass;
     }
 
 
@@ -69,10 +69,6 @@ public class PythonObject implements ThreadContext.Executable {
 
     public PythonObject dereferenceConstant() {
         return this;
-    }
-
-    public PythonType getType() {
-        return TYPE;
     }
 
     public void evaluateObjectMethod(ThreadContext context, String methodName, PythonObject... kargs) {
@@ -481,7 +477,7 @@ public class PythonObject implements ThreadContext.Executable {
         evaluateObjectMethod(context, "__round__");
     }
 
-    protected static String collectionToString(Collection<?> col, String delimiter) {
+    public static String collectionToString(Collection<?> col, String delimiter) {
         StringBuilder res = new StringBuilder();
         boolean first = true;
         for (Object o : col) {

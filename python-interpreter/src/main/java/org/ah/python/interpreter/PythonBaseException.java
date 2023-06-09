@@ -22,6 +22,7 @@ public class PythonBaseException extends PythonObject {
     }
 
     public PythonBaseException(String exceptionName, List<PythonObject> args) {
+        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
         this.args = args;
         this.exceptionName = exceptionName;
     }
