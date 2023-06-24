@@ -1,74 +1,93 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
-import static org.ah.python.interpreter.PythonInteger.ONE;
-import static org.ah.python.interpreter.PythonInteger.THREE;
-import static org.ah.python.interpreter.PythonInteger.TWO;
-import static org.ah.python.interpreter.PythonInteger.ZERO;
-
 import java.util.List;
+import java.util.Map;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.InstanceMethod;
-import org.ah.python.interpreter.Proxy;
+import org.ah.python.interpreter.BuiltInBoundMethod;
+import org.ah.python.interpreter.ListAccessible;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonNone;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.PythonTuple;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
-class PyGameSurfaceScreen extends Proxy {
+class PyGameSurfaceScreen extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameSurfaceScreen.class);
+    public static PythonClass PYGAME_SCREEN_SURFACE_CLASS = new PythonClass("pygame.surface.ScreenSurface") {
+        {
+            addMethod(new BuiltInBoundMethod("blit") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                // PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+                int x, y = 0;
+                PyGameSurfaceSprite sprite = (PyGameSurfaceSprite)args[1];
+                if (args[2] instanceof PyGameRect) {
+                    PyGameRect rect = (PyGameRect)args[2];
+                    x = rect.x;
+                    y = rect.y;
+                } else if (args[2] instanceof ListAccessible) {
+                    List<PythonObject> rectlist = ((ListAccessible)args[2]).asList();
+                    x = rectlist.get(0).asInteger();
+                    y = rectlist.get(1).asInteger();
+                } else {
+                    throw new UnsupportedOperationException("pygame.surface.ScreenSurface.blit second parameter on arbitrary object does not work yet, need rect or list; " + args[1]);
+                }
+
+                context.pushData(blit(sprite, x, y));
+            }});
+            addMethod(new BuiltInBoundMethod("fill") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                // PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+
+                context.pushData(fill(args[1]));
+            }});
+            addMethod(new BuiltInBoundMethod("width") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+
+                context.pushData(self.size().asList().get(0));
+            }});
+            addMethod(new BuiltInBoundMethod("height") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+
+                context.pushData(self.size().asList().get(1));
+            }});
+            addMethod(new BuiltInBoundMethod("get_width") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+
+                context.pushData(self.size().asList().get(0));
+            }});
+            addMethod(new BuiltInBoundMethod("get_height") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+
+                context.pushData(self.size().asList().get(1));
+            }});
+            addMethod(new BuiltInBoundMethod("size") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+
+                context.pushData(self.size());
+            }});
+            addMethod(new BuiltInBoundMethod("get_rect") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
+                if (self.rect == null) {
+                    self.rect = new PyGameRect(0, 0, self.getWidth(), self.getHeight());
+                }
+
+                context.pushData(self.rect);
+            }});
+        }
+    };
 
     private int w;
-
     private int h;
-
     private PythonTuple size;
+    private PyGameRect rect;
 
     public PyGameSurfaceScreen(int w, int h) {
+        super(PYGAME_SCREEN_SURFACE_CLASS);
         this.w = w;
         this.h = h;
-    }
-
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.setAttribute("blit", new Function() {
-            @Override public PythonObject call0(PythonObject sprite, PythonObject rect) {
-                int x = rect.__getitem__(ZERO).dereference().asInteger();
-                int y = rect.__getitem__(ONE).dereference().asInteger();
-                return blit(sprite, x, y);
-            }
-            @Override public PythonObject call0(PythonObject sprite, PythonObject x, PythonObject y) {
-                return blit(sprite, x.asInteger(), y.asInteger());
-            }
-        });
-        TYPE.setAttribute("fill", new Function() { @Override public PythonObject call0(PythonObject colour) {
-            return fill(colour);
-        }});
-        TYPE.setAttribute("width", new InstanceMethod<PyGameSurfaceScreen>() { @Override public PythonObject call0(PyGameSurfaceScreen self) {
-            return self.size().asList().get(0);
-        }});
-        TYPE.setAttribute("height", new InstanceMethod<PyGameSurfaceScreen>() { @Override public PythonObject call0(PyGameSurfaceScreen self) {
-            return self.size().asList().get(1);
-        }});
-        TYPE.setAttribute("get_width", new InstanceMethod<PyGameSurfaceScreen>() { @Override public PythonObject call0(PyGameSurfaceScreen self) {
-            return self.size().asList().get(0);
-        }});
-        TYPE.setAttribute("get_height", new InstanceMethod<PyGameSurfaceScreen>() { @Override public PythonObject call0(PyGameSurfaceScreen self) {
-            return self.size().asList().get(1);
-        }});
-        TYPE.setAttribute("size", new InstanceMethod<PyGameSurfaceScreen>() { @Override public PythonObject call0(PyGameSurfaceScreen self) {
-            return self.size();
-        }});
-        TYPE.setAttribute("get_rect", new InstanceMethod<PyGameSurfaceScreen>() { @Override public PythonObject call0(PyGameSurfaceScreen self) {
-            return new PyGameRect(0, 0, self.getWidth(), self.getHeight());
-        }});
     }
 
     public static PythonObject blit(PythonObject spritePyObject, int x, int y) {
@@ -87,13 +106,21 @@ class PyGameSurfaceScreen extends Proxy {
     }
 
     public static PythonObject fill(PythonObject colour) {
-        float r = colour.__getitem__(ZERO).dereference().asInteger() / 255.0f;
-        float g = colour.__getitem__(ONE).dereference().asInteger() / 255.0f;
-        float b = colour.__getitem__(TWO).dereference().asInteger() / 255.0f;
+        float r, g, b = 0;
         float a = 1f;
-        if (colour.__len__().asInteger() > 3) {
-            a = colour.__getitem__(THREE).dereference().asInteger() / 255.0f;
+
+        if (colour instanceof ListAccessible) {
+            List<PythonObject> colorList = ((ListAccessible)colour).asList();
+            r = colorList.get(0).asInteger() / 255.0f;
+            g = colorList.get(1).asInteger() / 255.0f;
+            b = colorList.get(2).asInteger() / 255.0f;
+            if (colorList.size() > 3) {
+                a = colorList.get(3).asInteger() / 255.0f;
+            }
+        } else {
+            throw new UnsupportedOperationException("pygame.Font.render on arbitrary object does not work yet");
         }
+
         Gdx.gl.glClearColor(r, g, b, a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         return PythonNone.NONE;

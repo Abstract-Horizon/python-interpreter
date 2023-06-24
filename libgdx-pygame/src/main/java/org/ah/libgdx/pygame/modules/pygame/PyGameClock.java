@@ -1,47 +1,48 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.InstanceMethod;
-import org.ah.python.interpreter.Proxy;
+import org.ah.python.interpreter.BuiltInBoundMethod;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonFloat;
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonNone;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 import org.ah.python.modules.BuiltInFunctions;
 
-class PyGameClock extends Proxy {
+class PyGameClock extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameClock.class);
+    public static PythonClass PYGAME_CLOCK_CLASS = new PythonClass("pygame.clock") {
+        @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... kargs) {
+            context.pushData(new PyGameClock());
+        }
+
+        {
+            addMethod(new BuiltInBoundMethod("tick") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameClock self = (PyGameClock)args[0];
+                lastTick = System.currentTimeMillis();
+                context.pushData(self.tick(args[1]));
+
+            }});
+            addMethod(new BuiltInBoundMethod("get_fps") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                context.pushData(PythonFloat.valueOf(fps));
+            }});
+            addMethod(new BuiltInBoundMethod("get_time") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                context.pushData(PythonInteger.valueOf((int)(System.currentTimeMillis() - lastTick)));
+            }});
+        }
+    };
 
     private static long last;
     private static long lastTick;
     private static double fps = 0;
     private static double frames[] = new double[10];
 
-    private static PythonObject tick = new InstanceMethod<PyGameClock>() { @Override public PythonObject call0(PyGameClock self, PythonObject args) {
-        lastTick = System.currentTimeMillis();
-        return self.tick(args);
-    }};
-
-    private static PythonObject get_fps = new Function() { @Override public PythonObject call0() {
-        return PythonFloat.valueOf(fps);
-    }};
-
     public PyGameClock() {
-    }
-
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.setAttribute("tick", tick);
-        TYPE.setAttribute("get_fps", get_fps);
-        TYPE.setAttribute("get_time", new Function() { @Override public PythonObject call0() {
-            return PythonInteger.valueOf((int)(System.currentTimeMillis() - lastTick));
-        }});
+        super(PYGAME_CLOCK_CLASS);
     }
 
     public PythonObject tick(PythonObject args) {

@@ -1,23 +1,22 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
-import static org.ah.python.interpreter.PythonInteger.ONE;
-import static org.ah.python.interpreter.PythonInteger.THREE;
-import static org.ah.python.interpreter.PythonInteger.TWO;
-import static org.ah.python.interpreter.PythonInteger.ZERO;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
+import org.ah.python.interpreter.BuiltInMethod;
+import org.ah.python.interpreter.ListAccessible;
+import org.ah.python.interpreter.PythonBaseException;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonNone;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.PythonString;
+import org.ah.python.interpreter.ThreadContext;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -27,61 +26,68 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
-class PyGameDraw extends Proxy {
+class PyGameDraw extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameDraw.class);
+    public static PythonClass PYGAME_DRAW_CLASS = new PythonClass("pygame.draw") {
+        {
+            addMethod(new BuiltInMethod("rect") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                if (args.length < 3) {
+                    context.raise(PythonBaseException.exception("TypeError", PythonString.valueOf("pygame.draw.rect() requires at least 3 arguments")));
+                } else {
+                    int r, g, b = 0;
+                    int x, y, w, h = 0;
+
+                    if (args[1] instanceof ListAccessible) {
+                        List<PythonObject> colorList = ((ListAccessible)args[1]).asList();
+                        r = colorList.get(0).asInteger();
+                        g = colorList.get(1).asInteger();
+                        b = colorList.get(2).asInteger();
+                    } else {
+                        throw new UnsupportedOperationException("pygame.draw on arbitrary object does not work yet");
+                    }
+
+                    if (args[2] instanceof PyGameRect) {
+                        PyGameRect rect = (PyGameRect)args[2];
+                        x = rect.x;
+                        y = rect.y;
+                        w = rect.w;
+                        h = rect.h;
+                    } else if (args[2] instanceof ListAccessible) {
+                        List<PythonObject> rectlist = ((ListAccessible)args[1]).asList();
+                        x = rectlist.get(0).asInteger();
+                        y = rectlist.get(1).asInteger();
+                        w = rectlist.get(2).asInteger();
+                        h = rectlist.get(3).asInteger();
+                    } else {
+                        throw new UnsupportedOperationException("pygame.draw on arbitrary object does not work yet");
+                    }
+
+                    if (args.length > 3) {
+                        ShapeRenderer shapeRenderer = PyGameModule.PYGAME_MODULE.getShapeRenderer(ShapeType.Line);
+
+                        shapeRenderer.setColor(r, g, b, 1);
+                        shapeRenderer.rect(x, y, w, h);
+                        // TODO add line width
+                    } else {
+                        int colourKey = r + (g << 8) + (b << 16);
+
+                        Texture texture = rectTextures.get(colourKey);
+                        if (texture == null) {
+                            texture = createTexture(colourKey, r, g, b);
+                        }
+                        PyGameModule.PYGAME_MODULE.getSpriteBatch().draw(texture, x, y, w, h);
+                    }
+                }
+            };
+        });
+        }
+    };
 
     public PyGameDraw() {
+        super(PYGAME_DRAW_CLASS);
     }
 
-    public PythonType getType() { return TYPE; }
 
-    static {
-        TYPE.setAttribute("rect", new Function() {
-            @Override public PythonObject call0(PythonObject screen, PythonObject colour, PythonObject rect) {
-                int r = colour.__getitem__(ZERO).dereference().asInteger();
-                int g = colour.__getitem__(ONE).dereference().asInteger();
-                int b = colour.__getitem__(TWO).dereference().asInteger();
-
-                int x = rect.__getitem__(ZERO).dereference().asInteger();
-                int y = rect.__getitem__(ONE).dereference().asInteger();
-                int w = rect.__getitem__(TWO).dereference().asInteger();
-                int h = rect.__getitem__(THREE).dereference().asInteger();
-
-                int colourKey = r + (g << 8) + (b << 16);
-
-                Texture texture = rectTextures.get(colourKey);
-                if (texture == null) {
-                    texture = createTexture(colourKey, r, g, b);
-                }
-                PyGameModule.PYGAME_MODULE.getSpriteBatch().draw(texture, x, y, w, h);
-                return PythonNone.NONE;
-            }
-
-            @Override public PythonObject call0(PythonObject screen, PythonObject colour, PythonObject rect, PythonObject width) {
-                if (PyGameModule.ENABLE_SHAPE_RENDERER) {
-                    int r = colour.__getitem__(ZERO).dereference().asInteger();
-                    int g = colour.__getitem__(ONE).dereference().asInteger();
-                    int b = colour.__getitem__(TWO).dereference().asInteger();
-
-                    int x = rect.__getitem__(ZERO).dereference().asInteger();
-                    int y = rect.__getitem__(ONE).dereference().asInteger();
-                    int w = rect.__getitem__(TWO).dereference().asInteger();
-                    int h = rect.__getitem__(THREE).dereference().asInteger();
-
-                    // int lw = width.asInteger();
-
-                    ShapeRenderer shapeRenderer = PyGameModule.PYGAME_MODULE.getShapeRenderer(ShapeType.Line);
-
-                    shapeRenderer.setColor(r, g, b, 1);
-                    shapeRenderer.rect(x, y, w, h);
-
-                    // TODO add line width
-                }
-                return PythonNone.NONE;
-            }
-        });
-    }
 
     static ModelBuilder modelBuilder = null;
 

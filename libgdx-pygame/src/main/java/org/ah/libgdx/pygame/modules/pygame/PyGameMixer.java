@@ -1,60 +1,37 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
-import org.ah.python.interpreter.PythonNone;
+import java.util.Map;
+
+import org.ah.python.interpreter.BuiltInMethod;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.files.FileHandle;
-
-class PyGameMixer extends Proxy {
-
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameMixer.class);
+class PyGameMixer extends org.ah.python.interpreter.Module {
 
     public PyGameMixer() {
-    }
+        super("pygame.mixer");
 
-    public PythonType getType() { return TYPE; }
+        __setattr__("Sound", PyGameSound.PYGAME_SOUND_CLASS);
 
-    static {
-        TYPE.setAttribute("Sound", new Function() { @Override public PythonObject call0(PythonObject soundName) {
-            if (!PyGameModule.PRE_RUN) {
-                String fileName = soundName.asString();
-                String path = PyGameModule.PYGAME_MODULE.getPath();
-                if (path != null && path.length() > 0) {
-                    fileName = path + "/" + fileName;
-                }
-                FileHandle fileHandle = Gdx.files.internal(fileName);
-                Sound sound = Gdx.audio.newSound(fileHandle);
-                return new PyGameSound(sound);
-            } else {
-                return new PyGameSound(null);
-            }
+        addMethod(new BuiltInMethod("set_num_channels") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
         }});
-        TYPE.setAttribute("set_num_channels", new Function() { @Override public PythonObject call0(PythonObject numChannels) {
-            return PythonNone.NONE;
-        }});
-        TYPE.setAttribute("init", new Function() { 
-            @Override public PythonObject call0() {
-                return PythonNone.NONE;
-            }
-            @Override public PythonObject call0(PythonObject frequency) {
-                return PythonNone.NONE;
-            }
-            @Override public PythonObject call0(PythonObject frequency, PythonObject size) {
-                return PythonNone.NONE;
-            }
-            @Override public PythonObject call0(PythonObject frequency, PythonObject size, PythonObject channels) {
-                return PythonNone.NONE;
-            }
-            @Override public PythonObject call0(PythonObject frequency, PythonObject size, PythonObject channels, PythonObject buffer) {
-                return PythonNone.NONE;
-            }
-        });
-    }
-    
 
+        addMethod(new BuiltInMethod("init") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+//            @Override public PythonObject call0() {
+//                return PythonNone.NONE;
+//            }
+//            @Override public PythonObject call0(PythonObject frequency) {
+//                return PythonNone.NONE;
+//            }
+//            @Override public PythonObject call0(PythonObject frequency, PythonObject size) {
+//                return PythonNone.NONE;
+//            }
+//            @Override public PythonObject call0(PythonObject frequency, PythonObject size, PythonObject channels) {
+//                return PythonNone.NONE;
+//            }
+//            @Override public PythonObject call0(PythonObject frequency, PythonObject size, PythonObject channels, PythonObject buffer) {
+//                return PythonNone.NONE;
+//            }
+        }});
+    }
 }

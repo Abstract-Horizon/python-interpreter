@@ -1,27 +1,34 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
+import static org.ah.libgdx.pygame.modules.pygame.PyGameClock.PYGAME_CLOCK_CLASS;
+
+import java.util.Map;
+
+import org.ah.python.interpreter.BuiltInMethod;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
-class PyGameTime extends Proxy {
+class PyGameTime extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameTime.class);
+    public static PythonClass PYGAME_TIME_CLASS = new PythonClass("pygame.time") {
+        {
+            addMethod(new BuiltInMethod("get_ticks") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                context.pushData(PythonInteger.valueOf((int)(System.currentTimeMillis() - started)));
+            }});
+//            setAttribute("Clock", new Attribute<PyGameTime>() {
+//                @Override public PythonObject attribute(PyGameTime self) { return new PyGameClock(); }
+//                @Override public void assign(PyGameTime self, PythonObject expr) { }
+//            });
+            __setattr__("Clock", PYGAME_CLOCK_CLASS);
+        }
+    };
+
     private static long started = System.currentTimeMillis();
 
     public PyGameTime() {
+        super(PYGAME_TIME_CLASS);
     }
 
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.setAttribute("get_ticks", new Function() { @Override public PythonObject call0() {
-            return PythonInteger.valueOf((int)(System.currentTimeMillis() - started));
-        }});
-        TYPE.setAttribute("Clock", new Function() { @Override public PythonObject call0() {
-            return new PyGameClock();
-        }});
-    }
 }

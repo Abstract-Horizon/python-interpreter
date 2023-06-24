@@ -1,5 +1,18 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
+import static org.ah.python.interpreter.PythonBoolean.FALSE;
+
+import java.util.Map;
+
+import org.ah.python.interpreter.BuiltInMethod;
+import org.ah.python.interpreter.PythonBoolean;
+import org.ah.python.interpreter.PythonClass;
+import org.ah.python.interpreter.PythonInteger;
+import org.ah.python.interpreter.PythonObject;
+import org.ah.python.interpreter.PythonTuple;
+import org.ah.python.interpreter.ThreadContext;
+import org.ah.python.modules.SysModule;
+
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -7,19 +20,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
-import org.ah.python.interpreter.PythonBoolean;
-import org.ah.python.interpreter.PythonInteger;
-import org.ah.python.interpreter.PythonNone;
-import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonTuple;
-import org.ah.python.interpreter.PythonType;
-import org.ah.python.modules.SysModule;
-
-import static org.ah.python.interpreter.PythonBoolean.FALSE;
-
-public class PyGameModule extends Proxy {
+public class PyGameModule extends org.ah.python.interpreter.Module {
 
     public static final boolean ENABLE_SHAPE_RENDERER = true;
     public static final boolean DEBUG = false;
@@ -27,6 +28,8 @@ public class PyGameModule extends Proxy {
     public static final PyGameModule PYGAME_MODULE = new PyGameModule();
     public static final PythonBoolean[] KEYS;
     public static boolean PRE_RUN = false;
+    public static boolean flip = false;
+
 //    protected static int createdSprites;
 
     static {
@@ -57,58 +60,62 @@ public class PyGameModule extends Proxy {
 
     private int batchState = BATCH_NONE;
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameModule.class);
-
-    public static PythonObject EVENT_TYPE_QUIT = new PythonObject();
-    public static PythonObject EVENT_TYPE_MOUSEMOTION = new PythonObject();
-    public static PythonObject EVENT_TYPE_MOUSEBUTTONDOWN = new PythonObject();
-    public static PythonObject EVENT_TYPE_MOUSEBUTTONUP = new PythonObject();
+    public static PythonObject EVENT_TYPE_QUIT = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
+    public static PythonObject EVENT_TYPE_MOUSEMOTION = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
+    public static PythonObject EVENT_TYPE_MOUSEBUTTONDOWN = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
+    public static PythonObject EVENT_TYPE_MOUSEBUTTONUP = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
 
 
-    private static PyGameTime time = new PyGameTime();
-    private static PyGameDisplay display = new PyGameDisplay();
-    private static PyGameImage image = new PyGameImage();
+//    private static PyGameTime time = new PyGameTime();
+//    private static PyGameDisplay display = new PyGameDisplay();
+//    private static PyGameImage image = new PyGameImage();
     private static PyGameEvent event = new PyGameEvent();
-    private static PyGameKey key = new PyGameKey();
-    private static PyGameFontStatic font = new PyGameFontStatic();
-    private static PyGameDraw draw = new PyGameDraw();
-    private static PyGameMixer mixer = new PyGameMixer();
-    private static PyGameTransform transform = new PyGameTransform();
-    private static PyGameSprite sprite = new PyGameSprite();
-    private static PyGameJoystick joystick = new PyGameJoystick();
+//    private static PyGameKey key = new PyGameKey();
+//    private static PyGameFontStatic font = new PyGameFontStatic();
+//    private static PyGameDraw draw = new PyGameDraw();
+//    private static PyGameMixer mixer = new PyGameMixer();
+//    private static PyGameTransform transform = new PyGameTransform();
+//    private static PyGameSprite sprite = new PyGameSprite();
+//    private static PyGameJoystick joystick = new PyGameJoystick();
 
-    static {
-        TYPE.setAttribute("init", new Function() { @Override public PythonObject call0() {
-            return PythonNone.NONE;
+    public PyGameModule() {
+        super("pygame");
+        addMethod(new BuiltInMethod("init") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
         }});
-        TYPE.setAttribute("time", time);
-        TYPE.setAttribute("display", display);
-        TYPE.setAttribute("image", image);
-        TYPE.setAttribute("event", event);
-        TYPE.setAttribute("key", key);
-        TYPE.setAttribute("font", font);
-        TYPE.setAttribute("draw", draw);
-        TYPE.setAttribute("mixer", mixer);
-        TYPE.setAttribute("transform", transform);
-        TYPE.setAttribute("sprite", sprite);
-        TYPE.setAttribute("joystick", joystick);
-        TYPE.setAttribute("QUIT", EVENT_TYPE_QUIT);
-        TYPE.setAttribute("MOUSEMOTION", EVENT_TYPE_MOUSEMOTION);
-        TYPE.setAttribute("MOUSEBUTTONDOWN", EVENT_TYPE_MOUSEBUTTONDOWN);
-        TYPE.setAttribute("MOUSEBUTTONUP", EVENT_TYPE_MOUSEBUTTONUP);
-        TYPE.setAttribute("Rect", PyGameRect.TYPE);
-        TYPE.setAttribute("quit", new Function() { @Override public PythonObject call0() {
+        __setattr__("time", new PyGameTime());
+        __setattr__("display", new PyGameDisplay());
+        __setattr__("image", new PyGameImage());
+        __setattr__("event", new PyGameEvent());
+        __setattr__("key", new PyGameKey());
+        __setattr__("font", new PyGameFontStatic());
+        __setattr__("draw", new PyGameDraw());
+        __setattr__("mixer", new PyGameMixer());
+        __setattr__("transform", new PyGameTransform());
+        __setattr__("sprite", new PyGameSprite());
+        __setattr__("joystick", new PyGameJoystick());
+
+
+        __setattr__("QUIT", EVENT_TYPE_QUIT);
+        __setattr__("MOUSEMOTION", EVENT_TYPE_MOUSEMOTION);
+        __setattr__("MOUSEBUTTONDOWN", EVENT_TYPE_MOUSEBUTTONDOWN);
+        __setattr__("MOUSEBUTTONUP", EVENT_TYPE_MOUSEBUTTONUP);
+        __setattr__("Rect", PyGameRect.PYGAME_RECT_CLASS);
+        addMethod(new BuiltInMethod("quit") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
             SysModule.systemBridge.exit(0);
-            return PythonNone.NONE;
         }});
-        TYPE.setAttribute("Color", new Function() {
-            @Override public PythonObject call0(PythonObject name) {
-                return PyGameModule.color(name);
-            }
-            @Override public PythonObject call0(PythonObject r, PythonObject g, PythonObject b) {
-                return PyGameModule.color(r.asInteger(), g.asInteger(), b.asInteger());
-            }
-        });
+//
+//        __setattr__("quit", new Function() { @Override public PythonObject call0() {
+//            SysModule.systemBridge.exit(0);
+//            return PythonNone.NONE;
+//        }});
+//        __setattr__("Color", new Function() {
+//            @Override public PythonObject call0(PythonObject name) {
+//                return PyGameModule.color(name);
+//            }
+//            @Override public PythonObject call0(PythonObject r, PythonObject g, PythonObject b) {
+//                return PyGameModule.color(r.asInteger(), g.asInteger(), b.asInteger());
+//            }
+//        });
         addKey("K_BACKSPACE", Keys.BACKSPACE);
         addKey("K_TAB", Keys.TAB);
         addKey("K_CLEAR", Keys.CLEAR);
@@ -244,15 +251,9 @@ public class PyGameModule extends Proxy {
         //addKey("K_EURO", Keys.EURO);
     }
 
-    protected static void addKey(String key, final int k) {
-        TYPE.setAttribute(key, PythonInteger.valueOf(k));
+    protected void addKey(String key, final int k) {
+        __setattr__(key, PythonInteger.valueOf(k));
     }
-
-    private PyGameModule() {
-    }
-
-    @Override
-    public PythonType getType() { return TYPE; }
 
     public void setPath(String path) {
         this.path = path;
@@ -327,6 +328,7 @@ public class PyGameModule extends Proxy {
             shapeRenderer.end();
         }
         batchState = BATCH_NONE;
+        flip = true;
     }
 
     public static PythonTuple color(PythonObject name) {

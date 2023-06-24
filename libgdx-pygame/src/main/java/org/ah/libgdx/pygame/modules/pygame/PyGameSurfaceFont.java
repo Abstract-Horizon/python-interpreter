@@ -1,29 +1,35 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
+import java.util.Map;
+
+import org.ah.python.interpreter.BuiltInBoundMethod;
+import org.ah.python.interpreter.PythonClass;
+import org.ah.python.interpreter.PythonInteger;
+import org.ah.python.interpreter.PythonObject;
+import org.ah.python.interpreter.ThreadContext;
+
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 //import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
-import org.ah.python.interpreter.InstanceMethod;
-import org.ah.python.interpreter.PythonInteger;
-import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
-
 class PyGameSurfaceFont extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameImage.class);
-
-    static {
-        TYPE.setAttribute("get_width", new InstanceMethod<PyGameSurfaceFont>() { @Override public PythonObject call0(PyGameSurfaceFont self) {
-            return PythonInteger.valueOf(self.get_width());
-        }});
-        TYPE.setAttribute("get_height", new InstanceMethod<PyGameSurfaceFont>() { @Override public PythonObject call0(PyGameSurfaceFont self) {
-            return PythonInteger.valueOf(self.get_width());
-        }});
-        TYPE.setAttribute("get_rect", new InstanceMethod<PyGameSurfaceFont>() { @Override public PythonObject call0(PyGameSurfaceFont self) {
-            return self.get_rect();
-        }});
-    }
+    public static PythonClass PYGAME_FONT_CLASS = new PythonClass("pygame.font.Font") {
+        {
+            addMethod(new BuiltInBoundMethod("get_width") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceFont self = (PyGameSurfaceFont)args[0];
+                context.pushData(PythonInteger.valueOf(self.get_width()));
+            }});
+            addMethod(new BuiltInBoundMethod("get_height") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceFont self = (PyGameSurfaceFont)args[0];
+                context.pushData(PythonInteger.valueOf(self.get_width()));
+            }});
+            addMethod(new BuiltInBoundMethod("get_rect") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameSurfaceFont self = (PyGameSurfaceFont)args[0];
+                context.pushData(self.get_rect());
+            }});
+        }
+    };
 
     private GlyphLayout layout = new GlyphLayout();
     private BitmapFont font;
@@ -31,17 +37,16 @@ class PyGameSurfaceFont extends PythonObject {
     private float r;
     private float g;
     private float b;
+    private PyGameRect rect;
 
     public PyGameSurfaceFont(BitmapFont font, String text, float r, float g, float b) {
+        super(PYGAME_FONT_CLASS);
         this.font = font;
         this.text = text;
         this.r = r;
         this.g = g;
         this.b = b;
     }
-
-    @Override
-    public PythonType getType() { return TYPE; }
 
     public void draw(int x, int y) {
         //BitmapFont font = PyGameModule.PYGAME_MODULE.getFont();
@@ -64,10 +69,13 @@ class PyGameSurfaceFont extends PythonObject {
     }
 
     public PyGameRect get_rect() {
-        BitmapFont font = PyGameModule.PYGAME_MODULE.getFont();
-        layout.setText(font, text);
-        // TextBounds bounds = font.getBounds(text);
-        return new PyGameRect(0, 0, (int)layout.width, (int)layout.height);
+        if (rect == null) {
+            BitmapFont font = PyGameModule.PYGAME_MODULE.getFont();
+            layout.setText(font, text);
+            // TextBounds bounds = font.getBounds(text);
+            rect = new PyGameRect(0, 0, (int)layout.width, (int)layout.height);
+        }
+        return rect;
     }
 
 }

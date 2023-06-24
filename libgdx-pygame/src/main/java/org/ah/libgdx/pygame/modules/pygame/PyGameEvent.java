@@ -2,28 +2,28 @@ package org.ah.libgdx.pygame.modules.pygame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
+import org.ah.python.interpreter.BuiltInMethod;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonList;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
-public class PyGameEvent extends Proxy {
+public class PyGameEvent extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameEvent.class);
+    public static PythonClass PYGAME_EVENT_CLASS = new PythonClass("pygame.event") {
+        {
+            addMethod(new BuiltInMethod("get") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                context.pushData(new PythonList(events));
+            }});
+        }
+    };
 
     private static List<PythonObject> events = new ArrayList<PythonObject>();
 
     public PyGameEvent() {
-    }
-
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.setAttribute("get", new Function() { @Override public PythonObject call0() {
-            return new PythonList(events);
-        }});
+        super(PYGAME_EVENT_CLASS);
     }
 
     public List<PythonObject> getEvents() {

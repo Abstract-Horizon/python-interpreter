@@ -1,42 +1,45 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
-import static org.ah.python.interpreter.PythonInteger.ONE;
-import static org.ah.python.interpreter.PythonInteger.ZERO;
-import static org.ah.python.interpreter.PythonNone.NONE;
+import java.util.List;
+import java.util.Map;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
-import org.ah.python.interpreter.PythonNone;
+import org.ah.python.interpreter.BuiltInBoundMethod;
+import org.ah.python.interpreter.BuiltInMethod;
+import org.ah.python.interpreter.ListAccessible;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
-class PyGameDisplay extends Proxy {
+class PyGameDisplay extends PythonObject {
 
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameDisplay.class);
+    public static PythonClass PYGAME_DISPLAY_CLASS = new PythonClass("pygame.display") {
+        {
+            addMethod(new BuiltInMethod("set_mode") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                if (args[0] instanceof ListAccessible) {
+                    List<PythonObject> list = ((ListAccessible)args[0]).asList();
+                    int w = list.get(0).asInteger();
+                    int h = list.get(1).asInteger();
+                    if (PyGameModule.PRE_RUN) {
+                        throw new PyGameModule.PyGamePreRunException(w, h);
+                    }
+                    PyGameModule.PYGAME_MODULE.getCamera().setToOrtho(true, w, h);
+                    context.pushData(new PyGameSurfaceScreen(w, h));
+                } else {
+                    throw new UnsupportedOperationException("set_mode on arbitrary object does not work yet");
+                }
+            }});
+            addMethod(new BuiltInBoundMethod("set_caption") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+            }});
+
+            addMethod(new BuiltInBoundMethod("flip") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameModule.PYGAME_MODULE.flip();
+            }});
+        }
+
+    };
 
     public PyGameDisplay() {
+        super(PYGAME_DISPLAY_CLASS);
     }
 
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.setAttribute("set_mode", new Function() { @Override public PythonObject call0(PythonObject resolution) {
-            int w = resolution.__getitem__(ZERO).dereference().asInteger();
-            int h = resolution.__getitem__(ONE).dereference().asInteger();
-            if (PyGameModule.PRE_RUN) {
-                throw new PyGameModule.PyGamePreRunException(w, h);
-            }
-            PyGameModule.PYGAME_MODULE.getCamera().setToOrtho(true, w, h);
-            return new PyGameSurfaceScreen(w, h);
-        }});
-        TYPE.setAttribute("set_caption", new Function() { @Override public PythonObject call0(PythonObject name) {
-            return NONE;
-        }});
-        
-        TYPE.setAttribute("flip", new Function() { @Override public PythonObject call0() {
-            PyGameModule.PYGAME_MODULE.flip();
-            return PythonNone.NONE;
-        }});
-    }
-    
 }

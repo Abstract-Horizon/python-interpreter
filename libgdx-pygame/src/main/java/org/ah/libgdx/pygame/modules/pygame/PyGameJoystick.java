@@ -1,23 +1,19 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
-import org.ah.python.interpreter.Function;
-import org.ah.python.interpreter.Proxy;
+import java.util.Map;
+
+import org.ah.python.interpreter.BuiltInMethod;
 import org.ah.python.interpreter.PythonInteger;
 import org.ah.python.interpreter.PythonObject;
-import org.ah.python.interpreter.PythonType;
+import org.ah.python.interpreter.ThreadContext;
 
-class PyGameJoystick extends Proxy {
-
-    public static PythonType TYPE = new PythonType(PythonObject.TYPE, PyGameJoystick.class);
+class PyGameJoystick extends org.ah.python.interpreter.Module {
 
     public PyGameJoystick() {
-    }
+        super("pygame.joystick");
 
-    public PythonType getType() { return TYPE; }
-
-    static {
-        TYPE.setAttribute("get_count", new Function() { @Override public PythonObject call0() {
-            return PythonInteger.valueOf(0);
+        addMethod(new BuiltInMethod("get_count") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+            context.pushData(PythonInteger.valueOf(0));
         }});
     }
 }

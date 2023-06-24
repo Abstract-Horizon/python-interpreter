@@ -1,35 +1,45 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.ah.python.interpreter.InstanceMethod;
-import org.ah.python.interpreter.Proxy;
+import org.ah.python.interpreter.BuiltInBoundMethod;
+import org.ah.python.interpreter.BuiltInIObject;
+import org.ah.python.interpreter.ListAccessible;
 import org.ah.python.interpreter.PythonBoolean;
-import org.ah.python.interpreter.PythonInstantiableType;
+import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonInteger;
-import org.ah.python.interpreter.PythonIterator;
 import org.ah.python.interpreter.PythonList;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.PythonTuple;
-import org.ah.python.interpreter.PythonType;
-import org.ah.python.interpreter.util.IntIterator;
+import org.ah.python.interpreter.ThreadContext;
 
-class PyGameRect extends Proxy {
+class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
 
-    public static PythonType TYPE = new PythonInstantiableType(PythonObject.TYPE, PyGameDisplay.class) {
-        @Override
-        public PythonObject __call__(PythonObject[] args) {
+    public static PythonClass PYGAME_RECT_CLASS = new PythonClass("pygame.Rect") {
+        public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+            int x = 0;
+            int y = 0;
+            int w = 0;
+            int h = 0;
             if (args.length == 4) {
-                return new PyGameRect(args[0].asInteger(), args[1].asInteger(), args[2].asInteger(), args[3].asInteger());
+                x = args[0].asInteger();
+                y = args[1].asInteger();
+                w = args[2].asInteger();
+                h = args[3].asInteger();
             } else if (args.length == 2) {
                 // TODO - this should be done in Python way - checking PythonType and if one of its ancestors is PyGameRectType...
-                if (args[0] instanceof PythonTuple && args[1] instanceof PythonTuple
+                if (args[0] instanceof ListAccessible && args[1] instanceof ListAccessible
                         && ((PythonList)args[0]).asList().size() > 1
                         && ((PythonList)args[1]).asList().size() > 1) {
-                    PythonList tuple1 = (PythonList)args[0];
-                    PythonList tuple2 = (PythonList)args[1];
-                    return new PyGameRect(tuple1.asList().get(0).asInteger(), tuple1.asList().get(1).asInteger(),
-                            tuple2.asList().get(0).asInteger(), tuple2.asList().get(1).asInteger());
+                    List<PythonObject> tuple1 = ((PythonList)args[0]).asList();
+                    List<PythonObject> tuple2 = ((PythonList)args[1]).asList();
+                    x = tuple1.get(0).asInteger();
+                    y = tuple1.get(1).asInteger();
+                    w = tuple2.get(0).asInteger();
+                    h = tuple1.get(1).asInteger();
                 } else {
                     throw new IllegalArgumentException("Wrong type of arguments for pygame.Rect(Tuple, Tuple) - there must be two Tuple types nad both with at least two elements");
                 }
@@ -37,96 +47,126 @@ class PyGameRect extends Proxy {
                 // TODO - this should be done in Python way - checking PythonType and if one of its ancestors is PyGameRectType...
                 if (args[0] instanceof PyGameRect) {
                     PyGameRect rect = (PyGameRect)args[0];
-                    return new PyGameRect(rect.x, rect.y, rect.w, rect.h);
+                    x = rect.x;
+                    y = rect.y;
+                    w = rect.w;
+                    h = rect.h;
                 } else {
                     throw new IllegalArgumentException("Wrong type of argument for pygame.Rect() - expected pygame.Rect");
                 }
             } else {
                 throw new IllegalArgumentException("Wrong number of arguments for pygame.Rect()");
             }
+            PyGameRect newPyGameRect = new PyGameRect(x, y, w, h);
+            context.pushData(newPyGameRect);
+        }
+        {
+            addMethod(new BuiltInBoundMethod("colliderect") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameRect self = (PyGameRect)args[0];
+
+                context.pushData(self.colliderect(args[1]));
+            }});
+            addMethod(new BuiltInBoundMethod("move") {
+                @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    PyGameRect self = (PyGameRect)args[0];
+
+                    if (args[1] instanceof PythonTuple) {
+                        context.pushData(self.move(args[1]));
+                    } else {
+                        context.pushData(self.move(args[1].asInteger(), args[2].asInteger()));
+                    }
+                }
+            });
+            addMethod(new BuiltInBoundMethod("copy") {
+                @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    PyGameRect self = (PyGameRect)args[0];
+
+                    context.pushData(new PyGameRect(self.x, self.y, self.w, self.h));
+                }
+            });
+            addMethod(new BuiltInBoundMethod("collidelist") {
+                @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    PyGameRect self = (PyGameRect)args[0];
+                    context.pushData(self.collidelist(args[1]));
+                }
+             });
+            addMethod(new BuiltInBoundMethod("collidepoint") {
+                @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    PyGameRect self = (PyGameRect)args[0];
+
+                    if (args[1] instanceof PythonTuple) {
+                        context.pushData(self.collidepoint(args[1]));
+                    } else {
+                        context.pushData(self.collidepoint(args[1], args[2]));
+                    }
+                }
+             }); // collidepoint
+            addMethod(new BuiltInBoundMethod("inflate") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameRect self = (PyGameRect)args[0];
+
+                context.pushData(self.inflate(args[1].asInteger(), args[2].asInteger()));
+            }});
+
+            setAttribute("x", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger(); }
+            });
+            setAttribute("left", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger(); }
+            });
+            setAttribute("y", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger(); }
+            });
+            setAttribute("top", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger(); }
+            });
+            setAttribute("w", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.w); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.w = expr.asInteger(); }
+            });
+            setAttribute("width", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.w); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.w = expr.asInteger(); }
+            });
+            setAttribute("h", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.h); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.h = expr.asInteger(); }
+            });
+            setAttribute("height", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.h); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.h = expr.asInteger(); }
+            });
+            setAttribute("right", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x + self.w); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger() - self.w; }
+            });
+            setAttribute("bottom", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y + self.h); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger() - self.h; }
+            });
+            setAttribute("center", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) {
+                    PythonTuple tuple = new PythonTuple();
+                    tuple.asList().add(PythonInteger.valueOf(self.x + self.w / 2));
+                    tuple.asList().add(PythonInteger.valueOf(self.y + self.h / 2));
+                    return tuple;
+                }
+                @Override public void assign(PyGameRect self, PythonObject expr) {
+                    if (expr instanceof PythonList) {
+                        PythonList list = (PythonList)expr;
+
+                        self.x = list.asList().get(0).asInteger() - self.w / 2;
+                        self.y = list.asList().get(1).asInteger() - self.h / 2;
+                    } else {
+                        throw new UnsupportedOperationException("center expected a list");
+                    }
+                }
+            });
         }
     };
-
-    static {
-        TYPE.setAttribute("colliderect", new InstanceMethod<PyGameRect>() { @Override public PythonObject call0(PyGameRect self, PythonObject arg) {
-            return self.colliderect(arg);
-        }});
-        TYPE.setAttribute("move", new InstanceMethod<PyGameRect>() {
-            @Override public PythonObject call0(PyGameRect self, PythonObject x, PythonObject y) {
-                return self.move(x.asInteger(), y.asInteger());
-            }
-            @Override public PythonObject call0(PyGameRect self, PythonObject tupple) {
-                return self.move(tupple);
-            }
-        });
-        TYPE.setAttribute("copy", new InstanceMethod<PyGameRect>() {
-            @Override public PythonObject call0(PyGameRect self) {
-                return new PyGameRect(self.x, self.y, self.w, self.h);
-            }
-        });
-        TYPE.setAttribute("collidelist", new InstanceMethod<PyGameRect>() {
-            @Override public PythonObject call0(PyGameRect self, PythonObject arg) {
-                return self.collidelist(arg);
-            }
-            @Override public PythonObject call0(PyGameRect self, PythonObject x, PythonObject y) {
-                return self.move(x.asInteger(), y.asInteger());
-            }
-         });
-        TYPE.setAttribute("collidepoint", new InstanceMethod<PyGameRect>() {
-            @Override public PythonObject call0(PyGameRect self, PythonObject arg) {
-                return self.collidepoint(arg);
-            }
-            @Override public PythonObject call0(PyGameRect self, PythonObject x, PythonObject y) {
-                return self.collidepoint(x, y);
-            }
-         }); // collidepoint
-        TYPE.setAttribute("inflate", new InstanceMethod<PyGameRect>() { @Override public PythonObject call0(PyGameRect self, PythonObject w, PythonObject h) {
-            return self.inflate(w.asInteger(), h.asInteger());
-        }});
-        TYPE.setAttribute("left", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) {
-                return PythonInteger.valueOf(self.x); }
-            @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger(); }
-        });
-        TYPE.setAttribute("top", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y); }
-            @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger(); }
-        });
-        TYPE.setAttribute("width", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.w); }
-            @Override public void assign(PyGameRect self, PythonObject expr) { self.w = expr.asInteger(); }
-        });
-        TYPE.setAttribute("height", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.h); }
-            @Override public void assign(PyGameRect self, PythonObject expr) { self.h = expr.asInteger(); }
-        });
-        TYPE.setAttribute("right", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x + self.w); }
-            @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger() - self.w; }
-        });
-        TYPE.setAttribute("bottom", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y + self.h); }
-            @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger() - self.h; }
-        });
-        TYPE.setAttribute("center", new Proxy.ProxyAttribute<PyGameRect>() {
-            @Override public PythonObject attribute(PyGameRect self) {
-                PythonTuple tuple = new PythonTuple();
-                tuple.asList().add(PythonInteger.valueOf(self.x + self.w / 2));
-                tuple.asList().add(PythonInteger.valueOf(self.y + self.h / 2));
-                return tuple;
-            }
-            @Override public void assign(PyGameRect self, PythonObject expr) {
-                if (expr instanceof PythonList) {
-                    PythonList list = (PythonList)expr;
-
-                    self.x = list.asList().get(0).asInteger() - self.w / 2;
-                    self.y = list.asList().get(1).asInteger() - self.h / 2;
-                } else {
-                    throw new UnsupportedOperationException("center expected a list");
-                }
-            }
-        });
-    }
 
     protected int x;
     protected int y;
@@ -135,13 +175,13 @@ class PyGameRect extends Proxy {
     protected int h;
 
     public PyGameRect(int x, int y, int w, int h) {
+        super(PYGAME_RECT_CLASS);
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
     }
 
-    public PythonType getType() { return TYPE; }
 
     public PythonInteger __len__() {
         return PythonInteger.valueOf(4);
@@ -180,9 +220,9 @@ class PyGameRect extends Proxy {
         throw new UnsupportedOperationException("__delitem__");
     }
 
-    public PythonIterator __iter__() {
-        return new PythonIterator(new IntIterator(this));
-    }
+//    public PythonIterator __iter__() {
+//        return new PythonIterator(new IntIterator(this));
+//    }
 
     public PythonObject __reversed__() {
         throw new UnsupportedOperationException("__reversed__");
@@ -220,11 +260,20 @@ class PyGameRect extends Proxy {
             oy = o.y;
             ow = o.w;
             oh = o.h;
+        } else if (arg instanceof ListAccessible) {
+            List<PythonObject> list = ((ListAccessible)arg).asList();
+            ox = list.get(0).asInteger();
+            oy = list.get(1).asInteger();
+            ow = list.get(2).asInteger();
+            oh = list.get(3).asInteger();
+
         } else {
-            ox = arg.__getitem__(PythonInteger.valueOf(0)).asInteger();
-            oy = arg.__getitem__(PythonInteger.valueOf(1)).asInteger();
-            ow = arg.__getitem__(PythonInteger.valueOf(2)).asInteger();
-            oh = arg.__getitem__(PythonInteger.valueOf(3)).asInteger();
+            // TODO this requires continuation for executing __getitem__
+            // ox = arg.__getitem__(PythonInteger.valueOf(0)).asInteger();
+            // oy = arg.__getitem__(PythonInteger.valueOf(1)).asInteger();
+            // ow = arg.__getitem__(PythonInteger.valueOf(2)).asInteger();
+            // oh = arg.__getitem__(PythonInteger.valueOf(3)).asInteger();
+            throw new UnsupportedOperationException("colliderect on arbitrary object does not work yet");
         }
         return PythonBoolean.valueOf(x < ox + ow && x + w > ox && y < oy + oh && y + h > oy);
     }
@@ -235,9 +284,15 @@ class PyGameRect extends Proxy {
             PyGameRect o = (PyGameRect)arg;
             ox = o.x;
             oy = o.y;
+        } else if (arg instanceof ListAccessible) {
+            List<PythonObject> list = ((ListAccessible)arg).asList();
+            ox = list.get(0).asInteger();
+            oy = list.get(1).asInteger();
         } else {
-            ox = arg.__getitem__(PythonInteger.valueOf(0)).asInteger();
-            oy = arg.__getitem__(PythonInteger.valueOf(1)).asInteger();
+            // TODO this requires continuation for executing __getitem__
+            // ox = arg.__getitem__(PythonInteger.valueOf(0)).asInteger();
+            // oy = arg.__getitem__(PythonInteger.valueOf(1)).asInteger();
+            throw new UnsupportedOperationException("collidepoint on arbitrary object does not work yet");
         }
         return PythonBoolean.valueOf(ox >= x && ox <= x + w && oy >= y && oy <= y + h);
     }
@@ -250,16 +305,39 @@ class PyGameRect extends Proxy {
 
     public PythonInteger collidelist(PythonObject arg) {
         int i = 0;
-        PythonIterator iterator = arg.__iter__();
-        PythonObject o = iterator.next();
-        while (o != null) {
-            PythonBoolean r = colliderect(o);
-            if (r.asBoolean()) {
-                return PythonInteger.valueOf(i);
+        if (arg instanceof ListAccessible) {
+            List<PythonObject> list = ((ListAccessible)arg).asList();
+            for (PythonObject o : list) {
+                PythonBoolean r = colliderect(o);
+                if (r.asBoolean()) {
+                    return PythonInteger.valueOf(i);
+                }
             }
-            i++;
-            o = iterator.next();
+            return PythonInteger.valueOf(-1);
+        } else {
+            // TODO this requires continuation for executing iterator
+            // PythonIterator iterator = arg.__iter__();
+            // PythonObject o = iterator.next();
+            // while (o != null) {
+            //     PythonBoolean r = colliderect(o);
+            //     if (r.asBoolean()) {
+            //         return PythonInteger.valueOf(i);
+            //     }
+            //     i++;
+            //     o = iterator.next();
+            // }
+            // return PythonInteger.valueOf(-1);
+            throw new UnsupportedOperationException("collidelist on arbitrary object does not work yet");
         }
-        return PythonInteger.valueOf(-1);
+    }
+
+    @Override
+    public List<PythonObject> asList() {
+        return Arrays.<PythonObject>asList(
+            PythonInteger.valueOf(x),
+            PythonInteger.valueOf(y),
+            PythonInteger.valueOf(w),
+            PythonInteger.valueOf(h)
+         );
     }
 }
