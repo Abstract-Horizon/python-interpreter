@@ -1,9 +1,8 @@
 package org.ah.python.interpreter;
 
-import java.util.List;
 import java.util.Map;
 
-public abstract class PythonSequence extends PythonObject {
+public abstract class PythonSequence extends PythonObject implements ListAccessible {
 
     public static PythonClass PYTHON_SEQUENCE_CLASS = new PythonClass("Sequence");
 
@@ -40,7 +39,5 @@ public abstract class PythonSequence extends PythonObject {
 //    public boolean asBoolean(ThreadContext context) {
 //        return __len__(context).asInteger(context) != 0;
 //    }
-
-    public abstract List<PythonObject> asList();
 
 }

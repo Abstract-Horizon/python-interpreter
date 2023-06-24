@@ -10,6 +10,8 @@ import org.ah.python.interpreter.ThreadContext;
 public class MathModule extends org.ah.python.interpreter.Module {
 
     public MathModule() {
+        super("math");
+
         addMethod(new BuiltInMethod("ceil") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
             throw new UnsupportedOperationException("Function ceil not supported yet");
         }});

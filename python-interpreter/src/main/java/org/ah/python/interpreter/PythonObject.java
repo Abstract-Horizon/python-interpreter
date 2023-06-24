@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ah.python.interpreter.Call.EvaluateFunctionAndArgsContinuation;
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class PythonObject implements Executable {
@@ -77,15 +76,16 @@ public class PythonObject implements Executable {
 
     public void evaluateObjectMethod(ThreadContext context, String methodName, Map<String, PythonObject> kwargs, PythonObject... kargs) {
         if (pythonClass != null) {
-            for (int i = kargs.length - 1; i >= 0; i++) {
-                context.pushData(kargs[i]);
-            }
-            // TODO we do this thinking it is OK - but we don't know!!!
-            context.pushData(this);
-            context.continuation(new EvaluateFunctionAndArgsContinuation(kargs.length));
-            // context.continuation(evaluateContinuation);
-
-            pythonClass.__getattr__(context, methodName);
+            Call.invoke(context, this, methodName, kwargs, kargs);
+//            for (int i = kargs.length - 1; i >= 0; i--) {
+//                context.pushData(kargs[i]);
+//            }
+//            // TODO we do this thinking it is OK - but we don't know!!!
+//            context.pushData(this);
+//            context.continuation(new EvaluateFunctionAndArgsContinuation(kargs.length));
+//            // context.continuation(evaluateContinuation);
+//
+//            pythonClass.__getattr__(context, methodName);
         } else {
             context.raise(exception("AttributeError", PythonString.valueOf(methodName + "@" + toString())));
         }
@@ -146,7 +146,7 @@ public class PythonObject implements Executable {
     public void __ne__(ThreadContext context, PythonObject other) {
         __eq__(context, other);
         // TODO this can be done better!!!
-        context.a = ((PythonBoolean)context.a).not();
+        context.setTop(((PythonBoolean)context.top()).not());
     }
 
     public void __lt__(ThreadContext context, PythonObject other) {
@@ -488,7 +488,11 @@ public class PythonObject implements Executable {
         return res.toString();
     }
 
-    protected static String arrayToString(Object[] col, String delimiter) {
+    public static String arrayToString(Object[] col) {
+        return arrayToString(col, ", ");
+    }
+
+    public static String arrayToString(Object[] col, String delimiter) {
         StringBuilder res = new StringBuilder();
         boolean first = true;
         for (Object o : col) {

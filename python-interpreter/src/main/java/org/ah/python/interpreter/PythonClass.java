@@ -1,33 +1,31 @@
 package org.ah.python.interpreter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class PythonClass extends Scope {
 
+    public static interface Attribute<T> {
+        public PythonObject attribute(T self);
+        public void assign(T self, PythonObject expr);
+    }
+
     public static PythonClass PYTHON_CLASS = new PythonClass();
     public static PythonClass PYTHON_INTERNAL_CLASS_NOT_DEFINED = new PythonClass("python-internal-class-not-defined");
+    public static PythonClass BUILT_IN_METHOD_CLASS = new PythonClass("built-in method");
 
     protected String name;
+    protected Map<String, Attribute<?>> nativeClassDefinedAttribtues = null;
 
-    private PythonClass() {
+    protected PythonClass() {
         super(null, null);
         name = "class";
     }
 
     public PythonClass(String name) {
-        this(PYTHON_CLASS, name);
-    }
-
-    public PythonClass(PythonClass pythonClass, String name) {
-        super(pythonClass, null);
+        super(PYTHON_CLASS, null);
         this.name = name;
-    }
 
-    public String toString() {
-        return "<class '" + name + "'>";
-    }
-
-    protected void populateCommonMethods() {
         __setattr__("__repr__", new BuiltInBoundMethod("__repr__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__repr__(context);
@@ -68,6 +66,20 @@ public class PythonClass extends Scope {
                 args[0].__ge__(context, args[1]);
             }
         });
+    }
+
+//    protected PythonClass(PythonClass pythonClass, String name) {
+//        super(pythonClass, null);
+//        this.name = name;
+//    }
+
+    public String toString() {
+        return "<class '" + name + "'>";
+    }
+
+    public void setAttribute(String name, Attribute<?> attr) {
+        if (nativeClassDefinedAttribtues == null) { nativeClassDefinedAttribtues = new HashMap<String, PythonClass.Attribute<?>>(); }
+        nativeClassDefinedAttribtues.put(name, attr);
     }
 
     public static void populateCommonAttributeClassMethods(PythonClass pythonClass) {

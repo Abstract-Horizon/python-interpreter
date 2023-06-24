@@ -34,7 +34,7 @@ public class BaseTestClass {
 
     @Before
     public void setUp() {
-        module = new Module();
+        module = new Module("__main__");
         module.__setattr__("__name__", PythonString.valueOf("__main__"));
         context = new ThreadContext(module);
         context.setCurrentScope(module);
@@ -64,6 +64,7 @@ public class BaseTestClass {
         PythonScannerFixed scanner = new PythonScannerFixed(new StringReader(code));
         PythonParser parser = new PythonParser(scanner);
         parser.setModule(module);
+        module.setName("__main__");
 
         parser.next();
         parser.existing_module_file_input();
@@ -81,8 +82,8 @@ public class BaseTestClass {
 
     public void contextIsEmpty() {
         StringBuilder message = new StringBuilder();
-        if (context.dataStack.size() > 0) {
-            message.append("Data stack is not emtpy; " + context.dataStack).append("\n");
+        if (context.getDataStackLevel() > 0) {
+            message.append("Data stack is not emtpy; " + PythonObject.arrayToString(context.dataStack)).append("\n");
         }
         if (context.pcStack.size() > 0) {
             message.append("PC stack is not emtpy; " + context.pcStack).append("\n");

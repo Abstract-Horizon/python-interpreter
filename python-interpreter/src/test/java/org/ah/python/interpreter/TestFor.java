@@ -17,5 +17,19 @@ public class TestFor extends BaseTestClass {
         );
 
         assertEquals("start\n0\n1\n2\nend\n", result());
+        contextIsEmpty();
+    }
+
+    @Test
+    public void canForOverList() {
+        executeLines(
+            "l = [1, 2, 3, 4]",
+            "for i in l:",
+            "    print(i)",
+            "print(\"End\")"
+        );
+
+        assertEquals("1\n2\n3\n4\nEnd\n", result());
+        contextIsEmpty();
     }
 }

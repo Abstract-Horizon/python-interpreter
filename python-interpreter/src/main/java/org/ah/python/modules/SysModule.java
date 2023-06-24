@@ -19,6 +19,7 @@ public class SysModule extends org.ah.python.interpreter.Module {
     };
 
     public SysModule() {
+        super("sys");
     }
 
     {

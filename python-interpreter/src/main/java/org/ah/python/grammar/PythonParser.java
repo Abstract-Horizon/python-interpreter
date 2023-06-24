@@ -110,7 +110,7 @@ public class PythonParser {
 
     // public file_input<null> = {(.k=1.) NEWLINE|stmt};
     public void file_input() throws ParserError {
- module = new Module(); currentBlock = module.getBlock(); 
+ module = new Module("parsed"); currentBlock = module.getBlock(); 
         while (((id >= 1) && (id <=11)) || ((id >= 14) && (id <=21)) || (id == 25) || ((id >= 27) && (id <=28)) || (id == 31) || (id == 33) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_ELLIPSIS) && (id <=PythonScanner.TOKEN_AT)) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || (id == PythonScanner.TOKEN_NEWLINE) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             if ((id == PythonScanner.TOKEN_NEWLINE)) {
                 if (id == PythonScanner.TOKEN_NEWLINE) {
@@ -628,7 +628,7 @@ public class PythonParser {
             del_stmt();
         } else if ((id == 2)) {
             pass_stmt();
-             throw new UnsupportedOperationException("pass_stmt"); 
+             currentList.add(new PythonPass()); 
         } else if (((id >= 3) && (id <=6)) || (id == 17)) {
             flow_stmt();
         } else if ((id == 7) || (id == 33)) {
@@ -859,7 +859,7 @@ public class PythonParser {
         }
         exprlist();
         
-                    currentObject = new Del(currentList);
+                    currentObject = Del.createDel(currentList);
                     addStatement(currentObject);
                 
     } // del_stmt
@@ -1641,10 +1641,10 @@ public class PythonParser {
         test_nocond();
     } // lambdef_nocond
 
-    // public or_test<null> = and_test CODE {"or" and_test CODE} CODE;
+    // public or_test<null> = and_test CODE {"or" and_test CODE};
     public void or_test() throws ParserError {
         and_test();
-         List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); 
+         ThreadContext.Executable left = currentObject; 
         while ((id == 30)) {
             if (id == 30) {
                 next(); // <-- here 2
@@ -1652,15 +1652,14 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"or\"");
             }
             and_test();
-             list.add(currentObject); 
+             currentObject = new LogicalOr(left, currentObject); 
         } // while 
-         if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.Or); } 
     } // or_test
 
-    // public and_test<null> = not_test CODE {"and" not_test CODE} CODE;
+    // public and_test<null> = not_test CODE {"and" not_test CODE};
     public void and_test() throws ParserError {
         not_test();
-         List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); 
+         ThreadContext.Executable left = currentObject; 
         while ((id == 29)) {
             if (id == 29) {
                 next(); // <-- here 2
@@ -1668,9 +1667,8 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"and\"");
             }
             not_test();
-             list.add(currentObject); 
+             currentObject = new LogicalAnd(left, currentObject); 
         } // while 
-         if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.And); } 
     } // and_test
 
     // public not_test<null> = (.k=1.) "not" not_test CODE|comparison;
@@ -1682,7 +1680,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"not\"");
             }
             not_test();
-             currentObject = new UnaryOp(currentObject, UnaryopType.Not); 
+             currentObject = new LogicalNot(currentObject); 
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             comparison();
         } else {
@@ -2358,7 +2356,7 @@ public class PythonParser {
         } // while 
     } // subscriptlist
 
-    // public subscript<null> = (.k=1.) test CODE|CODE [test CODE] COLON [test CODE] [sliceop] CODE;
+    // public subscript<null> = (.k=1.) test CODE|CODE [test CODE] COLON [test CODE] [sliceop CODE] CODE;
     public void subscript() throws ParserError {
  ThreadContext.Executable target = currentObject; 
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
@@ -2370,10 +2368,11 @@ public class PythonParser {
              
                    ThreadContext.Executable from = null;
                    ThreadContext.Executable to = null;
+                   ThreadContext.Executable stride = null;
                 
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 from = currentObject; 
+                 from = currentObject; currentObject = null; 
             } 
             if (id == PythonScanner.TOKEN_COLON) {
                 next(); // <-- here 2
@@ -2382,23 +2381,15 @@ public class PythonParser {
             }
             if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 test();
-                 to = currentObject; 
+                 to = currentObject; currentObject = null; 
             } 
             if ((id == PythonScanner.TOKEN_COLON)) {
                 sliceop();
+                 stride = currentObject; 
             } 
             
-                      // currentObject = new Subscript(target, from, to);
-                      if (from == null && to == null) {
-                          // return target;
-                          throw new UnsupportedOperationException("Subscript/Slice without parameters. How could this happen?");
-                      } else if (from == null) {
-                          throw new UnsupportedOperationException("Slice");
-                      } else if (to == null) {
-                          throw new UnsupportedOperationException("Slice");
-                      } else {
-                          currentObject = new Call(new Reference(target, "__getitem__"), from);
-                      }
+                      // currentObject = new Subscript(target, from, to, stride);
+                      currentObject = new Call(new Reference(target, "__getitem__"), new PythonSlice(from, to, stride));
                   
         } else {
             throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,COLON,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");

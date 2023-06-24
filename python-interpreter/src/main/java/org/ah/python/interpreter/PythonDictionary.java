@@ -9,7 +9,6 @@ public class PythonDictionary extends PythonObject {
 
     public static PythonClass PYTHON_DICT_CLASS = new PythonClass("dict") {
         {
-            populateCommonMethods();
             populateCommonContainerClassMethods(this);
         }
     };

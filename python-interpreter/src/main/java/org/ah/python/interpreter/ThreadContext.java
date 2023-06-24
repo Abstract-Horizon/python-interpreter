@@ -2,16 +2,20 @@ package org.ah.python.interpreter;
 
 import java.util.Stack;
 
+import org.ah.python.interpreter.StopIteration.StopIterationException;
+
 public class ThreadContext {
+
+    public static int DEFAULT_DATA_STACK_SIZE = 500;
 
     public static interface Executable {
         public void evaluate(ThreadContext context);
     }
 
     public Stack<Executable> pcStack = new Stack<Executable>();
-    public Stack<PythonObject> dataStack = new Stack<PythonObject>();
-
-    public PythonObject a;
+    // public Stack<PythonObject> dataStack = new Stack<PythonObject>();
+    public PythonObject[] dataStack;
+    private int dataStackPtr = -1;
 
     public Scope globalScope;
     public Scope currentScope;
@@ -20,8 +24,14 @@ public class ThreadContext {
     public int line;
 
     public ThreadContext(Scope globalScope) {
+        this(globalScope, DEFAULT_DATA_STACK_SIZE);
+    }
+
+    public ThreadContext(Scope globalScope, int dataStackSize) {
         this.globalScope = globalScope;
         this.currentScope = globalScope;
+        dataStack = new PythonObject[dataStackSize];
+        dataStackPtr = 0;
     }
 
     public boolean next() {
@@ -46,27 +56,31 @@ public class ThreadContext {
         }
     }
 
-    public PythonObject popData() {
-        PythonObject existingA = a;
-        if (dataStack.isEmpty()) {
-            // TODO is this right?
-            a = null;
-            if (existingA == null) {
-                throw new IllegalStateException("Stack is empty!");
-            }
-        } else {
-            a = dataStack.pop();
+    public PythonObject top() {
+        if (dataStackPtr >= 0) {
+            return dataStack[dataStackPtr];
         }
-        return existingA;
+        return null;
+    }
+
+    public void setTop(PythonObject top) {
+        if (dataStackPtr >= 0) {
+            dataStack[dataStackPtr] = top;
+        }
+    }
+
+    public PythonObject popData() {
+        if (dataStackPtr >= 0) {
+            PythonObject a = dataStack[dataStackPtr];
+            dataStackPtr -= 1;
+            return a;
+        }
+        throw new IllegalStateException("Stack is empty! Line " + line);
     }
 
     public void pushData(PythonObject value) {
-        if (a == null) {
-            a = value;
-        } else {
-            dataStack.push(a);
-            a = value;
-        }
+        dataStackPtr += 1;
+        dataStack[dataStackPtr] = value;
     }
 
     public Scope getCurrentScope() {
@@ -78,6 +92,9 @@ public class ThreadContext {
     }
 
     public PythonObject raise(PythonBaseException exception) {
+        if (exception instanceof StopIteration) {
+            throw new StopIterationException();
+        }
         throw new RuntimeException("@ line " + line + ", " + exception.asString());
     }
 
@@ -101,5 +118,13 @@ public class ThreadContext {
             }
             objectsToEvaluate[len - 1].evaluate(this);
         }
+    }
+
+    public int getDataStackLevel() {
+        return dataStackPtr;
+    }
+
+    public void setDataStackLevel(int dataStackLevel) {
+        dataStackPtr = dataStackLevel;
     }
 }

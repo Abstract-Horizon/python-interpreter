@@ -38,7 +38,7 @@ public class Subscript extends PythonObject implements Assignable {
         if (from == null && to == null) {
             context.pushData(scope);
         } else if (from == null) {
-
+            context.pushData(scope);
         } else if (to == null) {
 
         } else if (from == to) {

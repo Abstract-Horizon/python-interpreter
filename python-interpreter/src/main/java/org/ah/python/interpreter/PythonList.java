@@ -88,16 +88,16 @@ public class PythonList extends PythonSequence {
         context.pushData(PythonInteger.valueOf(list.size()));
     }
 
-    public PythonObject append(ThreadContext context, PythonObject value) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("list.append")));
+    public void append(ThreadContext context, PythonObject value) {
+        list.add(value);
     }
 
-    public PythonObject clear(ThreadContext context) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("list.clear")));
+    public void clear(ThreadContext context) {
+        list.clear();
     }
 
-    public PythonObject remove(ThreadContext context, PythonObject value) {
-        return context.raise(exception("AttributeError", PythonString.valueOf("list.remove")));
+    public void remove(ThreadContext context, PythonObject value) {
+        context.raise(exception("AttributeError", PythonString.valueOf("list.remove")));
     }
 
 //    private Executable setItemContinuation = new Executable() {
@@ -233,7 +233,8 @@ public class PythonList extends PythonSequence {
 
     @Override
     public void __iter__(ThreadContext context) {
-        context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
+        // context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
+        context.pushData(new PythonIterator(list.iterator()));
     }
 
     @Override

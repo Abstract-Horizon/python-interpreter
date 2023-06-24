@@ -8,7 +8,6 @@ public class PythonBoolean extends PythonNumber {
 
     public static PythonClass PYTHON_BOOL_CLASS = new PythonClass("bool") {
         {
-            populateCommonMethods();
             populateCommonNumberClassMethods(this);
             addMethod(new BuiltInBoundMethod("__and__") {
                 public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {

@@ -69,14 +69,14 @@ public class Def extends Function {
                 instanceMethod = true;
             }
 
-            System.out.println("Assigning def to " + context.currentScope + " with name " + name + (instanceMethod ? "as instance method" : ""));
+            // System.out.println("Assigning def to " + context.currentScope + " with name " + name + (instanceMethod ? "as instance method" : ""));
 
             context.currentScope.__setattr__(context, name, Def.this);
         }
     };
 
     public Def(String name, Argument[] args) {
-        super(new PythonMethodClass("<function " + name + ">"), name);
+        super(new PythonClass("<function " + name + ">"), name);
         this.args = args;
         List<Argument> argsToBeEvaluated = new ArrayList<Argument>();
         for (Argument arg : args) {
@@ -111,7 +111,7 @@ public class Def extends Function {
     }
 
     @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... kargs) {
-        System.out.println("Executing function " + name + " with args " + arrayToString(evaluatedArguments, ", "));
+        // System.out.println("Executing function " + name + " with args " + arrayToString(evaluatedArguments, ", "));
 
         // Bind arguments
         Frame frame = new Frame(context, functionScope);

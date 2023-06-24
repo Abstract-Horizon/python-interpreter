@@ -50,17 +50,8 @@ public class TestArrays extends BaseTestClass {
             "c = a[1]"
         );
 
-        PythonObject b1 = context.currentScope.getAttribute("b1");
-        PythonObject b2 = context.currentScope.getAttribute("b2");
-        PythonObject b3 = context.currentScope.getAttribute("b3");
         PythonObject c = context.currentScope.getAttribute("c");
 
-        System.out.println("Got b1=" + b1);
-        System.out.println("Got b2=" + b2);
-        System.out.println("Got b3=" + b3);
-        System.out.println("Got c=" + c);
-
-//        assertEquals(3, b.asInteger());
         assertEquals(5, c.asInteger());
 
         contextIsEmpty();

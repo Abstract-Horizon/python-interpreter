@@ -8,7 +8,6 @@ public class PythonFloat extends PythonNumber {
 
     public static PythonClass PYTHON_FLOAT_CLASS = new PythonClass("float") {
         {
-            populateCommonMethods();
             populateCommonNumberClassMethods(this);
         }
     };

@@ -26,6 +26,7 @@ import org.ah.python.interpreter.PythonString;
 import org.ah.python.interpreter.PythonTuple;
 import org.ah.python.interpreter.Scope;
 import org.ah.python.interpreter.ThreadContext;
+import org.ah.python.interpreter.StopIteration.StopIterationException;
 import org.ah.python.interpreter.ThreadContext.Executable;
 import org.ah.python.interpreter.util.RangeIterator;
 
@@ -265,11 +266,13 @@ public class BuiltInFunctions extends Scope {
                     @Override public void evaluate(ThreadContext context) {
                         PythonIterator iter = (PythonIterator)context.popData();
                         PythonList list = new PythonList();
-                        PythonObject o = iter.next(context);
-                        while (o != null) {
-                            list.asList().add(o);
-                            o = iter.next(context);
-                        }
+                        try {
+                            PythonObject o = iter.next(context);
+                            while (o != null) {
+                                list.asList().add(o);
+                                o = iter.next(context);
+                            }
+                        } catch (StopIterationException ignore) {}
 
                         context.pushData(list);
                     }
@@ -441,11 +444,16 @@ public class BuiltInFunctions extends Scope {
                             }
                         } else if (args.length == 2) {
                             if (args[0] instanceof PythonNumber && args[1] instanceof PythonNumber) {
-                                context.pushData(PythonSlice.range(context, ((PythonNumber)args[0]), ((PythonNumber)args[1])));
+                                context.pushData(PythonSlice.range(((PythonNumber)args[0]).asInteger(), ((PythonNumber)args[1]).asInteger()));
                             } else {
                                 context.raise(exception("TypeError", PythonString.valueOf("slice still does not support index of type " + args[0].getPythonClass().getName() + "," + args[1].getPythonClass().getName())));
                             }
                         } else if (args.length == 3) {
+                            if (args[0] instanceof PythonNumber && args[1] instanceof PythonNumber && args[2] instanceof PythonNumber) {
+                                context.pushData(PythonSlice.range(((PythonNumber)args[0]).asInteger(), ((PythonNumber)args[1]).asInteger(), ((PythonNumber)args[2]).asInteger()));
+                            } else {
+                                context.raise(exception("TypeError", PythonString.valueOf("slice still does not support index of type " + args[0].getPythonClass().getName() + "," + args[1].getPythonClass().getName())));
+                            }
                             throw new UnsupportedOperationException("Function slice not supported yet");
                         } else if (args.length == 0) {
                             context.raise(exception("TypeError", PythonString.valueOf("slice expected at least 1 arguments, got 0")));
@@ -474,11 +482,13 @@ public class BuiltInFunctions extends Scope {
                     @Override public void evaluate(ThreadContext context) {
                         PythonIterator iter = (PythonIterator)context.popData();
                         PythonTuple tuple = new PythonTuple();
-                        PythonObject o = iter.next(context);
-                        while (o != null) {
-                            tuple.asList().add(o);
-                            o = iter.next(context);
-                        }
+                        try {
+                            PythonObject o = iter.next(context);
+                            while (o != null) {
+                                tuple.asList().add(o);
+                                o = iter.next(context);
+                            }
+                        } catch (StopIterationException ignore) {}
 
                         context.pushData(tuple);
                     }

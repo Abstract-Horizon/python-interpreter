@@ -22,7 +22,7 @@ public class Assign extends PythonObject {
 
             PythonObject expression = context.popData();
 
-            System.out.println("Assigning to " + ref + " with name " + referenceObject.getName() + " value of " + expression);
+            // System.out.println("Assigning to " + ref + " with name " + referenceObject.getName() + " value of " + expression);
             ref.__setattr__(context, referenceObject.getName(), expression);
 
             if (!lastInstruction) {
@@ -50,7 +50,7 @@ public class Assign extends PythonObject {
                 context.continuationWithEvaluate(continuation, expression);
             }
         } else {
-            throw new RuntimeException("Expected reference");
+            throw new RuntimeException("Expected reference, but got " + reference);
         }
     }
 
@@ -62,7 +62,7 @@ public class Assign extends PythonObject {
         return reference.toString() + " = " + expression.toString();
     }
 
-    public static PythonObject createAssignment(PythonObject reference, PythonObject expression) {
+    public static PythonObject createAssignment(Executable reference, Executable expression) {
         return createAssignment(reference, expression, false);
     }
 
@@ -71,7 +71,7 @@ public class Assign extends PythonObject {
             Call call = (Call)reference;
             if (call.function instanceof Reference) {
                 Reference callReference = (Reference)call.function;
-                if (callReference.name == "__getitem__") {
+                if (callReference.name.equals("__getitem__")) {
                     callReference.name = "__setitem__";
                     Executable[] newArgs = new Executable[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
@@ -79,7 +79,7 @@ public class Assign extends PythonObject {
                     // call.kargs = newArgs;
                     // return call;
                     return new Call(callReference, call.kwargs, newArgs);
-                } else if (callReference.name == "__getattr__") {
+                } else if (callReference.name.equals("__getattr__")) {
                     callReference.name = "__setattr__";
                     Executable[] newArgs = new Executable[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);

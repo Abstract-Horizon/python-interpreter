@@ -6,10 +6,20 @@ import org.ah.python.modules.BuiltInFunctions;
 
 public class Module extends Scope {
 
+    private String name;
     private Block block = new Block();
 
-    public Module() {
+    public Module(String name) {
         super(PYTHON_INTERNAL_CLASS_NOT_DEFINED, BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE);
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Block getBlock() {
@@ -22,6 +32,6 @@ public class Module extends Scope {
     }
 
     public String toString() {
-        return "Module " + block;
+        return "<module '" + name + ". from '<not implemented>'";
     }
 }

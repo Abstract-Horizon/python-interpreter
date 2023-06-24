@@ -23,8 +23,9 @@ public class While implements Executable {
 
     private Executable whiteContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
-            if (context.a instanceof PythonBoolean) {
-                if (((PythonBoolean)context.a).asBoolean()) {
+            PythonObject a = context.top();
+            if (a instanceof PythonBoolean) {
+                if (((PythonBoolean)a).asBoolean()) {
                     context.continuation(whiteContinuation);
                     context.continuation(test);
                     block.evaluate(context);
@@ -33,14 +34,14 @@ public class While implements Executable {
                 }
             } else {
                 context.continuation(whiteBoolContinuation);
-                context.a.__bool__(context);
+                context.top().__bool__(context);
             }
         }
     };
 
     private Executable whiteBoolContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
-            if (((PythonBoolean)context.a).asBoolean()) {
+            if (((PythonBoolean)context.top()).asBoolean()) {
                 context.continuation(whiteContinuation);
                 context.continuation(test);
                 block.evaluate(context);

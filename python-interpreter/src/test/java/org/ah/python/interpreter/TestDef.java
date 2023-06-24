@@ -4,23 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.ah.python.modules.BuiltInFunctions;
 import org.junit.Test;
-//import org.ah.python.interpreter.Modules;
 
 public class TestDef extends BaseTestClass {
-
-//    @Test
-//    public void canInterpretDef() {
-//        PythonObject module = Interpreter.convert(
-//                "def x():\n"
-//              + "    print(\"TRUE\")\n"
-//              + "\n"
-//              + "x()\n"
-//              );
-//
-//        module.__call__();
-//
-//        assertEquals("TRUE\n", result());
-//    }
 
     @Test public void testDefOnModule() {
 
@@ -41,8 +26,6 @@ public class TestDef extends BaseTestClass {
 
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
-        System.out.println(result());
-//        assertEquals(context.a.asInteger(), 5);
         contextIsEmpty();
     }
 
@@ -71,7 +54,6 @@ public class TestDef extends BaseTestClass {
         for (int i = 0; i < 10000 && context.next(); i++) {}
 
         String resultString = result();
-        System.out.println(resultString);
         assertEquals(resultString, "Print from method, x=value_of_x\n");
         contextIsEmpty();
     }
@@ -98,6 +80,44 @@ public class TestDef extends BaseTestClass {
         );
 
         assertEquals("9\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testParsedDefWithTwoParameters() {
+        executeLines(
+            "def x(a, b):",
+            "    return a * 2 + b",
+            "",
+            "print(x(4, 1))"
+        );
+
+        assertEquals("9\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testNoStackLeftAfterInvocation() {
+        executeLines(
+            "def x(a):",
+            "    b = a + 1",
+            "    return b",
+            "x(1)",
+            "print(x(8))",
+            "x(2)"
+        );
+
+        assertEquals("9\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testNoStackLeftAfterInvocation2() {
+        executeLines(
+            "def x(a):",
+            "    return a",
+            "x(1)",
+            "x(2)",
+            "x(3)"
+        );
+
         contextIsEmpty();
     }
 }

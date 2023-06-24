@@ -11,7 +11,7 @@ public class Reference extends PythonObject implements Executable, Assignable {
         @Override public void evaluate(ThreadContext context) {
             // PythonObject o = context.popData();
             // TODO - this directly going to pythonClass is wrong! This needs to be moved to PythonObject.__getattr__
-            PythonObject o = context.a;
+            PythonObject o = context.top();
             context.continuation(checkBoundMethodContinuation);
             o.__getattr__(context, name.toString());
         }
@@ -20,12 +20,13 @@ public class Reference extends PythonObject implements Executable, Assignable {
     private Executable checkBoundMethodContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             // TODO optimise BuiltInBoundMethod and Def.isInstanceMethod
-            if (!(context.a instanceof BuiltInBoundMethod
-                    || (context.a instanceof Def && ((Def)context.a).isInstanceMethod()))) {
+            PythonObject a = context.top();
+            if (!(a instanceof ProxyAttribute
+                    || (a instanceof Function && ((Function)a).isInstanceMethod()))) {
                 // Remove 'self'
-                PythonObject data = context.a;
+                PythonObject data = a;
                 context.popData();
-                context.a = data;
+                context.setTop(data);
             }
         }
     };

@@ -137,7 +137,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     single_input = (NEWLINE | simple_stmt | compound_stmt NEWLINE { NEWLINE } );
 
     file_input = 
-        <% module = new Module(); currentBlock = module.getBlock(); %> 
+        <% module = new Module("parsed"); currentBlock = module.getBlock(); %> 
                  { NEWLINE | stmt };
 
     existing_module_file_input = 
@@ -232,7 +232,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     small_stmt = ( expr_stmt 
                  | del_stmt
-                 | pass_stmt <% throw new UnsupportedOperationException("pass_stmt"); %>
+                 | pass_stmt <% currentList.add(new PythonPass()); %>
                  | flow_stmt 
                  | import_stmt 
                  | global_stmt 
@@ -331,7 +331,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     // For normal assignments, additional restrictions enforced by the interpreter
     del_stmt = "del" exprlist 
                 <%
-                    currentObject = new Del(currentList);
+                    currentObject = Del.createDel(currentList);
                     addStatement(currentObject);
                 %>  
              ;
@@ -493,17 +493,17 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     
     lambdef_nocond = "lambda" [varargslist] COLON test_nocond;
 
-    or_test = and_test        <% List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); %>
-            { "or" and_test   <% list.add(currentObject); %>
-            }                 <% if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.Or); } %>
+    or_test = and_test        <% ThreadContext.Executable left = currentObject; %>
+            { "or" and_test   <% currentObject = new LogicalOr(left, currentObject); %>
+            }
             ;
 
-    and_test = not_test       <% List<ThreadContext.Executable> list = new ArrayList<ThreadContext.Executable>(); list.add(currentObject); %>
-             { "and" not_test <% list.add(currentObject); %>
-             }                <% if (list.size() > 1) { currentObject = new BoolOp(list, BoolopType.And); } %>
+    and_test = not_test       <% ThreadContext.Executable left = currentObject; %>
+             { "and" not_test <% currentObject = new LogicalAnd(left, currentObject); %>
+             }
              ;
 
-    not_test = "not" not_test <% currentObject = new UnaryOp(currentObject, UnaryopType.Not); %>
+    not_test = "not" not_test <% currentObject = new LogicalNot(currentObject); %>
              | comparison
              ;
 
@@ -771,23 +771,15 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
               | <% 
                    ThreadContext.Executable from = null;
                    ThreadContext.Executable to = null;
+                   ThreadContext.Executable stride = null;
                 %>
-                  [ test <% from = currentObject; %> ] 
+                  [ test <% from = currentObject; currentObject = null; %> ] 
                   COLON 
-                  [ test <% to = currentObject; %> ] 
-                  [ sliceop ] 
+                  [ test <% to = currentObject; currentObject = null; %> ] 
+                  [ sliceop <% stride = currentObject; %> ] 
                   <%
-                      // currentObject = new Subscript(target, from, to);
-                      if (from == null && to == null) {
-                          // return target;
-                          throw new UnsupportedOperationException("Subscript/Slice without parameters. How could this happen?");
-                      } else if (from == null) {
-                          throw new UnsupportedOperationException("Slice");
-                      } else if (to == null) {
-                          throw new UnsupportedOperationException("Slice");
-                      } else {
-                          currentObject = new Call(new Reference(target, "__getitem__"), from);
-                      }
+                      // currentObject = new Subscript(target, from, to, stride);
+                      currentObject = new Call(new Reference(target, "__getitem__"), new PythonSlice(from, to, stride));
                   %>
               )
               ;

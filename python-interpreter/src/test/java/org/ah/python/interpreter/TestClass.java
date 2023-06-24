@@ -3,7 +3,6 @@ package org.ah.python.interpreter;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-//import org.ah.python.interpreter.Modules;
 
 public class TestClass extends BaseTestClass {
 
@@ -115,4 +114,18 @@ public class TestClass extends BaseTestClass {
 
         assertEquals("x\ny\n", result());
     }
-}
+
+
+    @Test
+    public void canAssignNewAttribute() {
+        executeLines(
+            "class Cls():",
+            "    pass",
+            "",
+            "c = Cls()",
+            "c.x = 5",
+            "print(\"x=\" + str(c.x))"
+        );
+
+        assertEquals("x=5\n", result());
+    }}

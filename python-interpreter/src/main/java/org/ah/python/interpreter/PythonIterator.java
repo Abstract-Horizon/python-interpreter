@@ -1,10 +1,25 @@
 package org.ah.python.interpreter;
 
 import java.util.Iterator;
+import java.util.Map;
 
 public class PythonIterator extends PythonObject {
 
-    public static PythonClass PYTHON_ITERATOR_CLASS = new PythonClass("iterator");
+    public static PythonClass PYTHON_ITERATOR_CLASS = new PythonClass("iterator") {
+        {
+            addMethod(new BuiltInBoundMethod("__next__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__next__(context);
+                }
+            });
+            addMethod(new BuiltInBoundMethod("__iter__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    context.pushData(args[0]);
+                }
+            });
+
+        }
+    };
 
     private Iterator<PythonObject> it;
 
@@ -25,18 +40,8 @@ public class PythonIterator extends PythonObject {
         if (it.hasNext()) {
             return it.next();
         } else {
-            return null;
+            context.raise(new StopIteration());
+            return PythonNone.NONE;
         }
     }
-
-// TODO
-//    public PythonObject __getattr__(final ThreadContext context, String name) {
-//        if (!"__next__".equals(name)) {
-//            return super.__getattr__(context, name);
-//        }
-//
-//        PythonObject res = attributes.get(name);
-//        if ("__int__".equals(name)) { res = new Function() { @Override public PythonObject call0(ThreadContext context) { return __int__(context); }}; attributes.put(name,  res); }
-//        return res;
-//    }
 }

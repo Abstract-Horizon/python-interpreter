@@ -17,11 +17,12 @@ public class BoolOp extends PythonObject {
     }
 
     public void evaluate(ThreadContext context) {
-        if (op == BoolopType.And) {
-
-        } else if (op == BoolopType.Or) {
-
-        }
+        throw new RuntimeException("Shouldn't be evaliated; BoolOp");
+//        if (op == BoolopType.And) {
+//
+//        } else if (op == BoolopType.Or) {
+//
+//        }
 
 //        context.pushData(this);
     }

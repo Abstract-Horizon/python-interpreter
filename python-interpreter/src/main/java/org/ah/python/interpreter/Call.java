@@ -1,8 +1,11 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.PythonBaseException.exception;
+
 import java.util.Arrays;
 import java.util.Map;
 
+import org.ah.python.interpreter.Call.EvaluateFunctionAndArgsContinuation;
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class Call extends PythonObject implements Executable {
@@ -24,39 +27,17 @@ public class Call extends PythonObject implements Executable {
 
         @Override public void evaluate(ThreadContext context) {
             PythonObject function = context.popData();
+            int argNo = kargsLength;
+            if (function instanceof Function && ((Function)function).isInstanceMethod()) {
+                argNo += 1;
+            }
 
-//            if (function instanceof BuiltInBoundMethod) {
-//                // int argNo = kargs.length + 1;
-//                int argNo = kargsLength + 1;
-//
-//                PythonObject[] args = new PythonObject[argNo];
-//                for (int i = 0; i < argNo; i++) {
-//                    args[i] = context.popData();
-//                }
-//
-//                function.__call__(context, null, args);
-//            } else if (function instanceof BuiltInMethod) {
-//                int argNo = kargsLength;
-//
-//                PythonObject[] args = new PythonObject[argNo];
-//                for (int i = 0; i < argNo; i++) {
-//                    args[i] = context.popData();
-//                }
-//
-//                function.__call__(context, null, args);
-//            } else {
-                int argNo = kargsLength;
-                if (function instanceof Function && ((Function)function).isInstanceMethod()) {
-                    argNo += 1;
-                }
+            PythonObject[] args = new PythonObject[argNo];
+            for (int i = 0; i < argNo; i++) {
+                args[i] = context.popData();
+            }
 
-                PythonObject[] args = new PythonObject[argNo];
-                for (int i = 0; i < argNo; i++) {
-                    args[i] = context.popData();
-                }
-
-                function.__call__(context, null, args);
-//            }
+            function.__call__(context, null, args);
         }
     };
 
@@ -85,5 +66,16 @@ public class Call extends PythonObject implements Executable {
 
     public String toString() {
         return "Call[" + function + "](" + collectionToString(Arrays.asList(kargs), ", ") + ")";
+    }
+
+    public static void invoke(ThreadContext context, PythonObject object, String methodName, Map<String, PythonObject> kwargs, PythonObject... kargs) {
+        PythonClass pythonClass = object.pythonClass;
+        for (int i = kargs.length - 1; i >= 0; i--) {
+            context.pushData(kargs[i]);
+        }
+        context.pushData(object);
+        context.continuation(new EvaluateFunctionAndArgsContinuation(kargs.length));
+
+        pythonClass.__getattr__(context, methodName);
     }
 }

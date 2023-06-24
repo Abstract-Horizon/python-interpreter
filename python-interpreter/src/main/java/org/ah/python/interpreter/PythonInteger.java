@@ -25,7 +25,6 @@ public class PythonInteger extends PythonNumber {
 
     public static PythonClass PYTHON_INTEGER_CLASS = new PythonClass("int") {
         {
-            populateCommonMethods();
             populateCommonNumberClassMethods(this);
 
             addMethod(new BuiltInBoundMethod("__and__") {

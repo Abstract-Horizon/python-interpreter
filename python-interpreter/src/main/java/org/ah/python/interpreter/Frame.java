@@ -8,15 +8,15 @@ public class Frame extends Scope {
     private int dataStackLevel;
 
     public Frame(ThreadContext context, Scope parentScope) {
-        super(PYTHON_INTERNAL_CLASS_NOT_DEFINED, null);
+        super(PYTHON_INTERNAL_CLASS_NOT_DEFINED, parentScope);
         this.context = context;
         this.pcStackLevel = context.pcStack.size();
-        this.dataStackLevel = context.dataStack.size();
+        this.dataStackLevel = context.getDataStackLevel();
     }
 
     public void close() {
         context.pcStack.setSize(pcStackLevel);
-        context.dataStack.setSize(dataStackLevel);
+        context.setDataStackLevel(dataStackLevel);
         context.popScope();
     }
 }

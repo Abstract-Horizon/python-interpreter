@@ -1,5 +1,6 @@
 package org.ah.python.interpreter;
 
+import org.ah.python.interpreter.StopIteration.StopIterationException;
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class For implements Executable {
@@ -24,8 +25,23 @@ public class For implements Executable {
 
     private Executable forContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
+            context.continuation(forContinuationIter);
+            PythonObject o = context.popData();
+            o.__iter__(context);
+        }
+    };
+
+    private Executable forContinuationIter = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
             context.continuation(forContinuationNext);
-            context.a.__next__(context); // Keep iterator on the stack
+            try {
+                context.top().__next__(context); // Keep iterator on the stack
+            } catch (StopIterationException e) {
+                context.pcStack.pop(); // Remove just above added continuation
+                if (!elseBlock.isEmpty()) {
+                    elseBlock.evaluate(context);
+                }
+            }
         }
     };
 
@@ -34,7 +50,7 @@ public class For implements Executable {
             PythonObject value = context.popData();
 
             if (value != null) {
-                context.continuation(forContinuation);
+                context.continuation(forContinuationIter);
                 context.continuation(block);
                 Assign.createAssignment(target, value, true).evaluate(context);
             } else if (!elseBlock.isEmpty()) {
@@ -46,7 +62,7 @@ public class For implements Executable {
     private Executable forContinuation2 = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             context.continuation(forContinuation2Next);
-            PythonObject iter = context.a;
+            PythonObject iter = context.top();
             iter.__next__(context);
         }
     };
@@ -66,8 +82,8 @@ public class For implements Executable {
     };
 
     public void evaluate(ThreadContext context) {
-        context.continuation(forContinuation);
-        iter.evaluate(context);
+        context.continuationWithEvaluate(forContinuation, iter);
+        // iter.evaluate(context);
     }
 
     public String toString() {

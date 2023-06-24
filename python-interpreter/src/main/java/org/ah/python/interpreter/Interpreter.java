@@ -9,11 +9,11 @@ import org.ah.python.grammar.PythonScannerFixed;
 
 public class Interpreter {
 
-    public static PythonObject convert(String code) {
+    public static Module convert(String code) {
         return convert("__main__", code);
     }
 
-    public static PythonObject convertLines(String... lines) {
+    public static Module convertLines(String... lines) {
         StringBuilder code = new StringBuilder();
         for (String line : lines) {
             code.append(line).append('\n');
@@ -21,7 +21,7 @@ public class Interpreter {
         return convert("__main__", code.toString());
     }
 
-    public static PythonObject convert(String name, String code) {
+    public static Module convert(String name, String code) {
         PythonScannerFixed scanner = new PythonScannerFixed(new StringReader(code));
         PythonParser parser = new PythonParser(scanner);
 
