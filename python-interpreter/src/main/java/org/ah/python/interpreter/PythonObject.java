@@ -167,6 +167,9 @@ public class PythonObject implements Executable {
 
     public void __getattr__(ThreadContext context, String name) {
         // TODO set try catch around next instruction!!!
+         if (pythonClass == null) {
+             throw new NullPointerException(context.position() + name);
+         }
         pythonClass.__getattr__(context, name);
 
         // On catch - try with getting '__getattr__' attribute :D
@@ -475,6 +478,11 @@ public class PythonObject implements Executable {
 
     public void __round__(ThreadContext context) {
         evaluateObjectMethod(context, "__round__");
+    }
+
+
+    public static String collectionToString(Collection<?> col) {
+        return collectionToString(col, ", ");
     }
 
     public static String collectionToString(Collection<?> col, String delimiter) {

@@ -11,7 +11,7 @@ public class TestDef extends BaseTestClass {
 
         Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
         def.getBlock().addStatement(
-                new Call(BuiltInFunctions.getFunction("print"), PythonString.valueOf("Print from method")),
+                new Call(BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE.getAttribute("print"), PythonString.valueOf("Print from method")),
                 1
         );
 
@@ -33,7 +33,7 @@ public class TestDef extends BaseTestClass {
 
         Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
         def.getBlock().addStatement(
-            new Call(BuiltInFunctions.getFunction("print"),
+            new Call(BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE.getAttribute("print"),
                 new Call(
                     new Reference(PythonString.valueOf("Print from method, x="), "__add__"),
                     new Reference(null, "x")

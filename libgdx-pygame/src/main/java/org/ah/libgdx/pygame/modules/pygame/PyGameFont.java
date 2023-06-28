@@ -19,21 +19,21 @@ class PyGameFont extends PythonObject {
 
     public static PythonClass PYGAME_FONT_CLASS = new PythonClass("pygame.font") {
         public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
-            if (args.length < 3) {
-                context.raise(PythonBaseException.exception("TypeError", PythonString.valueOf("pygame.font.Font() requires at least 3 arguments")));
+            if (args.length < 2) {
+                context.raise(PythonBaseException.exception("TypeError", PythonString.valueOf("pygame.font.Font() requires at least 2 arguments")));
             }
-            String name = args[1].asString();
-            double size = args[2].asFloat();
+            String name = args[0].asString();
+            double size = args[1].asFloat();
             @SuppressWarnings("unused")
             boolean bold = false;
             @SuppressWarnings("unused")
             boolean italic = false;
 
-            if (args.length > 4) {
-                bold = args[3].asBoolean();
+            if (args.length > 2) {
+                bold = args[2].asBoolean();
             }
-            if (args.length > 5) {
-                italic = args[4].asBoolean();
+            if (args.length > 3) {
+                italic = args[3].asBoolean();
             }
 
             String fullName = name + "-" + size;
@@ -62,12 +62,12 @@ class PyGameFont extends PythonObject {
                     float r, g, b = 0;
 
                     if (args[3] instanceof ListAccessible) {
-                        List<PythonObject> colorList = ((ListAccessible)args[1]).asList();
+                        List<PythonObject> colorList = ((ListAccessible)args[3]).asList();
                         r = colorList.get(0).asInteger() / 255.0f;
                         g = colorList.get(1).asInteger() / 255.0f;
                         b = colorList.get(2).asInteger() / 255.0f;
                     } else {
-                        throw new UnsupportedOperationException("pygame.Font.render on arbitrary object does not work yet");
+                        throw new UnsupportedOperationException(context.position() + "pygame.Font.render on arbitrary object does not work yet");
                     }
                     if (args.length > 3) {
                         // TODO add background colour with 'none' option to PyGameSurfaceFont constructor

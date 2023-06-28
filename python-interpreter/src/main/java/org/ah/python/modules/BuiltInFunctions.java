@@ -38,13 +38,13 @@ public class BuiltInFunctions extends Scope {
 
     public static BuiltInFunctions BUILT_IN_FUNCTIONS_SCOPE;
 
-    public static boolean isBuiltInFunction(String name) {
-        return BUILT_IN_FUNCTIONS_SCOPE .attributes.containsKey(name);
-    }
+//    public static boolean isBuiltInFunction(String name) {
+//        return BUILT_IN_FUNCTIONS_SCOPE.attributes.containsKey(name);
+//    }
 
-    public static PythonObject getFunction(String name) {
-        return BUILT_IN_FUNCTIONS_SCOPE .attributes.get(name);
-    }
+//    public static PythonObject getFunction(String name) {
+//        return BUILT_IN_FUNCTIONS_SCOPE.attributes.get(name);
+//    }
 
     public static void setOutput(OutputStream os) {
         out = new PrintStream(os);

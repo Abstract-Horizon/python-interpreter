@@ -23,7 +23,7 @@ class PyGameSurfaceScreen extends PythonObject {
             addMethod(new BuiltInBoundMethod("blit") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 // PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];
                 int x, y = 0;
-                PyGameSurfaceSprite sprite = (PyGameSurfaceSprite)args[1];
+                // PyGameSurfaceSprite sprite = (PyGameSurfaceSprite)args[1];
                 if (args[2] instanceof PyGameRect) {
                     PyGameRect rect = (PyGameRect)args[2];
                     x = rect.x;
@@ -36,7 +36,7 @@ class PyGameSurfaceScreen extends PythonObject {
                     throw new UnsupportedOperationException("pygame.surface.ScreenSurface.blit second parameter on arbitrary object does not work yet, need rect or list; " + args[1]);
                 }
 
-                context.pushData(blit(sprite, x, y));
+                context.pushData(blit(args[1], x, y));
             }});
             addMethod(new BuiltInBoundMethod("fill") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 // PyGameSurfaceScreen self = (PyGameSurfaceScreen)args[0];

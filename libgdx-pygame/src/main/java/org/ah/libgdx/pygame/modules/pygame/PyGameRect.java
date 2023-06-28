@@ -61,6 +61,16 @@ class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
             context.pushData(newPyGameRect);
         }
         {
+            addMethod(new BuiltInBoundMethod("__getitem__") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameRect self = (PyGameRect)args[0];
+
+                self.__getitem__(context, args[1]);
+            }});
+            addMethod(new BuiltInBoundMethod("__setitem__") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameRect self = (PyGameRect)args[0];
+
+                self.__setitem__(context, args[1], args[2]);
+            }});
             addMethod(new BuiltInBoundMethod("colliderect") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 PyGameRect self = (PyGameRect)args[0];
 
@@ -187,21 +197,22 @@ class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
         return PythonInteger.valueOf(4);
     }
 
-    public PythonObject __getitem__(PythonObject key) {
+    public void __getitem__(ThreadContext context, PythonObject key) {
         int i = key.asInteger();
         if (i == 0) {
-            return PythonInteger.valueOf(x);
+            context.pushData(PythonInteger.valueOf(x));
         } else if (i == 1) {
-            return PythonInteger.valueOf(y);
+            context.pushData(PythonInteger.valueOf(y));
         } else if (i == 2) {
-            return PythonInteger.valueOf(w);
+            context.pushData(PythonInteger.valueOf(w));
         } else if (i == 3) {
-            return PythonInteger.valueOf(h);
+            context.pushData(PythonInteger.valueOf(h));
+        } else {
+            throw new NoSuchElementException(Integer.toString(i));
         }
-        throw new NoSuchElementException(Integer.toString(i));
     }
 
-    public void __setitem__(PythonObject key, PythonObject value) {
+    public void __setitem__(ThreadContext context, PythonObject key, PythonObject value) {
         int i = key.asInteger();
         if (i == 0) {
             x = value.asInteger();
@@ -216,8 +227,8 @@ class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
         }
     }
 
-    public void __delitem__(PythonObject key) {
-        throw new UnsupportedOperationException("__delitem__");
+    public void __delitem__(ThreadContext context, PythonObject key) {
+        throw new UnsupportedOperationException(context.position() + "__delitem__");
     }
 
 //    public PythonIterator __iter__() {

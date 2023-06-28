@@ -95,7 +95,7 @@ public class ThreadContext {
         if (exception instanceof StopIteration) {
             throw new StopIterationException();
         }
-        throw new RuntimeException("@ line " + line + ", " + exception.asString());
+        throw new RuntimeException(position() + exception.asString());
     }
 
     public void continuation(Executable continuation) {
@@ -126,5 +126,9 @@ public class ThreadContext {
 
     public void setDataStackLevel(int dataStackLevel) {
         dataStackPtr = dataStackLevel;
+    }
+
+    public String position() {
+        return "@ line " + line + ": ";
     }
 }
