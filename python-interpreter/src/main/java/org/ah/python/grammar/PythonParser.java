@@ -1849,7 +1849,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "OR");
             }
             xor_expr();
-             currentObject = new Call(new Reference(left, "__or__"), currentObject); 
+             currentObject = new Call(new Reference(left, "__or__"), currentObject); left = currentObject; 
         } // while 
     } // expr
 
@@ -1864,7 +1864,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "XOR");
             }
             and_expr();
-             currentObject = new Call(new Reference(left, "__xor__"), currentObject); 
+             currentObject = new Call(new Reference(left, "__xor__"), currentObject); left = currentObject; 
         } // while 
     } // xor_expr
 
@@ -1879,7 +1879,7 @@ public class PythonParser {
                 throw new ParserError(t, nt, "AND");
             }
             shift_expr();
-             currentObject = new Call(new Reference(left, "__and__"), currentObject); 
+             currentObject = new Call(new Reference(left, "__and__"), currentObject); left = currentObject; 
         } // while 
     } // and_expr
 
@@ -1888,32 +1888,26 @@ public class PythonParser {
         arith_expr();
          ThreadContext.Executable left = currentObject; 
         while (((id >= PythonScanner.TOKEN_LSHIFT) && (id <=PythonScanner.TOKEN_RSHIFT))) {
-             OperatorType op; 
+             String op; 
             if ((id == PythonScanner.TOKEN_LSHIFT)) {
                 if (id == PythonScanner.TOKEN_LSHIFT) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\"<<\"");
                 }
-                 op = OperatorType.LShift; 
+                 op = "__lshift__"; 
             } else if ((id == PythonScanner.TOKEN_RSHIFT)) {
                 if (id == PythonScanner.TOKEN_RSHIFT) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\">>\"");
                 }
-                 op = OperatorType.RShift; 
+                 op = "__rshift__"; 
             } else {
                 throw new ParserError(t, "LSHIFT,RSHIFT");
             }
             arith_expr();
-            
-                            if (op == OperatorType.LShift) {
-                                currentObject = new Call(new Reference(left, "__lshift__"), currentObject);
-                            } else {
-                                currentObject = new Call(new Reference(left, "__rshift__"), currentObject);
-                            }
-                              
+             currentObject = new Call(new Reference(currentObject, op), currentObject); left = currentObject; 
         } // while 
     } // shift_expr
 
@@ -1922,32 +1916,26 @@ public class PythonParser {
         term();
          ThreadContext.Executable left = currentObject; 
         while (((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS))) {
-             OperatorType op; 
+             String op; 
             if ((id == PythonScanner.TOKEN_PLUS)) {
                 if (id == PythonScanner.TOKEN_PLUS) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "PLUS");
                 }
-                 op = OperatorType.Add; 
+                 op = "__add__"; 
             } else if ((id == PythonScanner.TOKEN_MINUS)) {
                 if (id == PythonScanner.TOKEN_MINUS) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "MINUS");
                 }
-                 op = OperatorType.Sub; 
+                 op = "__sub__"; 
             } else {
                 throw new ParserError(t, "PLUS,MINUS");
             }
             term();
-             
-                            if (op == OperatorType.Add) {
-                                currentObject = new Call(new Reference(left, "__add__"), currentObject);
-                            } else {
-                                currentObject = new Call(new Reference(left, "__sub__"), currentObject);
-                            }
-                        
+             currentObject = new Call(new Reference(left, op), currentObject); left = currentObject; 
         } // while 
     } // arith_expr
 
@@ -1956,56 +1944,46 @@ public class PythonParser {
         factor();
          ThreadContext.Executable left = currentObject; 
         while ((id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_MOD) && (id <=PythonScanner.TOKEN_SLASHSLASH))) {
-             OperatorType op; 
+             String op; 
             if ((id == PythonScanner.TOKEN_STAR)) {
                 if (id == PythonScanner.TOKEN_STAR) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "STAR");
                 }
-                 op = OperatorType.Mult; 
+                 op = "__mul__"; 
             } else if ((id == PythonScanner.TOKEN_SLASH)) {
                 if (id == PythonScanner.TOKEN_SLASH) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "SLASH");
                 }
-                 op = OperatorType.Div; 
+                 op = "__div__"; 
             } else if ((id == PythonScanner.TOKEN_MOD)) {
                 if (id == PythonScanner.TOKEN_MOD) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "MOD");
                 }
-                 op = OperatorType.Mod; 
+                 op = "__mod__"; 
             } else if ((id == PythonScanner.TOKEN_SLASHSLASH)) {
                 if (id == PythonScanner.TOKEN_SLASHSLASH) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "\"//\"");
                 }
-                 op = OperatorType.FloorDiv; 
+                 op = "__floordiv__"; 
             } else {
                 throw new ParserError(t, "STAR,MOD,SLASH,SLASHSLASH");
             }
             factor();
-            
-                            if (op == OperatorType.Mult) {
-                                currentObject = new Call(new Reference(left, "__mul__"), currentObject);
-                            } else if (op == OperatorType.Div) {
-                                currentObject = new Call(new Reference(left, "__div__"), currentObject);
-                            } else if (op == OperatorType.Mod) {
-                                currentObject = new Call(new Reference(left, "__mod__"), currentObject);
-                            } else if (op == OperatorType.FloorDiv) {
-                                currentObject = new Call(new Reference(left, "__floordiv__"), currentObject);
-                            }
-                    
+             currentObject = new Call(new Reference(left, op), currentObject); left = currentObject; 
         } // while 
     } // term
 
     // public factor<null> = (.k=1.) (.k=1.) PLUS CODE|MINUS CODE|TILDA CODE factor CODE|power;
     public void factor() throws ParserError {
- UnaryopType op; 
+ String op; 
         if (((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA)) {
             if ((id == PythonScanner.TOKEN_PLUS)) {
                 if (id == PythonScanner.TOKEN_PLUS) {
@@ -2013,34 +1991,26 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "PLUS");
                 }
-                 op = UnaryopType.UAdd; 
+                 op = "__pos__"; 
             } else if ((id == PythonScanner.TOKEN_MINUS)) {
                 if (id == PythonScanner.TOKEN_MINUS) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "MINUS");
                 }
-                 op = UnaryopType.USub; 
+                 op = "__neg__"; 
             } else if ((id == PythonScanner.TOKEN_TILDA)) {
                 if (id == PythonScanner.TOKEN_TILDA) {
                     next(); // <-- here 2
                 } else {
                     throw new ParserError(t, nt, "TILDA");
                 }
-                 op = UnaryopType.Not; 
+                 op = "__invert__"; 
             } else {
                 throw new ParserError(t, "PLUS,MINUS,TILDA");
             }
             factor();
-            
-                            if (op == UnaryopType.UAdd) {
-                                currentObject = new Call(new Reference(currentObject, "__pos__"), currentObject);
-                            } else if (op == UnaryopType.USub) {
-                                currentObject = new Call(new Reference(currentObject, "__neg__"), currentObject);
-                            } else if (op == UnaryopType.Not) {
-                                currentObject = new Call(new Reference(currentObject, "__invert__"), currentObject);
-                            }
-                      
+             currentObject = new Call(new Reference(currentObject, op), currentObject); 
         } else if (((id >= 19) && (id <=21)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             power();
         } else {

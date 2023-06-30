@@ -1,11 +1,8 @@
 package org.ah.python.interpreter;
 
-import static org.ah.python.interpreter.PythonBaseException.exception;
-
 import java.util.Arrays;
 import java.util.Map;
 
-import org.ah.python.interpreter.Call.EvaluateFunctionAndArgsContinuation;
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class Call extends PythonObject implements Executable {

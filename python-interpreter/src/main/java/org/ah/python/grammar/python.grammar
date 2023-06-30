@@ -565,83 +565,53 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     star_expr = [STAR <% throw new UnsupportedOperationException("star_expr"); %> ] expr;
 
-    expr = xor_expr    <% ThreadContext.Executable left = currentObject; %>
-         { OR xor_expr <% currentObject = new Call(new Reference(left, "__or__"), currentObject); %>
+    expr = xor_expr <% ThreadContext.Executable left = currentObject; %>
+         { OR xor_expr <% currentObject = new Call(new Reference(left, "__or__"), currentObject); left = currentObject; %>
          }
          ;
 
-    xor_expr = and_expr     <% ThreadContext.Executable left = currentObject; %>
-             { XOR and_expr <% currentObject = new Call(new Reference(left, "__xor__"), currentObject); %>
+    xor_expr = and_expr <% ThreadContext.Executable left = currentObject; %>
+             { XOR and_expr <% currentObject = new Call(new Reference(left, "__xor__"), currentObject); left = currentObject; %>
              }
              ;
 
-    and_expr = shift_expr     <% ThreadContext.Executable left = currentObject; %>
-             { AND shift_expr <% currentObject = new Call(new Reference(left, "__and__"), currentObject); %>
+    and_expr = shift_expr <% ThreadContext.Executable left = currentObject; %>
+             { AND shift_expr <% currentObject = new Call(new Reference(left, "__and__"), currentObject); left = currentObject; %>
              }
              ;
 
-    shift_expr = arith_expr    <% ThreadContext.Executable left = currentObject; %>
-               { <% OperatorType op; %> 
-                   ( LSHIFT <% op = OperatorType.LShift; %> 
-                   | RSHIFT <% op = OperatorType.RShift; %> 
+    shift_expr = arith_expr <% ThreadContext.Executable left = currentObject; %>
+               { <% String op; %>
+                   ( LSHIFT <% op = "__lshift__"; %>
+                   | RSHIFT <% op = "__rshift__"; %>
                    ) 
-                   arith_expr <%
-                            if (op == OperatorType.LShift) {
-                                currentObject = new Call(new Reference(left, "__lshift__"), currentObject);
-                            } else {
-                                currentObject = new Call(new Reference(left, "__rshift__"), currentObject);
-                            }
-                              %>
+                   arith_expr <% currentObject = new Call(new Reference(currentObject, op), currentObject); left = currentObject; %>
                };
 
-    arith_expr = term   <% ThreadContext.Executable left = currentObject; %>
-               { <% OperatorType op; %> 
-                   ( PLUS  <% op = OperatorType.Add; %> 
-                   | MINUS <% op = OperatorType.Sub; %> 
+    arith_expr = term <% ThreadContext.Executable left = currentObject; %>
+               { <% String op; %>
+                   ( PLUS  <% op = "__add__"; %>
+                   | MINUS <% op = "__sub__"; %>
                    ) 
-                   term <% 
-                            if (op == OperatorType.Add) {
-                                currentObject = new Call(new Reference(left, "__add__"), currentObject);
-                            } else {
-                                currentObject = new Call(new Reference(left, "__sub__"), currentObject);
-                            }
-                        %>
+                   term <% currentObject = new Call(new Reference(left, op), currentObject); left = currentObject; %>
                };
 
     term = factor <% ThreadContext.Executable left = currentObject; %>
-         {  <% OperatorType op; %> 
-             ( STAR       <% op = OperatorType.Mult; %> 
-             | SLASH      <% op = OperatorType.Div; %> 
-             | MOD        <% op = OperatorType.Mod; %> 
-             | SLASHSLASH <% op = OperatorType.FloorDiv; %> 
+         {  <% String op; %>
+             ( STAR       <% op = "__mul__"; %>
+             | SLASH      <% op = "__div__"; %>
+             | MOD        <% op = "__mod__"; %>
+             | SLASHSLASH <% op = "__floordiv__"; %>
              ) 
-             factor <%
-                            if (op == OperatorType.Mult) {
-                                currentObject = new Call(new Reference(left, "__mul__"), currentObject);
-                            } else if (op == OperatorType.Div) {
-                                currentObject = new Call(new Reference(left, "__div__"), currentObject);
-                            } else if (op == OperatorType.Mod) {
-                                currentObject = new Call(new Reference(left, "__mod__"), currentObject);
-                            } else if (op == OperatorType.FloorDiv) {
-                                currentObject = new Call(new Reference(left, "__floordiv__"), currentObject);
-                            }
-                    %>
+             factor <% currentObject = new Call(new Reference(left, op), currentObject); left = currentObject; %>
          };
 
-    factor = <% UnaryopType op; %>
-               ( PLUS  <% op = UnaryopType.UAdd; %> 
-               | MINUS <% op = UnaryopType.USub; %> 
-               | TILDA <% op = UnaryopType.Not; %> 
+    factor = <% String op; %>
+               ( PLUS  <% op = "__pos__"; %>
+               | MINUS <% op = "__neg__"; %>
+               | TILDA <% op = "__invert__"; %>
                ) 
-               factor <%
-                            if (op == UnaryopType.UAdd) {
-                                currentObject = new Call(new Reference(currentObject, "__pos__"), currentObject);
-                            } else if (op == UnaryopType.USub) {
-                                currentObject = new Call(new Reference(currentObject, "__neg__"), currentObject);
-                            } else if (op == UnaryopType.Not) {
-                                currentObject = new Call(new Reference(currentObject, "__invert__"), currentObject);
-                            }
-                      %>
+               factor <% currentObject = new Call(new Reference(currentObject, op), currentObject); %>
            | 
            power;
 

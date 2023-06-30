@@ -13,7 +13,7 @@ public class Reference extends PythonObject implements Executable, Assignable {
             // TODO - this directly going to pythonClass is wrong! This needs to be moved to PythonObject.__getattr__
             PythonObject o = context.top();
             context.continuation(checkBoundMethodContinuation);
-            o.__getattr__(context, name.toString());
+            o.__getattr__(context, name);
         }
     };
 

@@ -130,4 +130,43 @@ public class TestExpression extends BaseTestClass {
         contextIsEmpty();
     }
 
+    @Test public void testAddingExpression() {
+        executeLines(
+            "print(1 + 2 + 3)"
+        );
+
+        assertEquals("6\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testAddingStrings() {
+        executeLines(
+            "print('one, ' + str(2))"
+        );
+
+        assertEquals("one, 2\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testAddingMoreStrings() {
+        executeLines(
+            "a = 'four'",
+            "print('one, ' + str(2) + ', three, ' + a)"
+        );
+
+        assertEquals("one, 2, three, four\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testAddingMoreStringsThroughVar() {
+        executeLines(
+            "a = 'four'",
+            "r = 'one, ' + str(2) + ', three, ' + a",
+            "print(r)"
+        );
+
+        assertEquals("one, 2, three, four\n", result());
+        contextIsEmpty();
+    }
+
 }
