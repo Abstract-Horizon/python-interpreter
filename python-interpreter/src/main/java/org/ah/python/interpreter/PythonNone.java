@@ -1,6 +1,6 @@
 package org.ah.python.interpreter;
 
-public class PythonNone extends PythonObject {
+public class PythonNone extends PythonObject implements Immutable {
 
     public static final PythonNone NONE = new PythonNone();
     public static final PythonClass NONE_CLASS = new PythonClass("Nne");

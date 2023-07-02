@@ -14,6 +14,7 @@ public class TestLists extends BaseTestClass {
             "print(str(x[1]))"
         );
         assertEquals("5\n6\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -26,6 +27,7 @@ public class TestLists extends BaseTestClass {
         );
 
         assertEquals("5\n7\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -38,5 +40,6 @@ public class TestLists extends BaseTestClass {
         );
 
         assertEquals("5\n9\n", result());
+        contextIsEmpty();
     }
 }

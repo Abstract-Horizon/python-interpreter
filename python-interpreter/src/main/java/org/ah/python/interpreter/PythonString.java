@@ -15,6 +15,11 @@ public class PythonString extends PythonObject {
                     args[0].__add__(context, args[1]);
                 }
             });
+            addMethod(new BuiltInBoundMethod("__iadd__") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    args[0].__iadd__(context, args[1]);
+                }
+            });
             addMethod(new BuiltInBoundMethod("__len__") {
                 public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                     args[0].__len__(context);

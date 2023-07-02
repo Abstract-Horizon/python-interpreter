@@ -20,6 +20,7 @@ public class PythonParser {
     private List<String> stringList = new ArrayList<String>();
     private Import currentImport;
     private List<ThreadContext.Executable> currentList;
+    private String op = "__unknown__";
 
     private Module module;
     private boolean trailingComma = false;
@@ -658,23 +659,24 @@ public class PythonParser {
             } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
                 testlist();
                 
-                            if (currentList.size() != targets.size()) {
-                                throw new UnsupportedOperationException("Target assignment list size " + targets.size() + " does not match values size " + currentList.size());
+                            ThreadContext.Executable left;
+                            if (targets.size() > 1) {
+                                ThreadContext.Executable tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
+                                left = tuple;
+                            } else {
+                                left = targets.get(0);
                             }
-                            
-                            for (int i = 0; i < targets.size(); i++) {
-                                ThreadContext.Executable target = targets.get(i);
-                                // PythonObject value = currentList.get(i);
-                                // BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
-                                
-                                if (!(target instanceof Assignable)) {
-                                    throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
-                                }
-                                
-                                // TODO Add this!!!
-                                // ThreadContext.Executable assign = Assign.createAssignment(target, binaryOp, true);
-                                // currentSuite.asList().add(assign);
+
+                            if (currentList.size() == 1) {
+                                currentObject = currentList.get(0);
+                            } else {
+                                ThreadContext.Executable tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
+                                currentObject = tuple; 
                             }
+                            currentList.clear();
+
+                            AssignInPlace assignInPlace = new AssignInPlace(left, currentObject, op);
+                            addStatement(assignInPlace);
                          
             } else {
                 throw new ParserError(t, "'yield','None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
@@ -767,84 +769,84 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "\"+=\"");
             }
-             operatorType = OperatorType.Add; 
+             op = "__iadd__"; 
         } else if ((id == 35)) {
             if (id == 35) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"-=\"");
             }
-             operatorType = OperatorType.Sub; 
+             op = "__isub__"; 
         } else if ((id == 36)) {
             if (id == 36) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"*=\"");
             }
-             operatorType = OperatorType.Mult; 
+             op = "__imul__"; 
         } else if ((id == 37)) {
             if (id == 37) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"/=\"");
             }
-             operatorType = OperatorType.Div; 
+             op = "__itruediv__"; 
         } else if ((id == 38)) {
             if (id == 38) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"%=\"");
             }
-             operatorType = OperatorType.Mod; 
+             op = "__imod__"; 
         } else if ((id == 39)) {
             if (id == 39) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"&=\"");
             }
-             operatorType = OperatorType.BitAnd; 
+             op = "__iand__"; 
         } else if ((id == 40)) {
             if (id == 40) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"|=\"");
             }
-             operatorType = OperatorType.BitOr; 
+             op = "__ior__"; 
         } else if ((id == 41)) {
             if (id == 41) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"^=\"");
             }
-             operatorType = OperatorType.BitXor; 
+             op = "__ixor__"; 
         } else if ((id == 42)) {
             if (id == 42) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"<<=\"");
             }
-             operatorType = OperatorType.LShift; 
+             op = "__ilshift__"; 
         } else if ((id == 43)) {
             if (id == 43) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\">>=\"");
             }
-             operatorType = OperatorType.RShift; 
+             op = "__irshift__"; 
         } else if ((id == 44)) {
             if (id == 44) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"**=\"");
             }
-             operatorType = OperatorType.Pow; 
+             op = "__ipow__"; 
         } else if ((id == 45)) {
             if (id == 45) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"//=\"");
             }
-             operatorType = OperatorType.FloorDiv; 
+             op = "__ifloordiv__"; 
         } else {
             throw new ParserError(t, "'+=','-=','*=','/=','%=','&=','|=','^=','<<=','>>=','**=','//='");
         }
@@ -1688,52 +1690,34 @@ public class PythonParser {
         }
     } // not_test
 
-    // public comparison<null> = star_expr CODE {comp_op CODE star_expr CODE} CODE;
+    // public comparison<null> = star_expr CODE {comp_op star_expr CODE};
     public void comparison() throws ParserError {
         star_expr();
         
                        ThreadContext.Executable left = currentObject;
-                       List<CmpopType> ops = new ArrayList<CmpopType>();
-                       List<ThreadContext.Executable> operands = new ArrayList<ThreadContext.Executable>();
                    
         while (((id >= 22) && (id <=23)) || (id == 28) || ((id >= PythonScanner.TOKEN_EQUAL) && (id <=PythonScanner.TOKEN_LT))) {
             comp_op();
-             ops.add(cmpopType); 
             star_expr();
-             operands.add(currentObject); 
+             
+                            if (op.equals("isnot")) {
+                                throw new UnsupportedOperationException("'is not' is not implemented");
+                            } else if (op.equals("is")) {
+                                throw new UnsupportedOperationException("'is' is not implemented");
+                            } else if (op.equals("notin")) {
+                                currentObject = new Call(
+                                    new Reference(
+                                        new Call(new Reference(left, "__contains__"), currentObject),
+                                        "__not__"
+                                    )
+                                );
+                                left = currentObject;
+                            } else {
+                                currentObject = new Call(new Reference(left, op), currentObject);
+                                left = currentObject;
+                            }
+                         
         } // while 
-        
-                     if (ops.size() > 1) {
-                     } else if (ops.size() == 1) {
-                         CmpopType cmpop = ops.get(0);
-                         if (cmpop == CmpopType.Lt) {
-                             currentObject = new Call(new Reference(left, "__lt__"), currentObject);
-                         } else if (cmpop == CmpopType.Gt) {
-                             currentObject = new Call(new Reference(left, "__gt__"), currentObject);
-                         } else if (cmpop == CmpopType.Eq) {
-                             currentObject = new Call(new Reference(left, "__eq__"), currentObject);
-                         } else if (cmpop == CmpopType.GtE) {
-                             currentObject = new Call(new Reference(left, "__ge__"), currentObject);
-                         } else if (cmpop == CmpopType.LtE) {
-                             currentObject = new Call(new Reference(left, "__le__"), currentObject);
-                         } else if (cmpop == CmpopType.NotEq) {
-                             currentObject = new Call(new Reference(left, "__ne__"), currentObject);
-                         } else if (cmpop == CmpopType.In) {
-                             currentObject = new Call(new Reference(left, "__contains__"), currentObject);
-                         } else if (cmpop == CmpopType.NotIn) {
-                             currentObject = new Call(
-                                 new Reference(
-                                     new Call(new Reference(left, "__contains__"), currentObject),
-                                     "__not__"
-                                 )
-                             );
-                         } else if (cmpop == CmpopType.Is) {
-                             // TODO
-                         } else if (cmpop == CmpopType.IsNot) {
-                             // TODO
-                         }
-                     }
-                   
     } // comparison
 
     // public comp_op<null> = (.k=1.) LT CODE|GT CODE|EQUAL CODE|GE CODE|LE CODE|NOT_EQUAL2 CODE|NOT_EQUAL CODE|"in" CODE|"not" CODE|"is" CODE|"is" "not" CODE;
@@ -1744,70 +1728,70 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "LT");
             }
-             cmpopType = CmpopType.Lt; 
+             op = "__lt__"; 
         } else if ((id == PythonScanner.TOKEN_GT)) {
             if (id == PythonScanner.TOKEN_GT) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "GT");
             }
-             cmpopType = CmpopType.Gt; 
+             op = "__gt__"; 
         } else if ((id == PythonScanner.TOKEN_EQUAL)) {
             if (id == PythonScanner.TOKEN_EQUAL) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"==\"");
             }
-             cmpopType = CmpopType.Eq; 
+             op = "__eq__"; 
         } else if ((id == PythonScanner.TOKEN_GE)) {
             if (id == PythonScanner.TOKEN_GE) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\">=\"");
             }
-             cmpopType = CmpopType.GtE; 
+             op = "__ge__"; 
         } else if ((id == PythonScanner.TOKEN_LE)) {
             if (id == PythonScanner.TOKEN_LE) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"<=\"");
             }
-             cmpopType = CmpopType.LtE; 
+             op = "__le__"; 
         } else if ((id == PythonScanner.TOKEN_NOT_EQUAL2)) {
             if (id == PythonScanner.TOKEN_NOT_EQUAL2) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"<>\"");
             }
-             cmpopType = CmpopType.NotEq; 
+             op = "__ne__"; 
         } else if ((id == PythonScanner.TOKEN_NOT_EQUAL)) {
             if (id == PythonScanner.TOKEN_NOT_EQUAL) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"!=\"");
             }
-             cmpopType = CmpopType.NotEq; 
+             op = "__ne__"; 
         } else if ((id == 22)) {
             if (id == 22) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"in\"");
             }
-             cmpopType = CmpopType.In; 
+             op = "__contains__"; 
         } else if ((id == 28)) {
             if (id == 28) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"not\"");
             }
-             cmpopType = CmpopType.NotIn; 
+             op = "notin"; 
         } else if ((id == 23)) {
             if (id == 23) {
                 next(); // <-- here 2
             } else {
                 throw new ParserError(t, nt, "\"is\"");
             }
-             cmpopType = CmpopType.Is; 
+             op = "is"; 
         } else if ((id == 23)) {
             if (id == 23) {
                 next(); // <-- here 2
@@ -1819,7 +1803,7 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "\"not\"");
             }
-             cmpopType = CmpopType.IsNot; 
+             op = "isnot"; 
         } else {
             throw new ParserError(t, "'in','is','not',EQUAL,NOT_EQUAL,NOT_EQUAL2,GE,GT,LE,LT");
         }
@@ -1958,7 +1942,7 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "SLASH");
                 }
-                 op = "__div__"; 
+                 op = "__truediv__"; 
             } else if ((id == PythonScanner.TOKEN_MOD)) {
                 if (id == PythonScanner.TOKEN_MOD) {
                     next(); // <-- here 2

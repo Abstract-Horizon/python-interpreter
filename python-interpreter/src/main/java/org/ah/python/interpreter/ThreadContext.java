@@ -80,6 +80,11 @@ public class ThreadContext {
 
     public void pushData(PythonObject value) {
         dataStackPtr += 1;
+        if (dataStackPtr >= dataStack.length) {
+            for (int i = 0; i < dataStack.length; i++) {
+                System.out.println(i + ": " + dataStack[i]);
+            }
+        }
         dataStack[dataStackPtr] = value;
     }
 

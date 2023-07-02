@@ -192,6 +192,10 @@ class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
         this.h = h;
     }
 
+    public String asString() {
+        return "Rect[" + x + ", " + y + ", " + w + ", " + h + "]";
+    }
+
 
     public PythonInteger __len__() {
         return PythonInteger.valueOf(4);

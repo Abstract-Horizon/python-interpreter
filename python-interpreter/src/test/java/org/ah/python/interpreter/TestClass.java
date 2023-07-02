@@ -18,6 +18,7 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("TRUE\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -42,6 +43,7 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("x\ny\nx\nz\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -63,6 +65,7 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("z\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -79,6 +82,7 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("Constructor invoked\nx\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -96,6 +100,7 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("Constructor invoked, x=5\nx=5\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -113,6 +118,7 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("x\ny\n", result());
+        contextIsEmpty();
     }
 
 
@@ -128,4 +134,5 @@ public class TestClass extends BaseTestClass {
         );
 
         assertEquals("x=5\n", result());
+        contextIsEmpty();
     }}

@@ -256,14 +256,6 @@ public class PythonBoolean extends PythonNumber {
 //        return __int__(context).__mod__(context, other);
 //    }
 //
-//    public void __divmod__(ThreadContext context, PythonObject other) {
-//        if (other instanceof PythonFloat) {
-//            return __float__(context).__divmod__(context, other);
-//        }
-//
-//        return __int__(context).__divmod__(context, other);
-//    }
-//
 //    public void __pow__(ThreadContext context, PythonObject other) {
 //        if (other instanceof PythonFloat) {
 //            return __float__(context).__pow__(context, other);

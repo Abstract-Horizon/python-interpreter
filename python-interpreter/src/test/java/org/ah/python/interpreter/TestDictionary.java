@@ -16,6 +16,7 @@ public class TestDictionary extends BaseTestClass {
         );
 
         assertEquals("B\n", result());
+        contextIsEmpty();
     }
 
 
@@ -36,6 +37,7 @@ public class TestDictionary extends BaseTestClass {
         );
 
         assertEquals("0\n7.5\n", result());
+        contextIsEmpty();
     }
 
 }

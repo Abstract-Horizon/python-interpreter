@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.ah.python.interpreter.PythonList.ListIterator;
 
-public class PythonTuple extends PythonSequence {
+public class PythonTuple extends PythonSequence implements Immutable {
 
     public static PythonClass PYTHON_TUPLE_CLASS = new PythonClass("tuple") {
         {

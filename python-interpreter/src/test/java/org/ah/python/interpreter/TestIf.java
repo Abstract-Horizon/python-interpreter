@@ -15,6 +15,7 @@ public class TestIf extends BaseTestClass {
           );
 
         assertEquals("TRUE\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -25,6 +26,7 @@ public class TestIf extends BaseTestClass {
         );
 
         assertEquals("", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -37,6 +39,7 @@ public class TestIf extends BaseTestClass {
         );
 
         assertEquals("TRUE\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -49,6 +52,7 @@ public class TestIf extends BaseTestClass {
         );
 
         assertEquals("TRUE\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -63,6 +67,7 @@ public class TestIf extends BaseTestClass {
         );
 
         assertEquals("2\n", result());
+        contextIsEmpty();
     }
 
     @Test
@@ -77,6 +82,7 @@ public class TestIf extends BaseTestClass {
         );
 
         assertEquals("3\n", result());
+        contextIsEmpty();
     }
 
 }

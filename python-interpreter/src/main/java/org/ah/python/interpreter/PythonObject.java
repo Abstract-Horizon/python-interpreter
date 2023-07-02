@@ -276,10 +276,6 @@ public class PythonObject implements Executable {
         evaluateObjectMethod(context, "__mod__", other);
     }
 
-    public void __divmod__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__divmod__", other);
-    }
-
     public void __pow__(ThreadContext context, PythonObject other) {
         evaluateObjectMethod(context, "__pow__", other);
     }
@@ -308,14 +304,9 @@ public class PythonObject implements Executable {
         evaluateObjectMethod(context, "__or__", other);
     }
 
-    public void __div__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__div__", other);
-    }
-
     public void __truediv__(ThreadContext context, PythonObject other) {
         evaluateObjectMethod(context, "__truediv__", other);
     }
-
 
     public void __radd__(ThreadContext context, PythonObject other) {
         evaluateObjectMethod(context, "__radd__", other);

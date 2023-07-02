@@ -286,11 +286,6 @@ public class PythonFloat extends PythonNumber {
         }
     }
 
-
-    public void __divmod__(ThreadContext context, PythonObject other) {
-        context.raise(exception("NotImplementedError", PythonString.valueOf("__divmod__")));
-    }
-
     public void __pow__(ThreadContext context, PythonObject other) {
         context.raise(exception("NotImplementedError", PythonString.valueOf("__pow__")));
     }

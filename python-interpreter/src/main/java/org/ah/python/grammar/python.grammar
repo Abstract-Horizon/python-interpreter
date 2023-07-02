@@ -117,6 +117,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     private List<String> stringList = new ArrayList<String>();
     private Import currentImport;
     private List<ThreadContext.Executable> currentList;
+    private String op = "__unknown__";
 
     private Module module;
     private boolean trailingComma = false;
@@ -244,24 +245,25 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                 ( augassign
                     ( yield_expr <% throw new UnsupportedOperationException("yield_expr"); %>
                     | testlist
-                        <%
-                            if (currentList.size() != targets.size()) {
-                                throw new UnsupportedOperationException("Target assignment list size " + targets.size() + " does not match values size " + currentList.size());
+                         <%
+                            ThreadContext.Executable left;
+                            if (targets.size() > 1) {
+                                ThreadContext.Executable tuple = new PythonListGenerator(targets, PythonTuple.PYTHON_TUPLE_CLASS);
+                                left = tuple;
+                            } else {
+                                left = targets.get(0);
                             }
-                            
-                            for (int i = 0; i < targets.size(); i++) {
-                                ThreadContext.Executable target = targets.get(i);
-                                // PythonObject value = currentList.get(i);
-                                // BinaryOp binaryOp = new BinaryOp(target, value, operatorType);
-                                
-                                if (!(target instanceof Assignable)) {
-                                    throw new UnsupportedOperationException("Illegal left side of assignment; " + target);
-                                }
-                                
-                                // TODO Add this!!!
-                                // ThreadContext.Executable assign = Assign.createAssignment(target, binaryOp, true);
-                                // currentSuite.asList().add(assign);
+
+                            if (currentList.size() == 1) {
+                                currentObject = currentList.get(0);
+                            } else {
+                                ThreadContext.Executable tuple = new PythonListGenerator(currentList, PythonTuple.PYTHON_TUPLE_CLASS);
+                                currentObject = tuple; 
                             }
+                            currentList.clear();
+
+                            AssignInPlace assignInPlace = new AssignInPlace(left, currentObject, op);
+                            addStatement(assignInPlace);
                          %>
                     )
                 |   <%
@@ -314,18 +316,18 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                          ;
 
     augassign = 
-                ( "+="  <% operatorType = OperatorType.Add; %>
-                | "-="  <% operatorType = OperatorType.Sub; %>
-                | "*="  <% operatorType = OperatorType.Mult; %>
-                | "/="  <% operatorType = OperatorType.Div; %>
-                | "%="  <% operatorType = OperatorType.Mod; %>
-                | "&="  <% operatorType = OperatorType.BitAnd; %>
-                | "|="  <% operatorType = OperatorType.BitOr; %>
-                | "^="  <% operatorType = OperatorType.BitXor; %>
-                | "<<=" <% operatorType = OperatorType.LShift; %>
-                | ">>=" <% operatorType = OperatorType.RShift; %>
-                | "**=" <% operatorType = OperatorType.Pow; %>
-                | "//=" <% operatorType = OperatorType.FloorDiv; %>
+                ( "+="  <% op = "__iadd__"; %>
+                | "-="  <% op = "__isub__"; %>
+                | "*="  <% op = "__imul__"; %>
+                | "/="  <% op = "__itruediv__"; %>
+                | "%="  <% op = "__imod__"; %>
+                | "&="  <% op = "__iand__"; %>
+                | "|="  <% op = "__ior__"; %>
+                | "^="  <% op = "__ixor__"; %>
+                | "<<=" <% op = "__ilshift__"; %>
+                | ">>=" <% op = "__irshift__"; %>
+                | "**=" <% op = "__ipow__"; %>
+                | "//=" <% op = "__ifloordiv__"; %>
                 );
 
     // For normal assignments, additional restrictions enforced by the interpreter
@@ -510,57 +512,41 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     comparison = star_expr 
                    <%
                        ThreadContext.Executable left = currentObject;
-                       List<CmpopType> ops = new ArrayList<CmpopType>();
-                       List<ThreadContext.Executable> operands = new ArrayList<ThreadContext.Executable>();
                    %>
-               { comp_op <% ops.add(cmpopType); %> star_expr <% operands.add(currentObject); %>
+               { comp_op star_expr 
+                         <% 
+                            if (op.equals("isnot")) {
+                                throw new UnsupportedOperationException("'is not' is not implemented");
+                            } else if (op.equals("is")) {
+                                throw new UnsupportedOperationException("'is' is not implemented");
+                            } else if (op.equals("notin")) {
+                                currentObject = new Call(
+                                    new Reference(
+                                        new Call(new Reference(left, "__contains__"), currentObject),
+                                        "__not__"
+                                    )
+                                );
+                                left = currentObject;
+                            } else {
+                                currentObject = new Call(new Reference(left, op), currentObject);
+                                left = currentObject;
+                            }
+                         %>
                }
-                   <%
-                     if (ops.size() > 1) {
-                     } else if (ops.size() == 1) {
-                         CmpopType cmpop = ops.get(0);
-                         if (cmpop == CmpopType.Lt) {
-                             currentObject = new Call(new Reference(left, "__lt__"), currentObject);
-                         } else if (cmpop == CmpopType.Gt) {
-                             currentObject = new Call(new Reference(left, "__gt__"), currentObject);
-                         } else if (cmpop == CmpopType.Eq) {
-                             currentObject = new Call(new Reference(left, "__eq__"), currentObject);
-                         } else if (cmpop == CmpopType.GtE) {
-                             currentObject = new Call(new Reference(left, "__ge__"), currentObject);
-                         } else if (cmpop == CmpopType.LtE) {
-                             currentObject = new Call(new Reference(left, "__le__"), currentObject);
-                         } else if (cmpop == CmpopType.NotEq) {
-                             currentObject = new Call(new Reference(left, "__ne__"), currentObject);
-                         } else if (cmpop == CmpopType.In) {
-                             currentObject = new Call(new Reference(left, "__contains__"), currentObject);
-                         } else if (cmpop == CmpopType.NotIn) {
-                             currentObject = new Call(
-                                 new Reference(
-                                     new Call(new Reference(left, "__contains__"), currentObject),
-                                     "__not__"
-                                 )
-                             );
-                         } else if (cmpop == CmpopType.Is) {
-                             // TODO
-                         } else if (cmpop == CmpopType.IsNot) {
-                             // TODO
-                         }
-                     }
-                   %>
                ;
 
     comp_op = 
-              LT         <% cmpopType = CmpopType.Lt; %>
-            | GT         <% cmpopType = CmpopType.Gt; %>
-            | EQUAL      <% cmpopType = CmpopType.Eq; %>
-            | GE         <% cmpopType = CmpopType.GtE; %>
-            | LE         <% cmpopType = CmpopType.LtE; %>
-            | NOT_EQUAL2 <% cmpopType = CmpopType.NotEq; %>
-            | NOT_EQUAL  <% cmpopType = CmpopType.NotEq; %>
-            | "in"       <% cmpopType = CmpopType.In; %>
-            | "not"      <% cmpopType = CmpopType.NotIn; %>
-            | "is"       <% cmpopType = CmpopType.Is; %>
-            | "is" "not" <% cmpopType = CmpopType.IsNot; %>
+              LT         <% op = "__lt__"; %>
+            | GT         <% op = "__gt__"; %>
+            | EQUAL      <% op = "__eq__"; %>
+            | GE         <% op = "__ge__"; %>
+            | LE         <% op = "__le__"; %>
+            | NOT_EQUAL2 <% op = "__ne__"; %>
+            | NOT_EQUAL  <% op = "__ne__"; %>
+            | "in"       <% op = "__contains__"; %>
+            | "not"      <% op = "notin"; %>
+            | "is"       <% op = "is"; %>
+            | "is" "not" <% op = "isnot"; %>
             ;
 
     star_expr = [STAR <% throw new UnsupportedOperationException("star_expr"); %> ] expr;
@@ -599,7 +585,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     term = factor <% ThreadContext.Executable left = currentObject; %>
          {  <% String op; %>
              ( STAR       <% op = "__mul__"; %>
-             | SLASH      <% op = "__div__"; %>
+             | SLASH      <% op = "__truediv__"; %>
              | MOD        <% op = "__mod__"; %>
              | SLASHSLASH <% op = "__floordiv__"; %>
              ) 

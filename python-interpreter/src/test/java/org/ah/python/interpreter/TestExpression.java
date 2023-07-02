@@ -77,6 +77,17 @@ public class TestExpression extends BaseTestClass {
 
     @Test public void testComparison() {
         executeLines(
+            "d = 1 == 2",
+            "print(d)"
+        );
+
+        //assertEquals(((PythonBoolean)module.getattr(context, "d")).asBoolean(), true);
+        assertEquals("False\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testComparison2() {
+        executeLines(
             "a = 5",
             "b = 6",
             "c = a == b",
@@ -166,6 +177,17 @@ public class TestExpression extends BaseTestClass {
         );
 
         assertEquals("one, 2, three, four\n", result());
+        contextIsEmpty();
+    }
+
+    @Test public void testInPlaceAdd() {
+        executeLines(
+            "a = 1",
+            "a += 2",
+            "print(a)"
+        );
+
+        assertEquals("3\n", result());
         contextIsEmpty();
     }
 
