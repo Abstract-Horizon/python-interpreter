@@ -240,7 +240,7 @@ public class PythonFloat extends PythonNumber {
         }
     };
 
-    public void __div__(ThreadContext context, PythonObject other) {
+    public void __truediv__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonNumber) {
             context.pushData(valueOf(value / ((PythonNumber)other).asFloat()));
         } else {

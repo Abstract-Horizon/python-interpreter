@@ -12,8 +12,6 @@ public class PythonParser {
 
 
     private Block currentBlock;
-    private OperatorType operatorType;
-    private CmpopType cmpopType;
     private ThreadContext.Executable currentObject;
     private Def.Argument currentArgument;
 
@@ -675,8 +673,7 @@ public class PythonParser {
                             }
                             currentList.clear();
 
-                            AssignInPlace assignInPlace = new AssignInPlace(left, currentObject, op);
-                            addStatement(assignInPlace);
+                            addStatement(AssignInPlace.createAssignmentInPlace(left, currentObject, op));
                          
             } else {
                 throw new ParserError(t, "'yield','None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
@@ -1891,7 +1888,7 @@ public class PythonParser {
                 throw new ParserError(t, "LSHIFT,RSHIFT");
             }
             arith_expr();
-             currentObject = new Call(new Reference(currentObject, op), currentObject); left = currentObject; 
+             currentObject = new Call(new Reference(left, op), currentObject); left = currentObject; 
         } // while 
     } // shift_expr
 

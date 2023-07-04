@@ -1,6 +1,8 @@
 package org.ah.python.interpreter;
 
 import static org.ah.python.interpreter.PythonBaseException.exception;
+import static org.ah.python.interpreter.PythonJavaIterator.PYTHON_ITERATOR_CLASS;
+import static org.ah.python.interpreter.StopIteration.STOP_ITERATION;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,7 +99,7 @@ public class PythonList extends PythonSequence {
     }
 
     public void remove(ThreadContext context, PythonObject value) {
-        context.raise(exception("AttributeError", PythonString.valueOf("list.remove")));
+        list.remove(value);
     }
 
 //    private Executable setItemContinuation = new Executable() {
@@ -234,7 +236,7 @@ public class PythonList extends PythonSequence {
     @Override
     public void __iter__(ThreadContext context) {
         // context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
-        context.pushData(new PythonIterator(list.iterator()));
+        context.pushData(new PythonListIterator(this));
     }
 
     @Override
@@ -329,5 +331,30 @@ public class PythonList extends PythonSequence {
 //                }
 //        };
 //    };
+
+    public static class PythonListIterator extends PythonObject {
+
+        private PythonList list;
+        private int ptr = 0;
+
+        public PythonListIterator(PythonList list) {
+            super(PYTHON_ITERATOR_CLASS);
+            this.list = list;
+        }
+
+        public void __iter__(ThreadContext context) {
+            context.pushData(this);
+        }
+
+        public void __next__(ThreadContext context) {
+            if (ptr < list.list.size()) {
+                context.pushData(list.list.get(ptr));
+                ptr += 1;
+            } else {
+                context.raise(STOP_ITERATION);
+            }
+        }
+
+    }
 
 }

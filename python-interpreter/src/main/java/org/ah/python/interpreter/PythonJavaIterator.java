@@ -3,7 +3,7 @@ package org.ah.python.interpreter;
 import java.util.Iterator;
 import java.util.Map;
 
-public class PythonIterator extends PythonObject {
+public class PythonJavaIterator extends PythonObject {
 
     public static PythonClass PYTHON_ITERATOR_CLASS = new PythonClass("iterator") {
         {
@@ -23,7 +23,7 @@ public class PythonIterator extends PythonObject {
 
     private Iterator<PythonObject> it;
 
-    public PythonIterator(Iterator<PythonObject> it) {
+    public PythonJavaIterator(Iterator<PythonObject> it) {
         super(PYTHON_ITERATOR_CLASS);
         this.it = it;
     }

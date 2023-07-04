@@ -76,16 +76,12 @@ public class Assign extends PythonObject {
                     Executable[] newArgs = new Executable[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
                     newArgs[call.kargs.length] = expression;
-                    // call.kargs = newArgs;
-                    // return call;
                     return new Call(callReference, call.kwargs, newArgs);
                 } else if (callReference.name.equals("__getattr__")) {
                     callReference.name = "__setattr__";
                     Executable[] newArgs = new Executable[call.kargs.length + 1];
                     System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
                     newArgs[call.kargs.length] = expression;
-                    // call.kargs = newArgs;
-                    // return call;
                     return new Call(callReference, call.kwargs, newArgs);
                 }
             }

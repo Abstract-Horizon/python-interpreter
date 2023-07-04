@@ -325,11 +325,11 @@ public class PythonInteger extends PythonNumber {
         }
     };
 
-    public void __div__(ThreadContext context, PythonObject other) {
+    public void __truediv__(ThreadContext context, PythonObject other) {
         if (other instanceof PythonFloat) {
             context.pushData(PythonFloat.valueOf(value / ((PythonFloat)other).value));
         } else if (other instanceof PythonInteger) {
-            context.pushData(PythonInteger.valueOf(value / ((PythonInteger)other).value));
+            context.pushData(PythonFloat.valueOf((double)value / ((PythonInteger)other).value));
         } else {
             context.continuation(div_continuation);
             context.pushData(this);

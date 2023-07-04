@@ -109,8 +109,6 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
 <%
     private Block currentBlock;
-    private OperatorType operatorType;
-    private CmpopType cmpopType;
     private ThreadContext.Executable currentObject;
     private Def.Argument currentArgument;
 
@@ -262,8 +260,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                             }
                             currentList.clear();
 
-                            AssignInPlace assignInPlace = new AssignInPlace(left, currentObject, op);
-                            addStatement(assignInPlace);
+                            addStatement(AssignInPlace.createAssignmentInPlace(left, currentObject, op));
                          %>
                     )
                 |   <%
@@ -571,7 +568,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    ( LSHIFT <% op = "__lshift__"; %>
                    | RSHIFT <% op = "__rshift__"; %>
                    ) 
-                   arith_expr <% currentObject = new Call(new Reference(currentObject, op), currentObject); left = currentObject; %>
+                   arith_expr <% currentObject = new Call(new Reference(left, op), currentObject); left = currentObject; %>
                };
 
     arith_expr = term <% ThreadContext.Executable left = currentObject; %>

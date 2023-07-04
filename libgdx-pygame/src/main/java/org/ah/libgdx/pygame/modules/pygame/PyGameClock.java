@@ -47,6 +47,7 @@ class PyGameClock extends PythonObject {
 
     public PythonObject tick(PythonObject args) {
         int targetFps = args.asInteger() / 2;
+        int lasted = 0;
         if (last > 0) {
             long now = System.currentTimeMillis();
             double msPerFrame = 1000.0 / targetFps;
@@ -74,6 +75,7 @@ class PyGameClock extends PythonObject {
             total = total + lastFrameTime;
 
             fps = (1000.0 * frames.length) / total;
+            lasted = (int)(now - last);
             last = now;
 
             if (PyGameModule.DEBUG) {
@@ -96,6 +98,6 @@ class PyGameClock extends PythonObject {
             }
             last = System.currentTimeMillis();
         }
-        return PythonNone.NONE;
+        return PythonInteger.valueOf(lasted);
     }
 }

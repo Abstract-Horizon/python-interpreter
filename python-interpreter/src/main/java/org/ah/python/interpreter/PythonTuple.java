@@ -99,7 +99,7 @@ public class PythonTuple extends PythonSequence implements Immutable {
 
     @Override
     public void __iter__(ThreadContext context) {
-        context.pushData(new PythonIterator(new ListIterator<PythonObject>(context, list)));
+        context.pushData(new PythonJavaIterator(new ListIterator<PythonObject>(context, list)));
     }
 
     public String asString() {

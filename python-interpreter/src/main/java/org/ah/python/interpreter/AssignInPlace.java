@@ -68,7 +68,7 @@ public class AssignInPlace extends PythonObject {
                 context.continuationWithEvaluate(continuation, expression);
             }
         } else {
-            throw new RuntimeException("Expected reference, but got " + reference);
+            throw new RuntimeException(context.position() + "Expected reference, but got " + reference);
         }
     }
 
@@ -79,35 +79,29 @@ public class AssignInPlace extends PythonObject {
     public String toString() {
         return reference.toString() + " = " + expression.toString();
     }
-//
-//    public static PythonObject createAssignment(Executable reference, Executable expression) {
-//        return createAssignment(reference, expression, false);
-//    }
-//
-//    public static PythonObject createAssignment(Executable reference, Executable expression, boolean lastInstruction) {
-//        if (reference instanceof Call) {
-//            Call call = (Call)reference;
-//            if (call.function instanceof Reference) {
-//                Reference callReference = (Reference)call.function;
-//                if (callReference.name.equals("__getitem__")) {
-//                    callReference.name = "__setitem__";
-//                    Executable[] newArgs = new Executable[call.kargs.length + 1];
-//                    System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
-//                    newArgs[call.kargs.length] = expression;
-//                    // call.kargs = newArgs;
-//                    // return call;
-//                    return new Call(callReference, call.kwargs, newArgs);
-//                } else if (callReference.name.equals("__getattr__")) {
-//                    callReference.name = "__setattr__";
-//                    Executable[] newArgs = new Executable[call.kargs.length + 1];
-//                    System.arraycopy(call.kargs, 0, newArgs, 0, call.kargs.length);
-//                    newArgs[call.kargs.length] = expression;
-//                    // call.kargs = newArgs;
-//                    // return call;
-//                    return new Call(callReference, call.kwargs, newArgs);
-//                }
-//            }
-//        }
-//        return new AssignInPlace(reference, expression, lastInstruction);
-//    }
+
+    public static PythonObject createAssignmentInPlace(Executable reference, Executable expression, String operation) {
+        if (reference instanceof Call) {
+            Call call = (Call)reference;
+            if (call.function instanceof Reference) {
+                Reference callReference = (Reference)call.function;
+                if (callReference.name.equals("__getitem__")) {
+                    Reference opFunction = new Reference(reference, operation);
+                    Call invokeOp = new Call(opFunction, expression);
+
+                    Reference setReference = new Reference(callReference.scope, "__setitem__");
+                    Call setCall = new Call(setReference, call.kargs[0], invokeOp);
+                    return setCall;
+                } else if (callReference.name.equals("__getattr__")) {
+                    Reference opFunction = new Reference(reference, operation);
+                    Call invokeOp = new Call(opFunction, expression);
+
+                    Reference setReference = new Reference(callReference.scope, "__setattr__");
+                    Call setCall = new Call(setReference, call.kargs[0], invokeOp);
+                    return setCall;
+                }
+            }
+        }
+        return new AssignInPlace(reference, expression, operation);
+    }
 }

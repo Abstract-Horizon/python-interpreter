@@ -40,4 +40,29 @@ public class TestDictionary extends BaseTestClass {
         contextIsEmpty();
     }
 
+
+    @Test
+    public void assignToDict() {
+        executeLines(
+            "p = {1: \"A\", 2: \"B\"}",
+            "p[3] = 'C'",
+            "print(p[1] + ',' + p[2] + ',' + p[3])"
+        );
+
+        assertEquals("A,B,C\n", result());
+        contextIsEmpty();
+    }
+
+
+    @Test
+    public void assignInPlaceToDict() {
+        executeLines(
+            "p = {'A': 1, 'B': 2}",
+            "p['A'] += 3",
+            "print(str(p['A']) + ',' + str(p['B']))"
+        );
+
+        assertEquals("4,2\n", result());
+        contextIsEmpty();
+    }
 }

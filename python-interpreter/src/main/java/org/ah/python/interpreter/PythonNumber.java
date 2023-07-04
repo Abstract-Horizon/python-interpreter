@@ -11,6 +11,11 @@ public abstract class PythonNumber extends PythonObject implements Immutable {
     }
 
     protected static void populateCommonNumberClassMethods(PythonClass pythonClass) {
+        pythonClass.addMethod(new BuiltInBoundMethod("__neg__") {
+            public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                args[0].__neg__(context);
+            }
+        });
         pythonClass.addMethod(new BuiltInBoundMethod("__int__") {
             public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 args[0].__int__(context);

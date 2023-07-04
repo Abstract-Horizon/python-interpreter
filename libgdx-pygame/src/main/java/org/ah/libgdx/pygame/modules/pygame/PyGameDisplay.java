@@ -17,13 +17,14 @@ class PyGameDisplay extends PythonObject {
             addMethod(new BuiltInMethod("set_mode") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 if (args[0] instanceof ListAccessible) {
                     List<PythonObject> list = ((ListAccessible)args[0]).asList();
-                    int w = list.get(0).asInteger();
-                    int h = list.get(1).asInteger();
+                    PyGameModule.DISPLAY_WIDTH = list.get(0).asInteger();
+                    PyGameModule.DISPLAY_HEIGHT = list.get(1).asInteger();
                     if (PyGameModule.PRE_RUN) {
-                        throw new PyGameModule.PyGamePreRunException(w, h);
+                        // throw new PyGameModule.PyGamePreRunException(w, h);
+                    } else {
+                        PyGameModule.PYGAME_MODULE.getCamera().setToOrtho(true, PyGameModule.DISPLAY_WIDTH, PyGameModule.DISPLAY_HEIGHT);
                     }
-                    PyGameModule.PYGAME_MODULE.getCamera().setToOrtho(true, w, h);
-                    context.pushData(new PyGameSurfaceScreen(w, h));
+                    context.pushData(new PyGameSurfaceScreen(PyGameModule.DISPLAY_WIDTH, PyGameModule.DISPLAY_HEIGHT));
                 } else {
                     throw new UnsupportedOperationException("set_mode on arbitrary object does not work yet");
                 }
@@ -32,6 +33,10 @@ class PyGameDisplay extends PythonObject {
             }});
 
             addMethod(new BuiltInBoundMethod("flip") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                PyGameModule.PYGAME_MODULE.flip();
+            }});
+
+            addMethod(new BuiltInBoundMethod("update") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 PyGameModule.PYGAME_MODULE.flip();
             }});
         }

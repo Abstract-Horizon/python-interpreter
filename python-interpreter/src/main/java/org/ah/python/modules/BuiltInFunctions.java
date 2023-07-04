@@ -17,7 +17,7 @@ import org.ah.python.interpreter.PythonBoolean;
 import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonFloat;
 import org.ah.python.interpreter.PythonInteger;
-import org.ah.python.interpreter.PythonIterator;
+import org.ah.python.interpreter.PythonJavaIterator;
 import org.ah.python.interpreter.PythonList;
 import org.ah.python.interpreter.PythonNumber;
 import org.ah.python.interpreter.PythonObject;
@@ -264,7 +264,7 @@ public class BuiltInFunctions extends Scope {
                 }});
                 final Executable list_continuation = new Executable() {
                     @Override public void evaluate(ThreadContext context) {
-                        PythonIterator iter = (PythonIterator)context.popData();
+                        PythonJavaIterator iter = (PythonJavaIterator)context.popData();
                         PythonList list = new PythonList();
                         try {
                             PythonObject o = iter.next(context);
@@ -480,7 +480,7 @@ public class BuiltInFunctions extends Scope {
 
                 final Executable tuple_continuation = new Executable() {
                     @Override public void evaluate(ThreadContext context) {
-                        PythonIterator iter = (PythonIterator)context.popData();
+                        PythonJavaIterator iter = (PythonJavaIterator)context.popData();
                         PythonTuple tuple = new PythonTuple();
                         try {
                             PythonObject o = iter.next(context);
@@ -515,8 +515,8 @@ public class BuiltInFunctions extends Scope {
         };
     }
 
-    public static PythonIterator range(ThreadContext context, PythonNumber from, PythonNumber to, PythonNumber step) {
-        return new PythonIterator(new RangeIterator(from.asInteger(), to.asInteger(), step.asInteger()));
+    public static PythonJavaIterator range(ThreadContext context, PythonNumber from, PythonNumber to, PythonNumber step) {
+        return new PythonJavaIterator(new RangeIterator(from.asInteger(), to.asInteger(), step.asInteger()));
     }
 
     public static interface PrintInterface {

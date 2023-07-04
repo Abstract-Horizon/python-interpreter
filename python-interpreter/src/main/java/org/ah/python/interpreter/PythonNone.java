@@ -3,10 +3,10 @@ package org.ah.python.interpreter;
 public class PythonNone extends PythonObject implements Immutable {
 
     public static final PythonNone NONE = new PythonNone();
-    public static final PythonClass NONE_CLASS = new PythonClass("Nne");
+    public static final PythonClass NONE_CLASS = new PythonClass("None");
 
     private PythonNone() {
-        super(NONE_CLASS);
+        super(new PythonClass("None"));
     }
 
     public boolean asBoolean() {
@@ -15,6 +15,14 @@ public class PythonNone extends PythonObject implements Immutable {
 
     public boolean isConstant() {
         return true;
+    }
+
+    public void __str__(ThreadContext context) {
+        context.pushData(PythonString.valueOf("None"));
+    }
+
+    public String asString() {
+        return "None";
     }
 
     public String toString() {

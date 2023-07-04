@@ -30,13 +30,11 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
     public static boolean PRE_RUN = false;
     public static boolean flip = false;
 
-//    protected static int createdSprites;
+    // protected static int createdSprites;
 
     static {
-//        KEYS = new PythonList();
         KEYS = new PythonBoolean[256];
         for (int i = 0; i < 256; i++) {
-//            PyGameModule.KEYS.asList().add(FALSE);
             PyGameModule.KEYS[i] = FALSE;
         }
     }
@@ -50,8 +48,8 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
     private String path;
     private ShapeType lastType;
 
-//    protected static int startSpriteBatch;
-//    protected static int startShapeBatch;
+    // protected static int startSpriteBatch;
+    // protected static int startShapeBatch;
 
 
     private static final int BATCH_NONE = 0;
@@ -66,17 +64,9 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
     public static PythonObject EVENT_TYPE_MOUSEBUTTONUP = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
 
 
-//    private static PyGameTime time = new PyGameTime();
-//    private static PyGameDisplay display = new PyGameDisplay();
-//    private static PyGameImage image = new PyGameImage();
     private static PyGameEvent event = new PyGameEvent();
-//    private static PyGameKey key = new PyGameKey();
-//    private static PyGameFontStatic font = new PyGameFontStatic();
-//    private static PyGameDraw draw = new PyGameDraw();
-//    private static PyGameMixer mixer = new PyGameMixer();
-//    private static PyGameTransform transform = new PyGameTransform();
-//    private static PyGameSprite sprite = new PyGameSprite();
-//    private static PyGameJoystick joystick = new PyGameJoystick();
+    public static int DISPLAY_WIDTH = 0;
+    public static int DISPLAY_HEIGHT = 0;
 
     public PyGameModule() {
         super("pygame");
@@ -103,19 +93,6 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
         addMethod(new BuiltInMethod("quit") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
             SysModule.systemBridge.exit(0);
         }});
-//
-//        __setattr__("quit", new Function() { @Override public PythonObject call0() {
-//            SysModule.systemBridge.exit(0);
-//            return PythonNone.NONE;
-//        }});
-//        __setattr__("Color", new Function() {
-//            @Override public PythonObject call0(PythonObject name) {
-//                return PyGameModule.color(name);
-//            }
-//            @Override public PythonObject call0(PythonObject r, PythonObject g, PythonObject b) {
-//                return PyGameModule.color(r.asInteger(), g.asInteger(), b.asInteger());
-//            }
-//        });
         addKey("K_BACKSPACE", Keys.BACKSPACE);
         addKey("K_TAB", Keys.TAB);
         addKey("K_CLEAR", Keys.CLEAR);
@@ -358,23 +335,4 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
         color.asList().add(PythonInteger.valueOf(b));
         return color;
     }
-
-    public static class PyGamePreRunException extends RuntimeException {
-        private int w;
-        private int h;
-
-        public PyGamePreRunException(int w, int h) {
-            this.w = w;
-            this.h = h;
-        }
-
-        public int getWidth() {
-            return w;
-        }
-
-        public int getHeight() {
-            return h;
-        }
-    }
-
 }

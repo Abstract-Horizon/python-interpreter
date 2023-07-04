@@ -40,6 +40,11 @@ public class PythonString extends PythonObject {
                     args[0].__bool__(context);
                 }
             });
+            addMethod(new BuiltInBoundMethod("startswith") {
+                public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                    ((PythonString)args[0]).startswith(context, args[1]);
+                }
+            });
         }
     };
 
@@ -60,6 +65,14 @@ public class PythonString extends PythonObject {
 
     public boolean isConstant() {
         return true;
+    }
+
+    public void startswith(ThreadContext context, PythonObject s) {
+        if (value.startsWith(s.asString())) {
+            context.pushData(PythonBoolean.TRUE);
+        } else {
+            context.pushData(PythonBoolean.FALSE);
+        }
     }
 
     public void __eq__(ThreadContext context, PythonObject other) {
@@ -113,7 +126,7 @@ public class PythonString extends PythonObject {
     }
 
     public void __iter__(ThreadContext context) {
-        context.pushData(new PythonIterator(new StringIterator(value)));
+        context.pushData(new PythonJavaIterator(new StringIterator(value)));
     }
 
     @Override

@@ -150,6 +150,15 @@ public class TestExpression extends BaseTestClass {
         contextIsEmpty();
     }
 
+    @Test public void testDivExpression() {
+        executeLines(
+            "print(1 / 3)"
+        );
+
+        assertEquals("0.3333333333333333\n", result());
+        contextIsEmpty();
+    }
+
     @Test public void testAddingStrings() {
         executeLines(
             "print('one, ' + str(2))"

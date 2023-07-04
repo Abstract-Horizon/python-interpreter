@@ -1,5 +1,7 @@
 package org.ah.python.interpreter;
 
+import static org.ah.python.interpreter.Continue.ContinueMark;
+
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class While implements Executable {
@@ -21,30 +23,43 @@ public class While implements Executable {
         return elseBlock;
     }
 
-    private Executable whiteContinuation = new Executable() {
-        @Override public void evaluate(ThreadContext context) {
+    private class WhileContinuation implements Executable, Loop {
+
+        @Override
+        public void evaluate(ThreadContext context) {
             PythonObject a = context.popData();
             if (a instanceof PythonBoolean) {
                 if (((PythonBoolean)a).asBoolean()) {
-                    context.continuation(whiteContinuation);
+                    context.continuation(whileContinuation);
                     context.continuation(test);
+                    context.continuation(ContinueMark);
                     block.evaluate(context);
                 } else if (!elseBlock.isEmpty()) {
                     elseBlock.evaluate(context);
                 }
             } else {
-                context.continuation(whiteBoolContinuation);
+                context.continuation(whileBoolContinuation);
                 a.__bool__(context);
             }
         }
-    };
 
-    private Executable whiteBoolContinuation = new Executable() {
+        @Override public void doBreak(ThreadContext context) {
+            context.popData();
+            if (!elseBlock.isEmpty()) {
+                elseBlock.evaluate(context);
+            }
+        }
+    }
+
+    private Executable whileContinuation = new WhileContinuation();
+
+    private Executable whileBoolContinuation = new Executable() {
         @Override public void evaluate(ThreadContext context) {
             PythonObject a = context.popData();
             if (((PythonBoolean)a).asBoolean()) {
-                context.continuation(whiteContinuation);
+                context.continuation(whileContinuation);
                 context.continuation(test);
+                context.continuation(ContinueMark);
                 block.evaluate(context);
             } else if (!elseBlock.isEmpty()) {
                 elseBlock.evaluate(context);
@@ -53,7 +68,7 @@ public class While implements Executable {
     };
 
     public void evaluate(ThreadContext context) {
-        context.continuation(whiteContinuation);
+        context.continuation(whileContinuation);
 
         test.evaluate(context);
     }
