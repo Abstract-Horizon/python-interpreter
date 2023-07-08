@@ -50,7 +50,7 @@ public class TestPyGameRect extends BaseTestClass {
             "#print(str(initialSpaceShipRect))"
         )
 //        .assertResult("Rect[0, 0, 480, 768]\n");
-        .assertResult("768\n");
+        .assertResult("240.0\n");
     }
 
 

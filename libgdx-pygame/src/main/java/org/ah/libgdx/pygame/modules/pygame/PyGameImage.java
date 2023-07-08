@@ -24,12 +24,10 @@ class PyGameImage extends org.ah.python.interpreter.Module {
 
         addMethod(new BuiltInMethod("load") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
             Sprite sprite = null;
-            if (!PyGameModule.PRE_RUN) {
-                String imageName = args[0].asString();
-                sprite = sprites.get(imageName);
-                if (sprite== null) {
-                    sprite = loadSprite(imageName);
-                }
+            String imageName = args[0].asString();
+            sprite = sprites.get(imageName);
+            if (sprite== null) {
+                sprite = loadSprite(imageName);
             }
             context.pushData(new PyGameSurfaceSprite(sprite));
         }});
@@ -41,7 +39,11 @@ class PyGameImage extends org.ah.python.interpreter.Module {
         String fileName = imageName;
         String path = PyGameModule.PYGAME_MODULE.getPath();
         if (path != null && path.length() > 0) {
-            fileName = path + "/" + imageName;
+            if (path.endsWith("/")) {
+                fileName = path + imageName;
+            } else {
+                fileName = path + "/" + imageName;
+            }
         }
         FileHandle fh = Gdx.files.internal(fileName);
         Texture t = new Texture(fh);

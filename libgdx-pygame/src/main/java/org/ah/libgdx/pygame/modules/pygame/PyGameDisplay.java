@@ -10,7 +10,14 @@ import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.ThreadContext;
 
-class PyGameDisplay extends PythonObject {
+public class PyGameDisplay extends PythonObject {
+
+    public static interface WindowSizeCallback {
+        public void setSize(int width, int height);
+    }
+
+
+    public static WindowSizeCallback windowSizeCallback;
 
     public static PythonClass PYGAME_DISPLAY_CLASS = new PythonClass("pygame.display") {
         {
@@ -19,10 +26,8 @@ class PyGameDisplay extends PythonObject {
                     List<PythonObject> list = ((ListAccessible)args[0]).asList();
                     PyGameModule.DISPLAY_WIDTH = list.get(0).asInteger();
                     PyGameModule.DISPLAY_HEIGHT = list.get(1).asInteger();
-                    if (PyGameModule.PRE_RUN) {
-                        // throw new PyGameModule.PyGamePreRunException(w, h);
-                    } else {
-                        PyGameModule.PYGAME_MODULE.getCamera().setToOrtho(true, PyGameModule.DISPLAY_WIDTH, PyGameModule.DISPLAY_HEIGHT);
+                    if (windowSizeCallback != null) {
+                        windowSizeCallback.setSize(PyGameModule.DISPLAY_WIDTH, PyGameModule.DISPLAY_HEIGHT);
                     }
                     context.pushData(new PyGameSurfaceScreen(PyGameModule.DISPLAY_WIDTH, PyGameModule.DISPLAY_HEIGHT));
                 } else {
