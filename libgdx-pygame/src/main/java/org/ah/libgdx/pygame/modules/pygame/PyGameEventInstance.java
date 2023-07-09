@@ -20,12 +20,24 @@ class PyGameEventInstance extends BuiltInIObject<PyGameEventInstance> {
                 @Override public PythonObject attribute(PyGameEventInstance self) { return self.eventPos; }
                 @Override public void assign(PyGameEventInstance self, PythonObject expr) { new UnsupportedOperationException(); }
             });
+            setAttribute("key", new Attribute<PyGameEventInstance>() {
+                @Override public PythonObject attribute(PyGameEventInstance self) { return self.key; }
+                @Override public void assign(PyGameEventInstance self, PythonObject expr) { new UnsupportedOperationException(); }
+            });
         }
 
     };
 
-    private PythonTuple eventPos;
+    protected PythonTuple eventPos = new PythonTuple();
+    protected PythonObject key = PythonInteger.ZERO;
     private PythonObject eventType;
+
+    public PyGameEventInstance(PythonObject eventType) {
+        super(PYGAME_EVENT_INSTANCE_CLASS);
+        this.eventType = eventType;
+        eventPos.asList().add(PythonInteger.ZERO);
+        eventPos.asList().add(PythonInteger.ZERO);
+    }
 
     public PyGameEventInstance(PythonObject eventType, int x, int y) {
         super(PYGAME_EVENT_INSTANCE_CLASS);
@@ -33,5 +45,14 @@ class PyGameEventInstance extends BuiltInIObject<PyGameEventInstance> {
         this.eventPos = new PythonTuple();
         this.eventPos.asList().add(PythonInteger.valueOf(x));
         this.eventPos.asList().add(PythonInteger.valueOf(y));
+    }
+
+    public boolean equals(Object o) {
+        if (o instanceof PyGameEventInstance) {
+            if (((PyGameEventInstance)o).eventType == eventType) {
+                return true;
+            }
+        }
+        return false;
     }
 }

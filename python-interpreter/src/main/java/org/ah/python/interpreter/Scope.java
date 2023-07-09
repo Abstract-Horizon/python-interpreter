@@ -2,7 +2,6 @@ package org.ah.python.interpreter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Scope extends PythonObject {
 
@@ -60,10 +59,16 @@ public class Scope extends PythonObject {
     }
 
     public void __setitem__(String attr, PythonObject o) {
+        if (ThreadContext.DEBUG && o == null) {
+            throw new IllegalStateException("Trying to set attribute with name '" + attr + "' to null!");
+        }
         attributes.put(attr, o);
     }
 
     public void __setitem__(ThreadContext context, String attr, PythonObject o) {
+        if (ThreadContext.DEBUG && o == null) {
+            throw new IllegalStateException(context.position() + "Trying to set attribute with name '" + attr + "' to null!");
+        }
         attributes.put(attr, o);
     }
 
@@ -73,7 +78,11 @@ public class Scope extends PythonObject {
 
     public void __getattr__(ThreadContext context, String name) {
         if (attributes.containsKey(name)) {
-            context.pushData(attributes.get(name));
+            PythonObject value = attributes.get(name);
+            if (ThreadContext.DEBUG && value == null) {
+                throw new IllegalStateException(context.position() + "Attribute with name '" + name + "' is null!");
+            }
+            context.pushData(value);
         } else if (parentScope != null) {
             parentScope.__getattr__(context, name);
         } else {
@@ -94,10 +103,16 @@ public class Scope extends PythonObject {
     }
 
     public void __setattr__(String attr, PythonObject o) {
+        if (ThreadContext.DEBUG && o == null) {
+            throw new IllegalStateException("Trying to set attribute with name '" + attr + "' to null!");
+        }
         attributes.put(attr, o);
     }
 
     public void __setattr__(ThreadContext context, String attr, PythonObject o) {
+        if (ThreadContext.DEBUG && o == null) {
+            throw new IllegalStateException(context.position() + "Trying to set attribute with name '" + attr + "' to null!");
+        }
         attributes.put(attr, o);
     }
 

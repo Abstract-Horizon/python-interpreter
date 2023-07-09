@@ -3,6 +3,7 @@ package org.ah.python.interpreter;
 import static org.ah.python.interpreter.PythonBaseException.exception;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +34,9 @@ public class PythonTuple extends PythonSequence implements Immutable {
 
     private final List<PythonObject> list;
 
-    public PythonTuple() {
+    public PythonTuple(PythonObject... objects) {
         super(PYTHON_TUPLE_CLASS);
-        list = new ArrayList<PythonObject>();
+        list = new ArrayList<PythonObject>(Arrays.asList(objects));
     }
 
     public static PythonObject constructor(final List<PythonObject> elements) {

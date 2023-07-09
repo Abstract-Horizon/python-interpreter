@@ -1,6 +1,7 @@
 package org.ah.libgdx.pygame.modules.pygame;
 
 import static org.ah.python.interpreter.PythonBoolean.FALSE;
+import static org.ah.python.interpreter.PythonBoolean.TRUE;
 
 import java.util.Map;
 
@@ -25,8 +26,9 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
     public static final boolean ENABLE_SHAPE_RENDERER = true;
     public static final boolean DEBUG = false;
 
-    public static final PyGameModule PYGAME_MODULE = new PyGameModule();
     public static final PythonBoolean[] KEYS;
+    public static int MOUSE_X = 0;
+    public static int MOUSE_Y = 0;
     public static boolean PRE_RUN = false;
     public static boolean flip = false;
 
@@ -58,15 +60,21 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
 
     private int batchState = BATCH_NONE;
 
-    public static PythonObject EVENT_TYPE_QUIT = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
-    public static PythonObject EVENT_TYPE_MOUSEMOTION = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
-    public static PythonObject EVENT_TYPE_MOUSEBUTTONDOWN = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
-    public static PythonObject EVENT_TYPE_MOUSEBUTTONUP = new PythonObject(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED);
+    private static PythonClass EVENT_TYPE_CLASS = new PythonClass("pygame.event");
+
+    public static PythonObject EVENT_TYPE_QUIT = new PythonObject(EVENT_TYPE_CLASS);
+    public static PythonObject EVENT_TYPE_KEYDOWN = new PythonObject(EVENT_TYPE_CLASS);
+    public static PythonObject EVENT_TYPE_KEYUP = new PythonObject(EVENT_TYPE_CLASS);
+    public static PythonObject EVENT_TYPE_MOUSEMOTION = new PythonObject(EVENT_TYPE_CLASS);
+    public static PythonObject EVENT_TYPE_MOUSEBUTTONDOWN = new PythonObject(EVENT_TYPE_CLASS);
+    public static PythonObject EVENT_TYPE_MOUSEBUTTONUP = new PythonObject(EVENT_TYPE_CLASS);
 
 
     private static PyGameEvent event = new PyGameEvent();
     public static int DISPLAY_WIDTH = 0;
     public static int DISPLAY_HEIGHT = 0;
+
+    public static final PyGameModule PYGAME_MODULE = new PyGameModule();
 
     public PyGameModule() {
         super("pygame");
@@ -83,12 +91,15 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
         __setattr__("transform", new PyGameTransform());
         __setattr__("sprite", new PyGameSprite());
         __setattr__("joystick", new PyGameJoystick());
+        __setattr__("mouse", new PyGameMouse());
 
 
         __setattr__("QUIT", EVENT_TYPE_QUIT);
         __setattr__("MOUSEMOTION", EVENT_TYPE_MOUSEMOTION);
         __setattr__("MOUSEBUTTONDOWN", EVENT_TYPE_MOUSEBUTTONDOWN);
         __setattr__("MOUSEBUTTONUP", EVENT_TYPE_MOUSEBUTTONUP);
+        __setattr__("KEYDOWN", EVENT_TYPE_KEYDOWN);
+        __setattr__("KEYUP", EVENT_TYPE_KEYUP);
         __setattr__("Rect", PyGameRect.PYGAME_RECT_CLASS);
         addMethod(new BuiltInMethod("quit") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
             SysModule.systemBridge.exit(0);
@@ -327,6 +338,16 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
     public static PyGameEvent getPyGameEvent() {
         return event;
     }
+
+    public static void keyDown(int keycode) {
+        PyGameModule.KEYS[keycode] = TRUE;
+        event.addKeyDown(keycode);
+    }
+
+    public static void keyUp(int keycode) {
+        PyGameModule.KEYS[keycode] = FALSE;
+    }
+
 
     public static PythonTuple color(int r, int g, int b) {
         PythonTuple color = new PythonTuple();

@@ -6,6 +6,8 @@ import org.ah.python.interpreter.StopIteration.StopIterationException;
 
 public class ThreadContext {
 
+    public static boolean DEBUG = false;
+
     public static int DEFAULT_DATA_STACK_SIZE = 500;
 
     public static interface Executable {
@@ -13,7 +15,6 @@ public class ThreadContext {
     }
 
     public Stack<Executable> pcStack = new Stack<Executable>();
-    // public Stack<PythonObject> dataStack = new Stack<PythonObject>();
     public PythonObject[] dataStack;
     private int dataStackPtr = -1;
 
@@ -79,6 +80,9 @@ public class ThreadContext {
     }
 
     public void pushData(PythonObject value) {
+        if (DEBUG && value == null) {
+            throw new IllegalStateException(position() + "Pushing null to stack ");
+        }
         dataStackPtr += 1;
         if (dataStackPtr >= dataStack.length) {
             for (int i = 0; i < dataStack.length; i++) {

@@ -121,10 +121,6 @@ class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
                 @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x); }
                 @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger(); }
             });
-            setAttribute("left", new Attribute<PyGameRect>() {
-                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x); }
-                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger(); }
-            });
             setAttribute("y", new Attribute<PyGameRect>() {
                 @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y); }
                 @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger(); }
@@ -133,47 +129,119 @@ class PyGameRect extends BuiltInIObject<PyGameRect> implements ListAccessible {
                 @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y); }
                 @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger(); }
             });
-            setAttribute("w", new Attribute<PyGameRect>() {
+            setAttribute("left", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger(); }
+            });
+            setAttribute("bottom", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y + self.h); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger() - self.h; }
+            });
+            setAttribute("right", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x + self.w); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger() - self.w; }
+            });
+
+            setAttribute("midtop", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) {
+                    return new PythonTuple(
+                            PythonInteger.valueOf(self.x + self.w / 2),
+                            PythonInteger.valueOf(self.y));
+                }
+                @Override public void assign(PyGameRect self, PythonObject expr) {
+                    if (expr instanceof ListAccessible) {
+                        List<PythonObject> list = ((ListAccessible)expr).asList();
+
+                        self.x = list.get(0).asInteger() - self.w / 2;
+                        self.y = list.get(1).asInteger();
+                    } else {
+                        throw new UnsupportedOperationException("center expected a list");
+                    }
+                }
+            });
+            setAttribute("midleft", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) {
+                    return new PythonTuple(
+                            PythonInteger.valueOf(self.x),
+                            PythonInteger.valueOf(self.y + self.h / 2));
+                }
+                @Override public void assign(PyGameRect self, PythonObject expr) {
+                    if (expr instanceof ListAccessible) {
+                        List<PythonObject> list = ((ListAccessible)expr).asList();
+
+                        self.x = list.get(0).asInteger();
+                        self.y = list.get(1).asInteger() - self.h / 2;
+                    } else {
+                        throw new UnsupportedOperationException("center expected a list");
+                    }
+                }
+            });
+            setAttribute("midbottom", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) {
+                    return new PythonTuple(
+                            PythonInteger.valueOf(self.x + self.w / 2),
+                            PythonInteger.valueOf(self.y + self.h));
+                }
+                @Override public void assign(PyGameRect self, PythonObject expr) {
+                    if (expr instanceof ListAccessible) {
+                        List<PythonObject> list = ((ListAccessible)expr).asList();
+
+                        self.x = list.get(0).asInteger() - self.w / 2;
+                        self.y = list.get(1).asInteger() - self.h;
+                    } else {
+                        throw new UnsupportedOperationException("center expected a list");
+                    }
+                }
+            });
+            setAttribute("midright", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) {
+                    return new PythonTuple(
+                            PythonInteger.valueOf(self.x + self.w),
+                            PythonInteger.valueOf(self.y + self.h / 2));
+                }
+                @Override public void assign(PyGameRect self, PythonObject expr) {
+                    if (expr instanceof ListAccessible) {
+                        List<PythonObject> list = ((ListAccessible)expr).asList();
+
+                        self.x = list.get(0).asInteger() - self.w;
+                        self.y = list.get(1).asInteger() - self.h / 2;
+                    } else {
+                        throw new UnsupportedOperationException("center expected a list");
+                    }
+                }
+            });
+            setAttribute("center", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) {
+                    return new PythonTuple(
+                            PythonInteger.valueOf(self.x + self.w / 2),
+                            PythonInteger.valueOf(self.y + self.h / 2));
+                }
+                @Override public void assign(PyGameRect self, PythonObject expr) {
+                    if (expr instanceof ListAccessible) {
+                        List<PythonObject> list = ((ListAccessible)expr).asList();
+
+                        self.x = list.get(0).asInteger() - self.w / 2;
+                        self.y = list.get(1).asInteger() - self.h / 2;
+                    } else {
+                        throw new UnsupportedOperationException("center expected a list");
+                    }
+                }
+            });
+            setAttribute("width", new Attribute<PyGameRect>() {
                 @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.w); }
                 @Override public void assign(PyGameRect self, PythonObject expr) { self.w = expr.asInteger(); }
             });
-            setAttribute("width", new Attribute<PyGameRect>() {
+            setAttribute("height", new Attribute<PyGameRect>() {
+                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.h); }
+                @Override public void assign(PyGameRect self, PythonObject expr) { self.h = expr.asInteger(); }
+            });
+            setAttribute("w", new Attribute<PyGameRect>() {
                 @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.w); }
                 @Override public void assign(PyGameRect self, PythonObject expr) { self.w = expr.asInteger(); }
             });
             setAttribute("h", new Attribute<PyGameRect>() {
                 @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.h); }
                 @Override public void assign(PyGameRect self, PythonObject expr) { self.h = expr.asInteger(); }
-            });
-            setAttribute("height", new Attribute<PyGameRect>() {
-                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.h); }
-                @Override public void assign(PyGameRect self, PythonObject expr) { self.h = expr.asInteger(); }
-            });
-            setAttribute("right", new Attribute<PyGameRect>() {
-                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.x + self.w); }
-                @Override public void assign(PyGameRect self, PythonObject expr) { self.x = expr.asInteger() - self.w; }
-            });
-            setAttribute("bottom", new Attribute<PyGameRect>() {
-                @Override public PythonObject attribute(PyGameRect self) { return PythonInteger.valueOf(self.y + self.h); }
-                @Override public void assign(PyGameRect self, PythonObject expr) { self.y = expr.asInteger() - self.h; }
-            });
-            setAttribute("center", new Attribute<PyGameRect>() {
-                @Override public PythonObject attribute(PyGameRect self) {
-                    PythonTuple tuple = new PythonTuple();
-                    tuple.asList().add(PythonInteger.valueOf(self.x + self.w / 2));
-                    tuple.asList().add(PythonInteger.valueOf(self.y + self.h / 2));
-                    return tuple;
-                }
-                @Override public void assign(PyGameRect self, PythonObject expr) {
-                    if (expr instanceof PythonList) {
-                        PythonList list = (PythonList)expr;
-
-                        self.x = list.asList().get(0).asInteger() - self.w / 2;
-                        self.y = list.asList().get(1).asInteger() - self.h / 2;
-                    } else {
-                        throw new UnsupportedOperationException("center expected a list");
-                    }
-                }
             });
         }
     };
