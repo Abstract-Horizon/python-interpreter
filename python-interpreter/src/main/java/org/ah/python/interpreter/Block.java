@@ -7,17 +7,34 @@ import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class Block implements Executable {
 
-    private static class BlockEntry {
+    public static interface BlockDetails {
+        public int getLine();
+        public String getModuleName();
+    }
+
+    private static class BlockEntry implements BlockDetails {
         protected Executable executable;
         protected int line;
+        protected String moduleName;
 
-        protected BlockEntry(Executable executable, int line) {
+        protected BlockEntry(Executable executable, int line, String moduleName) {
             this.executable = executable;
             this.line = line;
+            this.moduleName = moduleName;
         }
 
         public String toString() {
             return line + ": " + executable.toString();
+        }
+
+        @Override
+        public int getLine() {
+            return line;
+        }
+
+        @Override
+        public String getModuleName() {
+            return moduleName;
         }
     }
 
@@ -40,6 +57,7 @@ public class Block implements Executable {
                 BlockEntry blockEntry = statements.get(ptr);
                 ptr += 1;
                 context.line = blockEntry.line;
+                context.moduleName = blockEntry.moduleName;
                 context.continuation(this);
                 blockEntry.executable.evaluate(context);
             }
@@ -66,8 +84,8 @@ public class Block implements Executable {
         this.closeScope = closeScope;
     }
 
-    public void addStatement(Executable executable, int line) {
-        statements.add(new BlockEntry(executable, line));
+    public void addStatement(Executable executable, int line, String moduleName) {
+        statements.add(new BlockEntry(executable, line, moduleName));
     }
 
     @Override public void evaluate(ThreadContext context) {
@@ -76,7 +94,7 @@ public class Block implements Executable {
 
     public void terminateWithReturn() {
         if (!(statements.get(statements.size() - 1).executable instanceof Return)) {
-            statements.add(new BlockEntry(new Return(PythonNone.NONE), -1));
+            statements.add(new BlockEntry(new Return(PythonNone.NONE), -1, null));
         }
     }
 

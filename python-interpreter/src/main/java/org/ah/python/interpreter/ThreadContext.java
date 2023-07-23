@@ -1,7 +1,5 @@
 package org.ah.python.interpreter;
 
-import java.util.Stack;
-
 import org.ah.python.interpreter.StopIteration.StopIterationException;
 
 public class ThreadContext {
@@ -10,11 +8,15 @@ public class ThreadContext {
 
     public static int DEFAULT_DATA_STACK_SIZE = 500;
 
+    public static int DEFAULT_PC_STACK_SIZE = 1500;
+
     public static interface Executable {
         public void evaluate(ThreadContext context);
     }
 
-    public Stack<Executable> pcStack = new Stack<Executable>();
+    public Executable[] pcStack;
+    public int pcStackPtr = -1;
+
     public PythonObject[] dataStack;
     private int dataStackPtr = -1;
 
@@ -22,25 +24,46 @@ public class ThreadContext {
     public Scope currentScope;
 
     public boolean popped;
+    public String moduleName;
     public int line;
 
+    public static Executable ContinueMark = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+        }
+    };
+
     public ThreadContext(Scope globalScope) {
-        this(globalScope, DEFAULT_DATA_STACK_SIZE);
+        this(globalScope, DEFAULT_DATA_STACK_SIZE, DEFAULT_PC_STACK_SIZE);
     }
 
-    public ThreadContext(Scope globalScope, int dataStackSize) {
+    public ThreadContext(Scope globalScope, int dataStackSize, int pcStackSize) {
         this.globalScope = globalScope;
         this.currentScope = globalScope;
         dataStack = new PythonObject[dataStackSize];
+        pcStack = new Executable[pcStackSize];
         dataStackPtr = 0;
     }
 
+    public boolean isPCStackEmpty() {
+        return pcStackPtr < 0;
+    }
+
+    public Executable pcStackPop() {
+        if (pcStackPtr >= 0) {
+            Executable executable = pcStack[pcStackPtr];
+            pcStackPtr -= 1;
+            return executable;
+        }
+        return null;
+    }
+
     public boolean next() {
-        if (pcStack.isEmpty()) {
+        if (pcStackPtr < 0) {
             return false;
         }
 
-        Executable pc = pcStack.pop();
+        Executable pc = pcStack[pcStackPtr];
+        pcStackPtr -= 1;
         pc.evaluate(this);
 
         return true;
@@ -49,11 +72,27 @@ public class ThreadContext {
     public void pushScope(Scope scope) {
         scope.setParentScope(currentScope);
         currentScope = scope;
+//        if (scope instanceof Module) {
+//            moduleName = ((Module)scope).getName();
+//        }
     }
 
     public void popScope() {
         if (globalScope != currentScope) {
-            currentScope = currentScope.getParentScope();
+//            if (currentScope instanceof Module) {
+//                currentScope = currentScope.getParentScope();
+//                Scope scope = currentScope;
+//                while (scope != null && scope != globalScope && !(scope instanceof Module)) {
+//                    scope = scope.getParentScope();
+//                }
+//                if (scope instanceof Module) {
+//                    moduleName = ((Module)scope).getName();
+//                } else {
+//                    moduleName = "__main__";
+//                }
+//            } else {
+                currentScope = currentScope.getParentScope();
+//            }
         }
     }
 
@@ -109,12 +148,15 @@ public class ThreadContext {
 
     public void continuation(Executable continuation) {
         popped = false;
-        pcStack.push(continuation);
+        pcStackPtr += 1;
+        pcStack[pcStackPtr] = continuation;
     }
 
     public void continuationWithEvaluate(Executable continuation, Executable... objectsToEvaluate) {
         popped = false;
-        pcStack.push(continuation);
+
+        pcStackPtr += 1;
+        pcStack[pcStackPtr] = continuation;
         int len = objectsToEvaluate.length;
         if (len == 0) {
             return;
@@ -123,7 +165,8 @@ public class ThreadContext {
             objectsToEvaluate[0].evaluate(this);
         } else {
             for (int i = 0; i < len - 1; i++) {
-                pcStack.push(objectsToEvaluate[i]);
+                pcStackPtr += 1;
+                pcStack[pcStackPtr] = objectsToEvaluate[i];
             }
             objectsToEvaluate[len - 1].evaluate(this);
         }
@@ -138,6 +181,37 @@ public class ThreadContext {
     }
 
     public String position() {
+
+
+        if (moduleName != null) {
+            return moduleName + "@ line " + line + ": ";
+        }
         return "@ line " + line + ": ";
+    }
+
+    public void doBreak() {
+        while (pcStackPtr >= 0) {
+            Executable pc = pcStack[pcStackPtr];
+            pcStackPtr -= 1;
+            if (pc instanceof Loop) {
+                Loop loop = (Loop)pc;
+                loop.doBreak(this);
+                return;
+            } else if (pc instanceof Cloasable) {
+                ((Cloasable) pc).close(this);
+            }
+        }
+    }
+
+    public void doContinue() {
+        while (pcStackPtr >= 0) {
+            Executable pc = pcStack[pcStackPtr];
+            pcStackPtr -= 1;
+            if (pc == ContinueMark) {
+                return;
+            } else if (pc instanceof Cloasable) {
+                ((Cloasable) pc).close(this);
+            }
+        }
     }
 }

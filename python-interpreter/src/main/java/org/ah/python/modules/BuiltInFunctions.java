@@ -32,8 +32,10 @@ import org.ah.python.interpreter.util.RangeIterator;
 
 public class BuiltInFunctions extends Scope {
 
+    public static PythonClass PYTHON_BUILT_INS_CLASS = new PythonClass("BuiltIns");
+
     public BuiltInFunctions() {
-        super(PythonClass.PYTHON_INTERNAL_CLASS_NOT_DEFINED, null);
+        super(PYTHON_BUILT_INS_CLASS, null);
     }
 
     public static BuiltInFunctions BUILT_IN_FUNCTIONS_SCOPE;

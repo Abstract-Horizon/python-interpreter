@@ -17,7 +17,7 @@ public class TestArrays extends BaseTestClass {
 
         Assign aAssignment = new Assign(aReference, expression, true);
 
-        block.addStatement(aAssignment, 1);
+        block.addStatement(aAssignment, 1, "test.py");
 
 
         Reference aReference2 = new Reference(null, "a");
@@ -29,7 +29,7 @@ public class TestArrays extends BaseTestClass {
         Assign bAssignment = new Assign(bReference, callAccess, true);
         bAssignment.setLastInstruction(true);
 
-        block.addStatement(bAssignment, 2);
+        block.addStatement(bAssignment, 2, "test.py");
 
         context.continuation(block);
 

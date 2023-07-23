@@ -257,15 +257,15 @@ public class PythonObject implements Executable {
     }
 
     public void __add__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__delslice__", other);
+        evaluateObjectMethod(context, "__add__", other);
     }
 
     public void __sub__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__delslice__", other);
+        evaluateObjectMethod(context, "__sub__", other);
     }
 
     public void __mul__(ThreadContext context, PythonObject other) {
-        evaluateObjectMethod(context, "__delslice__", other);
+        evaluateObjectMethod(context, "__mul__", other);
     }
 
     public void __floordiv__(ThreadContext context, PythonObject other) {
@@ -492,11 +492,16 @@ public class PythonObject implements Executable {
     }
 
     public static String arrayToString(Object[] col, String delimiter) {
+        return arrayToString(col, delimiter, col.length);
+    }
+
+
+    public static String arrayToString(Object[] col, String delimiter, int size) {
         StringBuilder res = new StringBuilder();
         boolean first = true;
-        for (Object o : col) {
+        for (int i = 0; i < size; i++) {
             if (first) { first = false; } else { res.append(delimiter); }
-            res.append(o.toString());
+            res.append(col[i].toString());
         }
 
         return res.toString();

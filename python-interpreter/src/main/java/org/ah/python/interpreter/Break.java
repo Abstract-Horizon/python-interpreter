@@ -10,15 +10,6 @@ public class Break implements Executable {
 
     @Override
     public void evaluate(ThreadContext context) {
-        while (!context.pcStack.empty()) {
-            Executable pc = context.pcStack.pop();
-            if (pc instanceof Loop) {
-                Loop loop = (Loop)pc;
-                loop.doBreak(context);
-                return;
-            } else if (pc instanceof Cloasable) {
-                ((Cloasable) pc).close(context);
-            }
-        }
+        context.doBreak();
     }
 }

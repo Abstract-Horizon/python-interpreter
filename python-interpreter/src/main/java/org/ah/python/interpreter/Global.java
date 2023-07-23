@@ -31,7 +31,16 @@ public class Global implements Executable {
     @Override
     public void evaluate(ThreadContext context) {
         if (context.currentScope instanceof Frame) {
-            ((Frame)context.currentScope).setGlobals(vars);
+            Frame frame = ((Frame)context.currentScope);
+            Scope scope = frame;
+            while (scope != null && !(scope instanceof Module)) {
+                scope = scope.parentScope;
+            }
+            if (scope == null) {
+                new RuntimeException(context.position() + " cannot find enclosed module for scope " + context.currentScope);
+            }
+            frame.setModule((Module)scope);
+            frame.setGlobals(vars);
         } else {
             new RuntimeException(context.position() + " unexpected context for global " + context.currentScope);
         }

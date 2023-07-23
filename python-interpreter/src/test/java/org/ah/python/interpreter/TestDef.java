@@ -12,15 +12,16 @@ public class TestDef extends BaseTestClass {
         Def def = new Def("my_method", new Def.Argument[] {new Def.Argument("x", null)});
         def.getBlock().addStatement(
                 new Call(BuiltInFunctions.BUILT_IN_FUNCTIONS_SCOPE.getAttribute("print"), PythonString.valueOf("Print from method")),
-                1
+                1,
+                "test.py"
         );
 
         Block block = new Block();
-        block.addStatement(def, 2);
+        block.addStatement(def, 2, "test.py");
 
         Call call = new Call(new Reference(null, "my_method"), PythonInteger.valueOf(3));
 
-        block.addStatement(call, 3);
+        block.addStatement(call, 3, "test.py");
 
         context.continuation(block);
 
@@ -38,15 +39,15 @@ public class TestDef extends BaseTestClass {
                     new Reference(PythonString.valueOf("Print from method, x="), "__add__"),
                     new Reference(null, "x")
                 )
-            ), 1
+            ), 1, "test.py"
         );
 
         Block block = new Block();
-        block.addStatement(def, 2);
+        block.addStatement(def, 2, "test.py");
 
         Call call = new Call(new Reference(null, "my_method"), PythonString.valueOf("value_of_x"));
 
-        block.addStatement(call, 3);
+        block.addStatement(call, 3, "test.py");
 
         context.continuation(block);
 

@@ -23,12 +23,14 @@ public abstract class ModuleLoader {
 
             PythonScannerFixed scanner = new PythonScannerFixed(new StringReader(pythonCode));
             PythonParser parser = new PythonParser(scanner);
+            parser.setModuleName(moduleName);
 
             parser.next();
             parser.file_input();
 
             Module module = parser.getModule();
-            module.__setattr__("__name__", PythonString.valueOf("__main__"));
+            module.setName(moduleName);
+            module.__setattr__("__name__", PythonString.valueOf(moduleName));
             module.__setattr__("__sourcecode__", PythonString.valueOf(pythonCode));
 
             return module;

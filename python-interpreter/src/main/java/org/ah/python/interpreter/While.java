@@ -1,7 +1,5 @@
 package org.ah.python.interpreter;
 
-import static org.ah.python.interpreter.Continue.ContinueMark;
-
 import org.ah.python.interpreter.ThreadContext.Executable;
 
 public class While implements Executable {
@@ -32,7 +30,7 @@ public class While implements Executable {
                 if (((PythonBoolean)a).asBoolean()) {
                     context.continuation(whileContinuation);
                     context.continuation(test);
-                    context.continuation(ContinueMark);
+                    context.continuation(ThreadContext.ContinueMark);
                     block.evaluate(context);
                 } else if (!elseBlock.isEmpty()) {
                     elseBlock.evaluate(context);
@@ -59,7 +57,7 @@ public class While implements Executable {
             if (((PythonBoolean)a).asBoolean()) {
                 context.continuation(whileContinuation);
                 context.continuation(test);
-                context.continuation(ContinueMark);
+                context.continuation(ThreadContext.ContinueMark);
                 block.evaluate(context);
             } else if (!elseBlock.isEmpty()) {
                 elseBlock.evaluate(context);

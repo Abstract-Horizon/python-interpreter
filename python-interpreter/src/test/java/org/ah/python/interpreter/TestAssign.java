@@ -14,7 +14,7 @@ public class TestAssign extends BaseTestClass {
 
         Assign assignment = new Assign(reference, expression, true);
 
-        block.addStatement(assignment, 1);
+        block.addStatement(assignment, 1, "test.py");
 
         context.continuation(block);
 

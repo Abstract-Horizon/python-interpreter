@@ -1,7 +1,5 @@
 package org.ah.python.interpreter;
 
-import static org.ah.python.interpreter.Continue.ContinueMark;
-
 import org.ah.python.interpreter.StopIteration.StopIterationException;
 import org.ah.python.interpreter.ThreadContext.Executable;
 
@@ -39,7 +37,7 @@ public class For implements Executable {
             try {
                 context.top().__next__(context); // Keep iterator on the stack
             } catch (StopIterationException e) {
-                context.pcStack.pop(); // Remove just above added continuation
+                context.pcStackPop(); // Remove just above added continuation
                 if (!elseBlock.isEmpty()) {
                     elseBlock.evaluate(context);
                 }
@@ -62,7 +60,7 @@ public class For implements Executable {
 
             if (value != null) {
                 context.continuation(forContinuationIter);
-                context.continuation(ContinueMark);
+                context.continuation(ThreadContext.ContinueMark);
                 context.continuation(block);
                 Assign.createAssignment(target, value, true).evaluate(context);
             } else if (!elseBlock.isEmpty()) {

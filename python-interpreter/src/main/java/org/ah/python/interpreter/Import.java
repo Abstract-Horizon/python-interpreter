@@ -28,14 +28,22 @@ public class Import implements Executable {
         return res.toString();
     }
 
+    private Executable removeScope = new Executable() {
+        @Override public void evaluate(ThreadContext context) {
+            context.popScope();
+        }
+    };
+
     public void evaluate(ThreadContext context) {
         for (String name : imports.keySet()) {
             if (!GlobalScope.MODULES.containsKey(name)) {
-                context.raise(PythonBaseException.exception("ModuleNotFoundError", PythonString.valueOf("No module named '" + name + "'")));
-                return;
-            } else {
-                context.currentScope.__setattr__(context, name, GlobalScope.MODULES.get(name));
+                Module module = GlobalScope.moduleLoader.loadModule(name);
+                GlobalScope.MODULES.put(name, module);
+                context.pushScope(module);
+                context.continuation(removeScope);
+                context.continuation(module);
             }
+            context.currentScope.__setattr__(context, name, GlobalScope.MODULES.get(name));
         }
     }
 }

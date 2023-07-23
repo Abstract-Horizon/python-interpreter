@@ -74,8 +74,8 @@ scanner PythonScanner package org.ah.python.grammar {
 
     NUMBER = digit { digit } [ '.' { digit } ];
 
-    private char1  = ' ' | CHR(33) | '\\' CHR(34) | CHR(35) .. CHR(91) | '\\' '\\' | CHR(93) .. CHR(127) ;
-    private char2  = ' ' | CHR(33) .. CHR(38) | '\\' CHR(39) | CHR(40) .. CHR(91) | '\\' '\\' | CHR(93) .. CHR(127) ;
+    private char1  = ' ' | CHR(33) | '\\' (CHR(34) | 'n' | 'r' | 't' | 'f' | 'b') | CHR(35) .. CHR(91) | '\\' '\\' | CHR(93) .. CHR(127) ;
+    private char2  = ' ' | CHR(33) .. CHR(38) | '\\' (CHR(39) | 'n' | 'r' | 't' | 'f' | 'b') | CHR(40) .. CHR(91) | '\\' '\\' | CHR(93) .. CHR(127) ;
 
     STRING = ( '"' { char1 } '"' ) | ( CHR(39) { char2 } CHR(39) )
       <% 
@@ -85,6 +85,18 @@ scanner PythonScanner package org.ah.python.grammar {
               if (c == '\\') {
                   i++;
                   c = s.charAt(i + 1);
+                  if (c == 'n') {
+                      c = 10;
+                  } else if (c == 'r') {
+                      c = 13;
+                  } else if (c == 't') {
+                      c = 9;
+                  } else if (c == 'b') {
+                      c = 9;
+                  } else if (c == 'f') {
+                      c = 12;
+                  } else {
+                  }
               }
               buf.append(c);
           }
@@ -118,25 +130,28 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     private String op = "__unknown__";
 
     private Module module;
+    private String moduleName = "parsed";
     private boolean trailingComma = false;
     
     public Module getModule() { return module; }
 
     public void setModule(Module module) { this.module = module; }
 
+	public void setModuleName(String moduleName) { this.moduleName = moduleName; }
+
     private void addStatement(Block block, ThreadContext.Executable statement) {
-        block.addStatement(statement, scanner.getStartLine());
+        block.addStatement(statement, scanner.getStartLine(), moduleName);
     }
 
     private void addStatement(ThreadContext.Executable statement) {
-        currentBlock.addStatement(statement, scanner.getStartLine());
+        currentBlock.addStatement(statement, scanner.getStartLine(), moduleName);
     }
 %>
 
     single_input = (NEWLINE | simple_stmt | compound_stmt NEWLINE { NEWLINE } );
 
     file_input = 
-        <% module = new Module("parsed"); currentBlock = module.getBlock(); %> 
+        <% module = new Module(moduleName); currentBlock = module.getBlock(); %>
                  { NEWLINE | stmt };
 
     existing_module_file_input = 
@@ -513,9 +528,9 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                { comp_op star_expr 
                          <% 
                             if (op.equals("isnot")) {
-                                throw new UnsupportedOperationException("'is not' is not implemented");
+                            	currentObject = new LogicalNot(new Same(left, currentObject));
                             } else if (op.equals("is")) {
-                                throw new UnsupportedOperationException("'is' is not implemented");
+                            	currentObject = new Same(left, currentObject);
                             } else if (op.equals("notin")) {
                                 currentObject = new Call(
                                     new Reference(
@@ -541,9 +556,9 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
             | NOT_EQUAL2 <% op = "__ne__"; %>
             | NOT_EQUAL  <% op = "__ne__"; %>
             | "in"       <% op = "__contains__"; %>
-            | "not"      <% op = "notin"; %>
-            | "is"       <% op = "is"; %>
+            | "not" "in" <% op = "notin"; %>
             | "is" "not" <% op = "isnot"; %>
+            | "is"       <% op = "is"; %>
             ;
 
     star_expr = [STAR <% throw new UnsupportedOperationException("star_expr"); %> ] expr;
@@ -789,12 +804,20 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     // The reason that keywords are test nodes instead of NAME is that using NAME
     // results in an ambiguity. ast.c makes sure it's a NAME.
-    argument =  
-             ( test
-                 [ comp_for <% throw new UnsupportedOperationException("argument for comprehensions"); %>
-                 ] 
-             | test EQ test <% throw new UnsupportedOperationException("named arguments"); %>
-             );   // Really [keyword EQ] test;
+    argument =
+             test
+             [ comp_for <% throw new UnsupportedOperationException("argument for comprehensions"); %>
+             | EQ <% ThreadContext.Executable name = currentObject; %>
+               test <% currentObject = new KWArg(name, currentObject); %>
+             ]
+             <%
+               // ( test
+               //    [ comp_for < % throw new UnsupportedOperationException("argument for comprehensions"); % >
+               //    ]
+               // | test EQ test < % throw new UnsupportedOperationException("named arguments"); % >
+               // );   // Really [keyword EQ] test;
+             %>
+             ;
 
     comp_iter = comp_for 
               | comp_if;

@@ -475,7 +475,7 @@ public class PythonScanner {
             } else if (state == 10) {
                     ok = false;
             } else if (state == 11) {
-                if ((ch == 34) || (ch == 92)) {
+                if ((ch == 34) || (ch == 92) || (ch == 98) || (ch == 102) || (ch == 110) || (ch == 114) || (ch == 116)) {
                     state = 9;
                 } else {
                     ok = false;
@@ -525,7 +525,7 @@ public class PythonScanner {
                     ok = false;
                 }
             } else if (state == 19) {
-                if ((ch == 39) || (ch == 92)) {
+                if ((ch == 39) || (ch == 92) || (ch == 98) || (ch == 102) || (ch == 110) || (ch == 114) || (ch == 116)) {
                     state = 18;
                 } else {
                     ok = false;
@@ -2247,6 +2247,18 @@ public class PythonScanner {
               if (c == '\\') {
                   i++;
                   c = s.charAt(i + 1);
+                  if (c == 'n') {
+                      c = 10;
+                  } else if (c == 'r') {
+                      c = 13;
+                  } else if (c == 't') {
+                      c = 9;
+                  } else if (c == 'b') {
+                      c = 9;
+                  } else if (c == 'f') {
+                      c = 12;
+                  } else {
+                  }
               }
               buf.append(c);
           }

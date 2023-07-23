@@ -21,18 +21,21 @@ public class PythonParser {
     private String op = "__unknown__";
 
     private Module module;
+    private String moduleName = "parsed";
     private boolean trailingComma = false;
     
     public Module getModule() { return module; }
 
     public void setModule(Module module) { this.module = module; }
 
+	public void setModuleName(String moduleName) { this.moduleName = moduleName; }
+
     private void addStatement(Block block, ThreadContext.Executable statement) {
-        block.addStatement(statement, scanner.getStartLine());
+        block.addStatement(statement, scanner.getStartLine(), moduleName);
     }
 
     private void addStatement(ThreadContext.Executable statement) {
-        currentBlock.addStatement(statement, scanner.getStartLine());
+        currentBlock.addStatement(statement, scanner.getStartLine(), moduleName);
     }
 
 
@@ -109,7 +112,7 @@ public class PythonParser {
 
     // public file_input<null> = {(.k=1.) NEWLINE|stmt};
     public void file_input() throws ParserError {
- module = new Module("parsed"); currentBlock = module.getBlock(); 
+ module = new Module(moduleName); currentBlock = module.getBlock(); 
         while (((id >= 1) && (id <=11)) || ((id >= 14) && (id <=21)) || (id == 25) || ((id >= 27) && (id <=28)) || (id == 31) || (id == 33) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || ((id >= PythonScanner.TOKEN_ELLIPSIS) && (id <=PythonScanner.TOKEN_AT)) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || (id == PythonScanner.TOKEN_NEWLINE) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             if ((id == PythonScanner.TOKEN_NEWLINE)) {
                 if (id == PythonScanner.TOKEN_NEWLINE) {
@@ -1698,9 +1701,9 @@ public class PythonParser {
             star_expr();
              
                             if (op.equals("isnot")) {
-                                throw new UnsupportedOperationException("'is not' is not implemented");
+                            	currentObject = new LogicalNot(new Same(left, currentObject));
                             } else if (op.equals("is")) {
-                                throw new UnsupportedOperationException("'is' is not implemented");
+                            	currentObject = new Same(left, currentObject);
                             } else if (op.equals("notin")) {
                                 currentObject = new Call(
                                     new Reference(
@@ -1717,7 +1720,7 @@ public class PythonParser {
         } // while 
     } // comparison
 
-    // public comp_op<null> = (.k=1.) LT CODE|GT CODE|EQUAL CODE|GE CODE|LE CODE|NOT_EQUAL2 CODE|NOT_EQUAL CODE|"in" CODE|"not" CODE|"is" CODE|"is" "not" CODE;
+    // public comp_op<null> = (.k=1.) LT CODE|GT CODE|EQUAL CODE|GE CODE|LE CODE|NOT_EQUAL2 CODE|NOT_EQUAL CODE|"in" CODE|"not" "in" CODE|"is" "not" CODE|"is" CODE;
     public void comp_op() throws ParserError {
         if ((id == PythonScanner.TOKEN_LT)) {
             if (id == PythonScanner.TOKEN_LT) {
@@ -1781,14 +1784,12 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "\"not\"");
             }
-             op = "notin"; 
-        } else if ((id == 23)) {
-            if (id == 23) {
+            if (id == 22) {
                 next(); // <-- here 2
             } else {
-                throw new ParserError(t, nt, "\"is\"");
+                throw new ParserError(t, nt, "\"in\"");
             }
-             op = "is"; 
+             op = "notin"; 
         } else if ((id == 23)) {
             if (id == 23) {
                 next(); // <-- here 2
@@ -1801,6 +1802,13 @@ public class PythonParser {
                 throw new ParserError(t, nt, "\"not\"");
             }
              op = "isnot"; 
+        } else if ((id == 23)) {
+            if (id == 23) {
+                next(); // <-- here 2
+            } else {
+                throw new ParserError(t, nt, "\"is\"");
+            }
+             op = "is"; 
         } else {
             throw new ParserError(t, "'in','is','not',EQUAL,NOT_EQUAL,NOT_EQUAL2,GE,GT,LE,LT");
         }
@@ -2555,26 +2563,33 @@ public class PythonParser {
         }
     } // arglist
 
-    // public argument<null> = (.k=1.) test [comp_for CODE]|test EQ test CODE;
+    // public argument<null> = test [(.k=1.) comp_for CODE|EQ CODE test CODE] CODE;
     public void argument() throws ParserError {
-        if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
-            test();
+        test();
+        if ((id == 14) || (id == PythonScanner.TOKEN_EQ)) {
             if ((id == 14)) {
                 comp_for();
                  throw new UnsupportedOperationException("argument for comprehensions"); 
-            } 
-        } else if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
-            test();
-            if (id == PythonScanner.TOKEN_EQ) {
-                next(); // <-- here 2
+            } else if ((id == PythonScanner.TOKEN_EQ)) {
+                if (id == PythonScanner.TOKEN_EQ) {
+                    next(); // <-- here 2
+                } else {
+                    throw new ParserError(t, nt, "EQ");
+                }
+                 ThreadContext.Executable name = currentObject; 
+                test();
+                 currentObject = new KWArg(name, currentObject); 
             } else {
-                throw new ParserError(t, nt, "EQ");
+                throw new ParserError(t, "'for',EQ");
             }
-            test();
-             throw new UnsupportedOperationException("named arguments"); 
-        } else {
-            throw new ParserError(t, "'None','True','False','lambda','not',LPAREN,LBRACK,LKBRACK,STAR,ELLIPSIS,PLUS,MINUS,TILDA,NAME,NUMBER,STRING");
-        }
+        } 
+        
+               // ( test
+               //    [ comp_for < % throw new UnsupportedOperationException("argument for comprehensions"); % >
+               //    ] 
+               // | test EQ test < % throw new UnsupportedOperationException("named arguments"); % >
+               // );   // Really [keyword EQ] test;
+             
     } // argument
 
     // public comp_iter<null> = (.k=1.) comp_for|comp_if;

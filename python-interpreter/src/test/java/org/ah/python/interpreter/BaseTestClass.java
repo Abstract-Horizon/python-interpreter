@@ -85,7 +85,7 @@ public class BaseTestClass {
         if (context.getDataStackLevel() > 0) {
             message.append("Data stack is not emtpy; " + PythonObject.arrayToString(context.dataStack)).append("\n");
         }
-        if (context.pcStack.size() > 0) {
+        if (!context.isPCStackEmpty()) {
             message.append("PC stack is not emtpy; " + context.pcStack).append("\n");
         }
         if (message.length() > 0) {

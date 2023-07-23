@@ -83,16 +83,23 @@ public class Scope extends PythonObject {
                 throw new IllegalStateException(context.position() + "Attribute with name '" + name + "' is null!");
             }
             context.pushData(value);
+            return;
         } else if (parentScope != null) {
-            parentScope.__getattr__(context, name);
-        } else {
-            if (this instanceof PythonClass) {
-                context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + ((PythonClass)this).getName() + "' object has no attribute '" + name + "'")));
-            } else if (pythonClass != null) {
-                context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + pythonClass.getName() + "' object has no attribute '" + name + "'")));
-            } else {
-                context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + toString() + "' object has no attribute '" + name + "'")));
+            PythonObject value = parentScope.getAttribute(name);
+            if (value != null) {
+                context.pushData(value);
+                return;
             }
+        }
+
+        if (this instanceof PythonClass) {
+            context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + ((PythonClass)this).getName() + "' object has no attribute '" + name + "'")));
+        } else if (this instanceof Module) {
+            context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("Module '" + ((Module)this).getName() + "' has no attribute '" + name + "'")));
+        } else if (pythonClass != null) {
+            context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + pythonClass.getName() + "' object has no attribute '" + name + "'")));
+        } else {
+            context.raise(new PythonBaseException("AttributeError", PythonString.valueOf("'" + toString() + "' object has no attribute '" + name + "'")));
         }
     }
 
