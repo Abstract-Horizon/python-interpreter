@@ -49,7 +49,13 @@ class PyGameSurfaceSprite extends PythonObject {
                 if (self.rect == null) {
                     self.rect = new PyGameRect(0, 0, (int)self.sprite.getWidth(), (int)self.sprite.getHeight());
                 }
-                context.pushData(self.rect);
+
+                if (kwargs != null) {
+                    // TODO - apply all kwargs to rect!!!
+                    context.pushData(self.rect);
+                } else {
+                    context.pushData(self.rect);
+                }
             }});
         }
     };

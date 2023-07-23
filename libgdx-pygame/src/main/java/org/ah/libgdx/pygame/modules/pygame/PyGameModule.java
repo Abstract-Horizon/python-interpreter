@@ -92,6 +92,7 @@ public class PyGameModule extends org.ah.python.interpreter.Module {
         __setattr__("sprite", new PyGameSprite());
         __setattr__("joystick", new PyGameJoystick());
         __setattr__("mouse", new PyGameMouse());
+        __setattr__("math", new PyGameMath());
 
 
         __setattr__("QUIT", EVENT_TYPE_QUIT);

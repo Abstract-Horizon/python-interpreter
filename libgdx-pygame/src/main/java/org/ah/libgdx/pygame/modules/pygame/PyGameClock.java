@@ -8,7 +8,6 @@ import org.ah.python.interpreter.BuiltInBoundMethod;
 import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonFloat;
 import org.ah.python.interpreter.PythonInteger;
-import org.ah.python.interpreter.PythonNone;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.ThreadContext;
 import org.ah.python.modules.BuiltInFunctions;
