@@ -410,7 +410,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     compound_stmt = if_stmt 
                   | while_stmt 
                   | for_stmt 
-                  | try_stmt  <% throw new UnsupportedOperationException("try_stmt"); %>
+                  | try_stmt
                   | with_stmt <% throw new UnsupportedOperationException("with_stmt"); %>
                   | funcdef 
                   | classdef
@@ -473,18 +473,30 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
                    <% currentBlock = savedBlock; addStatement(fr); %>
                 ;
 
-    try_stmt = ("try" COLON suite
-           ((except_clause COLON suite) { (except_clause COLON suite) }
-        ["else" COLON suite]
-        ["finally" COLON suite] |
-       "finally" COLON suite));
+    try_stmt = ("try" COLON
+               <% 
+                  Try tryStmt = new Try();
+                  Block savedBlock = currentBlock; currentBlock = tryStmt.getBlock();
+               %> 
+               suite
+                 (
+                   (except_clause COLON <% currentBlock = new Block(); %> suite <% tryStmt.addExcept(new Try.Except(currentBlock)); %>)
+                   { (except_clause COLON <% currentBlock = new Block(); %> suite <% tryStmt.addExcept(new Try.Except(currentBlock)); %>) }
+                   ["else" COLON suite  <% throw new UnsupportedOperationException("try/else not implemented "); %>]
+                   ["finally" COLON suite  <% throw new UnsupportedOperationException("try/finally not implemented "); %>] 
+                   
+                   | "finally" COLON suite <% throw new UnsupportedOperationException("try/finally not implemented "); %>
+                 )
+                 <% currentBlock = savedBlock; addStatement(tryStmt); %>
+               )
+               ;
 
     with_stmt = "with" with_item {COMMA with_item}  COLON suite;
 
     with_item = test ["as" expr];
 
     // NB compile.c makes sure that the default except clause is last
-    except_clause = "except" [test ["as" NAME]];
+    except_clause = "except" [test <% if (true) { throw new UnsupportedOperationException("try/except <test> not implemented "); } %> ["as" NAME]];
 
     suite = simple_stmt 
           | NEWLINE { NEWLINE }

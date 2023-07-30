@@ -103,8 +103,10 @@ public class Import implements Executable {
             for (AsName asName : imports) {
                 ensureLoaded(context, asName.dottedName);
                 String moduleName = asName.dottedName.get(asName.dottedName.size() - 1);
+                Module module = (Module)GlobalScope.MODULES.get(moduleName);
+
                 String importName = asName.asName != null ? asName.asName : moduleName;
-                context.currentScope.__setattr__(context, importName, GlobalScope.MODULES.get(moduleName));
+                context.currentScope.__setattr__(context, importName, module);
             }
         }
     }

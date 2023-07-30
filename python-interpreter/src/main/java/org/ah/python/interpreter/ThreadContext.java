@@ -27,6 +27,10 @@ public class ThreadContext {
     public String moduleName;
     public int line;
 
+    public static interface CatchContinuation {
+        public void evaluateException(ThreadContext context, PythonBaseException exception);
+    }
+
     public static Executable ContinueMark = new Executable() {
         @Override public void evaluate(ThreadContext context) {
         }
@@ -72,27 +76,11 @@ public class ThreadContext {
     public void pushScope(Scope scope) {
         scope.setParentScope(currentScope);
         currentScope = scope;
-//        if (scope instanceof Module) {
-//            moduleName = ((Module)scope).getName();
-//        }
     }
 
     public void popScope() {
         if (globalScope != currentScope) {
-//            if (currentScope instanceof Module) {
-//                currentScope = currentScope.getParentScope();
-//                Scope scope = currentScope;
-//                while (scope != null && scope != globalScope && !(scope instanceof Module)) {
-//                    scope = scope.getParentScope();
-//                }
-//                if (scope instanceof Module) {
-//                    moduleName = ((Module)scope).getName();
-//                } else {
-//                    moduleName = "__main__";
-//                }
-//            } else {
-                currentScope = currentScope.getParentScope();
-//            }
+            currentScope = currentScope.getParentScope();
         }
     }
 

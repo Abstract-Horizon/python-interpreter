@@ -1236,7 +1236,7 @@ public class PythonParser {
         } 
     } // assert_stmt
 
-    // public compound_stmt<null> = (.k=1.) if_stmt|while_stmt|for_stmt|try_stmt CODE|with_stmt CODE|funcdef|classdef|decorated CODE;
+    // public compound_stmt<null> = (.k=1.) if_stmt|while_stmt|for_stmt|try_stmt|with_stmt CODE|funcdef|classdef|decorated CODE;
     public void compound_stmt() throws ParserError {
         if ((id == 11)) {
             if_stmt();
@@ -1246,7 +1246,6 @@ public class PythonParser {
             for_stmt();
         } else if ((id == 31)) {
             try_stmt();
-             throw new UnsupportedOperationException("try_stmt"); 
         } else if ((id == 25)) {
             with_stmt();
              throw new UnsupportedOperationException("with_stmt"); 
@@ -1401,7 +1400,7 @@ public class PythonParser {
          currentBlock = savedBlock; addStatement(fr); 
     } // for_stmt
 
-    // public try_stmt<null> = "try" COLON suite (.k=1.) except_clause COLON suite {except_clause COLON suite} ["else" COLON suite] ["finally" COLON suite]|"finally" COLON suite;
+    // public try_stmt<null> = "try" COLON CODE suite (.k=1.) except_clause COLON CODE suite CODE {except_clause COLON CODE suite CODE} ["else" COLON suite CODE] ["finally" COLON suite CODE]|"finally" COLON suite CODE CODE;
     public void try_stmt() throws ParserError {
         if (id == 31) {
             next(); // <-- here 2
@@ -1413,6 +1412,10 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "COLON");
         }
+         
+                  Try tryStmt = new Try();
+                  Block savedBlock = currentBlock; currentBlock = tryStmt.getBlock();
+               
         suite();
         if ((id == 26)) {
             except_clause();
@@ -1421,7 +1424,9 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "COLON");
             }
+             currentBlock = new Block(); 
             suite();
+             tryStmt.addExcept(new Try.Except(currentBlock)); 
             while ((id == 26)) {
                 except_clause();
                 if (id == PythonScanner.TOKEN_COLON) {
@@ -1429,7 +1434,9 @@ public class PythonParser {
                 } else {
                     throw new ParserError(t, nt, "COLON");
                 }
+                 currentBlock = new Block(); 
                 suite();
+                 tryStmt.addExcept(new Try.Except(currentBlock)); 
             } // while 
             if ((id == 13)) {
                 if (id == 13) {
@@ -1443,6 +1450,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COLON");
                 }
                 suite();
+                 throw new UnsupportedOperationException("try/else not implemented "); 
             } 
             if ((id == 32)) {
                 if (id == 32) {
@@ -1456,6 +1464,7 @@ public class PythonParser {
                     throw new ParserError(t, nt, "COLON");
                 }
                 suite();
+                 throw new UnsupportedOperationException("try/finally not implemented "); 
             } 
         } else if ((id == 32)) {
             if (id == 32) {
@@ -1469,9 +1478,11 @@ public class PythonParser {
                 throw new ParserError(t, nt, "COLON");
             }
             suite();
+             throw new UnsupportedOperationException("try/finally not implemented "); 
         } else {
             throw new ParserError(t, "'except','finally'");
         }
+         currentBlock = savedBlock; addStatement(tryStmt); 
     } // try_stmt
 
     // public with_stmt<null> = "with" with_item {COMMA with_item} COLON suite;
@@ -1511,7 +1522,7 @@ public class PythonParser {
         } 
     } // with_item
 
-    // public except_clause<null> = "except" [test ["as" NAME]];
+    // public except_clause<null> = "except" [test CODE ["as" NAME]];
     public void except_clause() throws ParserError {
         if (id == 26) {
             next(); // <-- here 2
@@ -1520,6 +1531,7 @@ public class PythonParser {
         }
         if (((id >= 19) && (id <=21)) || ((id >= 27) && (id <=28)) || (id == PythonScanner.TOKEN_LPAREN) || (id == PythonScanner.TOKEN_LBRACK) || (id == PythonScanner.TOKEN_LKBRACK) || (id == PythonScanner.TOKEN_STAR) || (id == PythonScanner.TOKEN_ELLIPSIS) || ((id >= PythonScanner.TOKEN_PLUS) && (id <=PythonScanner.TOKEN_MINUS)) || (id == PythonScanner.TOKEN_TILDA) || ((id >= PythonScanner.TOKEN_NAME) && (id <=PythonScanner.TOKEN_NUMBER)) || (id == PythonScanner.TOKEN_STRING)) {
             test();
+             if (true) { throw new UnsupportedOperationException("try/except <test> not implemented "); } 
             if ((id == 24)) {
                 if (id == 24) {
                     next(); // <-- here 2
