@@ -16,6 +16,7 @@ public class PythonParser {
     private Def.Argument currentArgument;
 
     private List<String> stringList = new ArrayList<String>();
+    private Import.AsName asName;
     private Import currentImport;
     private List<ThreadContext.Executable> currentList;
     private String op = "__unknown__";
@@ -953,14 +954,13 @@ public class PythonParser {
          throw new UnsupportedOperationException("raise_stmt"); 
     } // raise_stmt
 
-    // public import_stmt<null> = (.k=1.) import_name|import_from CODE CODE;
+    // public import_stmt<null> = (.k=1.) import_name|import_from CODE;
     public void import_stmt() throws ParserError {
  currentImport = new Import(); 
         if ((id == 33)) {
             import_name();
         } else if ((id == 7)) {
             import_from();
-             throw new UnsupportedOperationException("import_from"); 
         } else {
             throw new ParserError(t, "'from','import'");
         }
@@ -977,7 +977,7 @@ public class PythonParser {
         dotted_as_names();
     } // import_name
 
-    // public import_from<null> = "from" (.k=1.) {(.k=1.) DOT|ELLIPSIS} dotted_name|(.k=1.) DOT|ELLIPSIS {(.k=1.) DOT|ELLIPSIS} "import" (.k=1.) STAR|LPAREN import_as_names RPAREN|import_as_names;
+    // public import_from<null> = "from" (.k=1.) {(.k=1.) DOT|ELLIPSIS} dotted_name|(.k=1.) DOT|ELLIPSIS {(.k=1.) DOT|ELLIPSIS} "import" CODE (.k=1.) STAR|LPAREN import_as_names RPAREN|import_as_names;
     public void import_from() throws ParserError {
         if (id == 7) {
             next(); // <-- here 2
@@ -1044,6 +1044,7 @@ public class PythonParser {
         } else {
             throw new ParserError(t, nt, "\"import\"");
         }
+         currentImport.setFrom(stringList); 
         if ((id == PythonScanner.TOKEN_STAR)) {
             if (id == PythonScanner.TOKEN_STAR) {
                 next(); // <-- here 2
@@ -1069,13 +1070,14 @@ public class PythonParser {
         }
     } // import_from
 
-    // public import_as_name<null> = NAME ["as" NAME];
+    // public import_as_name<null> = NAME CODE ["as" NAME CODE] CODE;
     public void import_as_name() throws ParserError {
         if (id == PythonScanner.TOKEN_NAME) {
             next(); // <-- here 2
         } else {
             throw new ParserError(t, nt, "NAME");
         }
+         stringList = new ArrayList<String>(); stringList.add(t.toString()); String as = null;  
         if ((id == 24)) {
             if (id == 24) {
                 next(); // <-- here 2
@@ -1087,7 +1089,9 @@ public class PythonParser {
             } else {
                 throw new ParserError(t, nt, "NAME");
             }
+             as = t.toString(); 
         } 
+         currentImport.addFromImports(new Import.AsName(stringList, as)); 
     } // import_as_name
 
     // public dotted_as_name<null> = dotted_name CODE ["as" NAME CODE] CODE;
@@ -1107,7 +1111,7 @@ public class PythonParser {
             }
              as = t.toString(); 
         } 
-         currentImport.addImport(as, stringList); 
+         currentImport.addImport(new Import.AsName(stringList, as)); 
     } // dotted_as_name
 
     // public import_as_names<null> = import_as_name {COMMA import_as_name};
@@ -2586,7 +2590,7 @@ public class PythonParser {
         
                // ( test
                //    [ comp_for < % throw new UnsupportedOperationException("argument for comprehensions"); % >
-               //    ] 
+               //    ]
                // | test EQ test < % throw new UnsupportedOperationException("named arguments"); % >
                // );   // Really [keyword EQ] test;
              

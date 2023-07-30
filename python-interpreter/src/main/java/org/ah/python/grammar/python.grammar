@@ -125,6 +125,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     private Def.Argument currentArgument;
 
     private List<String> stringList = new ArrayList<String>();
+    private Import.AsName asName;
     private Import currentImport;
     private List<ThreadContext.Executable> currentList;
     private String op = "__unknown__";
@@ -371,7 +372,7 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
     import_stmt =
                 <% currentImport = new Import(); %>
                 ( import_name 
-                | import_from <% throw new UnsupportedOperationException("import_from"); %>
+                | import_from
                 )
                 <% addStatement(currentImport); %>
                 ;
@@ -380,13 +381,16 @@ parser PythonParser package org.ah.python.grammar using scanner org.ah.python.gr
 
     // note below: the (DOT | ELLIPSIS) is necessary because ELLIPSIS is tokenized as ELLIPSIS
     import_from = ("from" ({DOT | ELLIPSIS} dotted_name | (DOT | ELLIPSIS) { (DOT | ELLIPSIS) } )
-              "import" (STAR | LPAREN import_as_names RPAREN | import_as_names));
+              "import" <% currentImport.setFrom(stringList); %> (STAR | LPAREN import_as_names RPAREN | import_as_names));
 
-    import_as_name = NAME ["as" NAME];
+    import_as_name = NAME <% stringList = new ArrayList<String>(); stringList.add(t.toString()); String as = null;  %>
+                    ["as" NAME <% as = t.toString(); %>]
+                    <% currentImport.addFromImports(new Import.AsName(stringList, as)); %>
+                    ;
 
     dotted_as_name = dotted_name <% String as = null; %> 
                      ["as" NAME <% as = t.toString(); %>]
-                     <% currentImport.addImport(as, stringList); %>
+                     <% currentImport.addImport(new Import.AsName(stringList, as)); %>
                     ;
 
     import_as_names = import_as_name { COMMA import_as_name };
