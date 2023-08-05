@@ -271,4 +271,12 @@ public class PythonBoolean extends PythonNumber {
             return "False";
         }
     }
+
+    public PythonObject copy() {
+        return this;
+    }
+
+    public PythonObject deepCopy() {
+        return this;
+    }
 }

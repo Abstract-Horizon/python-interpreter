@@ -17,6 +17,7 @@ import org.ah.python.interpreter.PythonBoolean;
 import org.ah.python.interpreter.PythonClass;
 import org.ah.python.interpreter.PythonFloat;
 import org.ah.python.interpreter.PythonInteger;
+import org.ah.python.interpreter.PythonIteratorInterface;
 import org.ah.python.interpreter.PythonJavaIterator;
 import org.ah.python.interpreter.PythonList;
 import org.ah.python.interpreter.PythonNumber;
@@ -266,13 +267,12 @@ public class BuiltInFunctions extends Scope {
                 }});
                 final Executable list_continuation = new Executable() {
                     @Override public void evaluate(ThreadContext context) {
-                        PythonJavaIterator iter = (PythonJavaIterator)context.popData();
+                        PythonIteratorInterface iter = (PythonIteratorInterface)context.popData();
                         PythonList list = new PythonList();
                         try {
-                            PythonObject o = iter.next(context);
-                            while (o != null) {
-                                list.asList().add(o);
-                                o = iter.next(context);
+                            while (true) {
+                                iter.__next__(context);
+                                list.asList().add(context.popData());
                             }
                         } catch (StopIterationException ignore) {}
 

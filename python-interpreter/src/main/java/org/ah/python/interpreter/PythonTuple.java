@@ -115,4 +115,15 @@ public class PythonTuple extends PythonSequence implements Immutable {
         return res.toString();
     }
 
+    public PythonObject copy() {
+        return deepCopy();
+    }
+
+    public PythonObject deepCopy() {
+        PythonTuple copy = new PythonTuple();
+        for (PythonObject object : list) {
+            copy.asList().add(object.deepCopy());
+        }
+        return copy;
+    }
 }

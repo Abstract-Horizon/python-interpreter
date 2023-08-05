@@ -5,6 +5,8 @@ import static org.ah.python.interpreter.util.MapBuilder.newmap;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ah.python.modules.CopyModule;
+import org.ah.python.modules.IterToolsModule;
 import org.ah.python.modules.MathModule;
 import org.ah.python.modules.RandomModule;
 import org.ah.python.modules.SysModule;
@@ -26,6 +28,8 @@ public class GlobalScope {
             .name("sys").val(new SysModule())
             .name("math").val(new MathModule())
             .name("random").val(new RandomModule())
+            .name("copy").val(new CopyModule())
+            .name("itertools").val(new IterToolsModule())
             .name("time").val(new TimeModule());
 
         CONTINUE = false;

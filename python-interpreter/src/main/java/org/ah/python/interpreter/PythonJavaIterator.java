@@ -3,7 +3,7 @@ package org.ah.python.interpreter;
 import java.util.Iterator;
 import java.util.Map;
 
-public class PythonJavaIterator extends PythonObject {
+public class PythonJavaIterator extends PythonObject implements PythonIteratorInterface {
 
     public static PythonClass PYTHON_ITERATOR_CLASS = new PythonClass("iterator") {
         {

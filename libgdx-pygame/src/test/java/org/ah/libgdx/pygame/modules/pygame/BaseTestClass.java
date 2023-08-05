@@ -15,6 +15,7 @@ import org.ah.python.interpreter.Module;
 import org.ah.python.interpreter.PythonObject;
 import org.ah.python.interpreter.PythonString;
 import org.ah.python.modules.BuiltInFunctions;
+import org.ah.python.modules.CopyModule;
 import org.ah.python.modules.MathModule;
 import org.ah.python.modules.RandomModule;
 import org.ah.python.modules.SysModule;
@@ -54,6 +55,7 @@ public class BaseTestClass {
             .name("math").val(new MathModule())
             .name("random").val(new RandomModule())
             .name("time").val(new TimeModule())
+            .name("copy").val(new CopyModule())
             .name("pygame").val(new PyGameModule());
 
         res = new ByteArrayOutputStream();

@@ -505,4 +505,12 @@ public class PythonInteger extends PythonNumber {
 //        }
         return false;
     }
+
+    public PythonObject copy() {
+        return this;
+    }
+
+    public PythonObject deepCopy() {
+        return this;
+    }
 }

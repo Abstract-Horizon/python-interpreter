@@ -42,4 +42,14 @@ public class TestLists extends BaseTestClass {
         assertEquals("5\n9\n", result());
         contextIsEmpty();
     }
+
+//    @Test
+//    public void testLstComprehension() {
+//        executeLines(
+//            "l = [i for i in (1, 2, 3)]",
+//            "print(str(l))"
+//        );
+//        assertEquals("[1, 2, 3, 4]\n", result());
+//        contextIsEmpty();
+//    }
 }

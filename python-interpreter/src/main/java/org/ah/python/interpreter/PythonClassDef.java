@@ -110,6 +110,13 @@ public class PythonClassDef extends PythonObject {
         }
     }
 
+    public void __getattr__(ThreadContext context, String name) {
+         if (pythonClassType == null) {
+             throw new NullPointerException(context.position() + name);
+         }
+         pythonClassType.__getattr__(context, name);
+    }
+
     private static String parentsToString(PythonClass[] parents) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;

@@ -170,4 +170,16 @@ class PyGameVector2 extends PythonSequence {
             key.__int__(context);
         }
     }
+
+    public PythonObject copy() {
+        return deepCopy();
+    }
+
+    public PythonObject deepCopy() {
+        PyGameVector2 copy = new PyGameVector2();
+        for (PythonObject object : list) {
+            copy.asList().add(object.deepCopy());
+        }
+        return copy;
+    }
 }

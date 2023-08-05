@@ -20,9 +20,7 @@ public class SysModule extends org.ah.python.interpreter.Module {
 
     public SysModule() {
         super("sys");
-    }
 
-    {
         addMethod(new BuiltInMethod("exit") {
             @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
                 if (args == null || args.length == 0) {

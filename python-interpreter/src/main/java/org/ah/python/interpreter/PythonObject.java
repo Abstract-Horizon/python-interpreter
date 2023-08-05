@@ -517,4 +517,12 @@ public class PythonObject implements Executable {
         }
         return name + "@" + System.identityHashCode(this);
     }
+
+    public PythonObject copy() {
+        throw new UnsupportedOperationException("Function copy not supported yet");
+    }
+
+    public PythonObject deepCopy() {
+        throw new UnsupportedOperationException("Function deepcopy not supported yet");
+    }
 }

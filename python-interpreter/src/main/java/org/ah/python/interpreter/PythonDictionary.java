@@ -65,4 +65,15 @@ public class PythonDictionary extends PythonObject {
         return res.toString();
     }
 
+    public PythonObject copy() {
+        return deepCopy();
+    }
+
+    public PythonObject deepCopy() {
+        PythonDictionary copy = new PythonDictionary();
+        for (Map.Entry<PythonObject, PythonObject> entry : map.entrySet()) {
+            copy.asMap().put(entry.getKey().deepCopy(), entry.getValue().deepCopy());
+        }
+        return copy;
+    }
 }

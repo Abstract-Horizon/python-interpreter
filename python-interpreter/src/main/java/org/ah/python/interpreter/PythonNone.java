@@ -28,4 +28,12 @@ public class PythonNone extends PythonObject implements Immutable {
     public String toString() {
         return "None";
     }
+
+    public PythonObject copy() {
+        return this;
+    }
+
+    public PythonObject deepCopy() {
+        return this;
+    }
 }

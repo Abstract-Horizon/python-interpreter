@@ -314,4 +314,12 @@ public class PythonFloat extends PythonNumber {
     public String toString() {
         return Double.toString(value);
     }
+
+    public PythonObject copy() {
+        return this;
+    }
+
+    public PythonObject deepCopy() {
+        return this;
+    }
 }

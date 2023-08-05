@@ -35,6 +35,11 @@ public class PyGameDisplay extends PythonObject {
                 }
             }});
             addMethod(new BuiltInBoundMethod("set_caption") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                // TODO
+            }});
+
+            addMethod(new BuiltInBoundMethod("set_icon") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {
+                // TODO
             }});
 
             addMethod(new BuiltInBoundMethod("flip") { @Override public void __call__(ThreadContext context, Map<String, PythonObject> kwargs, PythonObject... args) {

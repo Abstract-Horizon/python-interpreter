@@ -313,26 +313,7 @@ public class PythonList extends PythonSequence {
         }
     }
 
-
-
-//    public static PythonObject constructor(final List<PythonObject> elements, PythonClass pythonClass) {
-//        final ArrayList<PythonObject> storedElements = new ArrayList<PythonObject>(elements);
-//            return new Constructor() {
-//                @Override public PythonObject __call__(ThreadContext context) {
-//                    PythonList list = new PythonList();
-//                    for (PythonObject o : storedElements) {
-//                        PythonObject r = o.dereference();
-//                        list.asList().add(r);
-//                    }
-//                    return list;
-//                }
-//                @Override public String toString() {
-//                    return "CreateList" + storedElements;
-//                }
-//        };
-//    };
-
-    public static class PythonListIterator extends PythonObject {
+    public static class PythonListIterator extends PythonObject implements PythonIteratorInterface {
 
         private PythonList list;
         private int ptr = 0;
@@ -357,4 +338,15 @@ public class PythonList extends PythonSequence {
 
     }
 
+    public PythonObject copy() {
+        return deepCopy();
+    }
+
+    public PythonObject deepCopy() {
+        PythonList copy = new PythonList();
+        for (PythonObject object : list) {
+            copy.asList().add(object.deepCopy());
+        }
+        return copy;
+    }
 }

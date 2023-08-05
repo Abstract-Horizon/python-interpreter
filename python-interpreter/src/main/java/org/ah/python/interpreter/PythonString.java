@@ -142,4 +142,11 @@ public class PythonString extends PythonObject {
         return false;
     }
 
+    public PythonObject copy() {
+        return this;
+    }
+
+    public PythonObject deepCopy() {
+        return this;
+    }
 }
